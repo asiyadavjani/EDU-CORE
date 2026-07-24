@@ -1,0 +1,999 @@
+/*====================================
+        RESET
+====================================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+
+body{
+
+    background:#f8fafc;
+    color:#1e293b;
+    overflow-x:hidden;
+
+}
+
+
+/*====================================
+        HEADER
+====================================*/
+
+
+.main-enroll-header{
+
+    width:100%;
+    height:85px;
+
+    background:#111827;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 60px;
+
+    position:sticky;
+    top:0;
+    z-index:999;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+
+}
+
+
+/* LOGO */
+
+
+.enroll-logo{
+
+    display:flex;
+    align-items:center;
+    gap:15px;
+
+}
+
+
+.enroll-logo img{
+
+    width:55px;
+
+}
+
+
+.enroll-logo span{
+
+    color:white;
+    font-size:28px;
+    font-weight:700;
+
+}
+
+
+
+
+/* NAV */
+
+
+.enroll-nav{
+
+    display:flex;
+    gap:35px;
+
+}
+
+
+
+.enroll-nav a{
+
+    color:#e5e7eb;
+    text-decoration:none;
+
+    font-weight:600;
+
+    position:relative;
+
+    transition:.3s;
+
+}
+
+
+
+.enroll-nav a:hover{
+
+    color:white;
+
+}
+
+
+
+.enroll-nav a::after{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    bottom:-8px;
+
+    height:3px;
+    width:0;
+
+    background:#0056b3;
+
+    transition:.3s;
+
+}
+
+
+.enroll-nav a:hover::after{
+
+    width:100%;
+
+}
+
+
+
+
+/* BACK HOME BUTTON */
+
+
+.back-home-btn{
+
+    background:#0056b3;
+
+    color:white;
+
+    padding:12px 25px;
+
+    border-radius:50px;
+
+    text-decoration:none;
+
+    transition:.35s;
+
+}
+
+
+.back-home-btn:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 15px 30px rgba(0,86,179,.4);
+
+}
+
+
+
+
+/*====================================
+        HERO SLIDER
+====================================*/
+
+
+.hero-slider{
+
+
+    min-height:430px;
+
+    margin:35px;
+
+    border-radius:25px;
+
+    overflow:hidden;
+
+    position:relative;
+
+    display:flex;
+
+    align-items:center;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #111827,
+        #475569,
+        #ffffff
+    );
+
+
+}
+
+
+
+
+.hero-slider::before{
+
+
+    content:"";
+
+    position:absolute;
+
+    width:600px;
+
+    height:600px;
+
+
+    background:
+
+    radial-gradient(
+        circle,
+        rgba(255,255,255,.4),
+        transparent 65%
+    );
+
+
+    right:-150px;
+
+    top:-250px;
+
+
+    animation:moveGlow 8s infinite alternate;
+
+
+}
+
+
+
+
+@keyframes moveGlow{
+
+
+from{
+
+    transform:translateX(0);
+
+}
+
+
+to{
+
+    transform:translateX(-120px);
+
+}
+
+
+}
+
+
+
+
+.slider-content{
+
+
+    width:55%;
+
+    padding-left:70px;
+
+    position:relative;
+
+    z-index:2;
+
+    animation:slideLeft .8s ease;
+
+
+}
+
+
+
+
+@keyframes slideLeft{
+
+
+from{
+
+opacity:0;
+
+transform:translateX(-60px);
+
+}
+
+
+to{
+
+opacity:1;
+
+transform:translateX(0);
+
+}
+
+
+}
+
+
+
+
+
+.slider-badge{
+
+
+    background:white;
+
+    color:#111827;
+
+    padding:8px 20px;
+
+    border-radius:30px;
+
+    display:inline-block;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+
+}
+
+
+
+
+
+.slider-content h1{
+
+
+    color:white;
+
+    font-size:45px;
+
+    line-height:1.2;
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+
+.slider-content p{
+
+
+    color:#e2e8f0;
+
+    font-size:18px;
+
+    line-height:1.7;
+
+    margin-bottom:30px;
+
+
+}
+
+
+
+
+
+.slider-buttons{
+
+    display:flex;
+    gap:20px;
+
+}
+
+
+
+
+
+.primary-btn,
+.secondary-btn{
+
+
+    padding:15px 35px;
+
+    border-radius:50px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.35s;
+
+}
+
+
+
+
+
+.primary-btn{
+
+    background:#0056b3;
+
+    color:white;
+
+}
+
+
+
+.primary-btn:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 15px 30px rgba(0,86,179,.4);
+
+}
+
+
+
+
+
+.secondary-btn{
+
+
+    background:white;
+
+    color:#111827;
+
+
+}
+
+
+
+.secondary-btn:hover{
+
+    transform:translateY(-5px);
+
+}
+
+
+
+
+/* DESIGN SIDE */
+
+
+.slider-design{
+
+
+    width:45%;
+
+    height:100%;
+
+    position:absolute;
+
+    right:0;
+
+
+}
+
+
+
+.circle{
+
+
+    position:absolute;
+
+    border-radius:50%;
+
+    animation:floating 4s infinite alternate;
+
+
+}
+
+
+
+.circle-one{
+
+
+    width:180px;
+    height:180px;
+
+    background:#ffffff55;
+
+    top:60px;
+    right:200px;
+
+
+}
+
+
+
+.circle-two{
+
+
+    width:120px;
+    height:120px;
+
+    background:#11182788;
+
+    bottom:70px;
+
+    right:100px;
+
+
+}
+
+
+
+.circle-three{
+
+
+    width:80px;
+    height:80px;
+
+    background:#0056b355;
+
+    top:180px;
+
+    right:80px;
+
+
+}
+
+
+
+
+
+@keyframes floating{
+
+
+from{
+
+transform:translateY(0);
+
+}
+
+
+to{
+
+transform:translateY(-25px);
+
+}
+
+
+}
+
+
+
+
+/*====================================
+        STATS SLIDER
+====================================*/
+
+
+.stats-slider{
+
+    margin:40px;
+
+    overflow:hidden;
+
+}
+
+
+.stats-track{
+
+
+    display:flex;
+
+    gap:25px;
+
+    animation:moveStats 12s linear infinite;
+
+
+}
+
+
+
+.stats-card{
+
+
+    min-width:250px;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:20px;
+
+    text-align:center;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+
+}
+
+
+
+.stats-card:hover{
+
+    transform:translateY(-8px);
+
+}
+
+
+
+.stats-card i{
+
+    font-size:35px;
+
+    color:#0056b3;
+
+}
+
+
+
+.stats-card h2{
+
+    margin:15px 0;
+
+}
+
+
+
+
+
+@keyframes moveStats{
+
+
+from{
+
+transform:translateX(0);
+
+}
+
+
+to{
+
+transform:translateX(-600px);
+
+}
+
+
+}
+
+
+
+/*====================================
+        STUDENT PORTAL
+====================================*/
+
+
+.student-portal{
+
+
+    padding:50px;
+
+}
+
+
+
+.portal-heading{
+
+
+    text-align:center;
+
+    margin-bottom:35px;
+
+}
+
+
+
+.portal-heading h2{
+
+    font-size:35px;
+
+}
+
+
+
+
+
+.portal-buttons{
+
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:20px;
+
+    margin-bottom:40px;
+
+}
+
+
+
+
+.portal-btn{
+
+
+    padding:15px 30px;
+
+    border:none;
+
+    border-radius:50px;
+
+    background:#e5e7eb;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+
+
+.portal-btn.active,
+.portal-btn:hover{
+
+
+    background:#0056b3;
+
+    color:white;
+
+}
+
+
+
+/* BOX */
+
+
+.portal-box{
+
+
+    display:none;
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+
+}
+
+
+
+.portal-box.active{
+
+    display:block;
+
+    animation:fadeUp .6s ease;
+
+}
+
+
+
+/*====================================
+        FORM
+====================================*/
+
+
+.form-grid{
+
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:25px;
+
+}
+
+
+
+
+.input-box{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+.input-box label{
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+
+
+.input-box input,
+.input-box select{
+
+
+    height:55px;
+
+    border:1px solid #dbe3ec;
+
+    border-radius:12px;
+
+    padding:0 15px;
+
+
+}
+
+
+
+
+.submit-btn,
+.result-btn,
+.download-btn{
+
+
+    margin-top:30px;
+
+    background:#0056b3;
+
+    color:white;
+
+    border:none;
+
+    padding:15px 35px;
+
+    border-radius:50px;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+
+}
+
+
+
+.submit-btn:hover,
+.result-btn:hover,
+.download-btn:hover{
+
+
+    transform:translateY(-4px);
+
+    box-shadow:0 15px 30px rgba(0,86,179,.3);
+
+}
+
+
+
+/*====================================
+        ID CARD
+====================================*/
+
+
+.id-card{
+
+
+    width:360px;
+
+    margin:auto;
+
+    background:white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+}
+
+
+
+.id-header{
+
+
+    background:#111827;
+
+    color:white;
+
+    padding:25px;
+
+    text-align:center;
+
+
+}
+
+
+
+.id-header img{
+
+    width:70px;
+
+}
+
+
+
+.id-body{
+
+
+    padding:30px;
+
+    text-align:center;
+
+}
+
+
+
+.student-photo{
+
+
+    width:120px;
+
+    height:120px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+
+
+
+
+/*====================================
+        RESULT
+====================================*/
+
+
+.result-box{
+
+
+    max-width:400px;
+
+    margin:auto;
+
+    text-align:center;
+
+
+}
+
+
+
+.result-box input{
+
+
+    width:100%;
+
+    height:55px;
+
+    margin:10px 0;
+
+    border-radius:12px;
+
+    border:1px solid #ddd;
+
+    padding:15px;
+
+
+}
+
+
+
+
+@keyframes fadeUp{
+
+
+from{
+
+opacity:0;
+
+transform:translateY(40px);
+
+}
+
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+
+}

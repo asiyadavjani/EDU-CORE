@@ -1,0 +1,674 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>EduCore | Enrollment</title>
+
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
+<link rel="stylesheet" href="./enrollment.css">
+
+
+</head>
+
+
+<body>
+
+
+
+<!-- =================================
+            HEADER (SEPARATE)
+================================= -->
+
+
+<header class="main-enroll-header">
+
+
+<div class="enroll-logo">
+
+
+<img src="./images/logo.png">
+
+
+<span>
+EduCore
+</span>
+
+
+</div>
+
+
+
+
+<nav class="enroll-nav">
+
+
+<a href="index.html">
+Home
+</a>
+
+
+<a href="#courses">
+Courses
+</a>
+
+
+<a href="quiz.html">
+Quiz
+</a>
+
+
+<a href="#result">
+Result
+</a>
+
+
+</nav>
+
+
+
+
+<a href="index.html" class="back-home-btn">
+
+
+<i class="fa-solid fa-house"></i>
+
+Back Home
+
+
+</a>
+
+
+</header>
+
+
+
+
+
+
+
+<!-- =================================
+        MOVING HERO SLIDER
+================================= -->
+
+
+<section class="hero-slider">
+
+
+<div class="slider-content">
+
+
+<span class="slider-badge">
+
+Admissions Open 2026
+
+</span>
+
+
+
+<h1>
+
+Become An EduCore Student
+
+</h1>
+
+
+
+<p>
+
+Learn professional skills from expert mentors,
+build real world projects and grow your career.
+
+</p>
+
+
+
+<div class="slider-buttons">
+
+
+<a href="#studentPortal" class="primary-btn">
+
+Apply Now
+
+<i class="fa-solid fa-arrow-right"></i>
+
+</a>
+
+
+
+
+<a href="quiz.html" class="secondary-btn">
+
+Take Quiz
+
+<i class="fa-solid fa-play"></i>
+
+</a>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="slider-design">
+
+
+<div class="circle circle-one"></div>
+
+<div class="circle circle-two"></div>
+
+<div class="circle circle-three"></div>
+
+
+<i class="fa-solid fa-graduation-cap"></i>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+<!-- =================================
+        MOVING STATS SLIDER
+================================= -->
+
+
+<section class="stats-slider">
+
+
+<div class="stats-track">
+
+
+
+<div class="stats-card">
+
+<i class="fa-solid fa-user-graduate"></i>
+
+<h2>
+5000+
+</h2>
+
+<p>
+Students
+</p>
+
+</div>
+
+
+
+
+
+<div class="stats-card">
+
+<i class="fa-solid fa-book-open"></i>
+
+<h2>
+150+
+</h2>
+
+<p>
+Courses
+</p>
+
+</div>
+
+
+
+
+
+
+<div class="stats-card">
+
+<i class="fa-solid fa-award"></i>
+
+<h2>
+98%
+</h2>
+
+<p>
+Success Rate
+</p>
+
+</div>
+
+
+
+
+
+
+<div class="stats-card">
+
+<i class="fa-solid fa-chalkboard-user"></i>
+
+<h2>
+40+
+</h2>
+
+<p>
+Expert Mentors
+</p>
+
+</div>
+
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- =================================
+        STUDENT PORTAL
+================================= -->
+
+
+<section class="student-portal" id="studentPortal">
+
+
+
+<div class="portal-heading">
+
+
+<h2>
+
+Student Portal
+
+</h2>
+
+
+<p>
+
+Register, Download ID Card and Check Result
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- PORTAL BUTTONS -->
+
+
+<div class="portal-buttons">
+
+
+<button class="portal-btn active"
+onclick="showPortal('registration')">
+
+
+<i class="fa-solid fa-user-plus"></i>
+
+Registration
+
+
+</button>
+
+
+
+
+
+<button class="portal-btn"
+onclick="showPortal('idcard')">
+
+
+<i class="fa-solid fa-id-card"></i>
+
+Student ID Card
+
+
+</button>
+
+
+
+
+
+<button class="portal-btn"
+onclick="showPortal('result')">
+
+
+<i class="fa-solid fa-square-poll-vertical"></i>
+
+Result
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ==========================
+        REGISTRATION FORM
+========================== -->
+
+
+<div class="portal-box active" id="registration">
+
+
+
+<h3>
+
+Student Registration Form
+
+</h3>
+
+
+
+<form class="registration-form">
+
+
+<div class="form-grid">
+
+
+
+<div class="input-box">
+
+<label>
+Full Name
+</label>
+
+<input type="text">
+
+</div>
+
+
+
+
+
+<div class="input-box">
+
+<label>
+Father Name
+</label>
+
+<input type="text">
+
+</div>
+
+
+
+
+
+<div class="input-box">
+
+<label>
+Email
+</label>
+
+<input type="email">
+
+</div>
+
+
+
+
+
+<div class="input-box">
+
+<label>
+Phone Number
+</label>
+
+<input type="tel">
+
+</div>
+
+
+
+
+
+<div class="input-box">
+
+<label>
+Select Course
+</label>
+
+
+<select>
+
+<option>
+Choose Course
+</option>
+
+<option>
+Frontend Development
+</option>
+
+<option>
+Digital Marketing
+</option>
+
+<option>
+Python
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+
+<div class="input-box">
+
+<label>
+Student Photo
+</label>
+
+<input type="file">
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<button class="submit-btn">
+
+Submit Application
+
+</button>
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ==========================
+        ID CARD
+========================== -->
+
+
+<div class="portal-box" id="idcard">
+
+
+
+<div class="id-card">
+
+
+<div class="id-header">
+
+
+<img src="./images/logo.png">
+
+
+<h3>
+EduCore Student Card
+</h3>
+
+
+</div>
+
+
+
+<div class="id-body">
+
+
+<img src="https://placehold.co/120"
+class="student-photo">
+
+
+<h3>
+Student Name
+</h3>
+
+
+<p>
+Student ID:
+</p>
+
+
+<p>
+Course:
+</p>
+
+
+
+<button class="download-btn">
+
+Download ID Card
+
+</button>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ==========================
+        RESULT
+========================== -->
+
+
+<div class="portal-box" id="result">
+
+
+
+<div class="result-box">
+
+
+<h3>
+Check Result
+</h3>
+
+
+<input type="text"
+placeholder="Student ID">
+
+
+
+<input type="password"
+placeholder="Password">
+
+
+
+<button class="result-btn">
+
+Check Result
+
+</button>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+</section>
+
+
+
+
+
+
+<script src="./enrollment.js"></script>
+
+
+</body>
+
+</html>

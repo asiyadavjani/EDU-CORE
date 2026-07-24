@@ -1,0 +1,215 @@
+<header class="main-header">
+    <div class="logo-area">
+        <a href="./index.html" class="logo-link">
+            <img src="./images/logo.png" alt="EduCore Logo" class="brand-logo">
+            <span class="brand-name">EduCore</span>
+        </a>
+    </div>
+
+    <div class="center-nav">
+        <nav class="nav-links">
+
+            <div class="dropdown about-dropdown">
+                <button class="drop-btn" id="aboutBtn">
+                    About
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div class="about-content-box">
+                    <h3>Welcome to EduCore</h3>
+                    <p>
+                        EduCore provides premium education in Web Development, Digital Marketing, Programming, Graphic Designing and many more professional skills.
+                    </p>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="drop-btn">
+                    Courses
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+
+                <div class="dropdown-menu">
+                    <div class="drop-col">
+                        <h4>Digital Marketing</h4>
+                        <ul>
+                            <li>Shopify <span class="badge badge-free">Free</span></li>
+                            <li>Basic Marketing <span class="badge badge-free">Free</span></li>
+                            <li>Google Ads <span class="badge badge-paid">Paid</span></li>
+                            <li>Social Media Marketing <span class="badge badge-paid">Paid</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="drop-col">
+                        <h4>Graphic Designing</h4>
+                        <ul>
+                            <li>Canva <span class="badge badge-free">Free</span></li>
+                            <li>Photoshop <span class="badge badge-free">Free</span></li>
+                            <li>Illustrator <span class="badge badge-paid">Paid</span></li>
+                            <li>UI / UX Figma <span class="badge badge-paid">Paid</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="drop-col">
+                        <h4>Web Development</h4>
+                        <ul>
+                            <li>HTML &amp; CSS <span class="badge badge-free">Free</span></li>
+                            <li>JavaScript <span class="badge badge-free">Free</span></li>
+                            <li>MERN Stack <span class="badge badge-paid">Paid</span></li>
+                            <li>Git &amp; GitHub <span class="badge badge-paid">Paid</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="drop-col">
+                        <h4>Programming</h4>
+                        <ul>
+                            <li>Python <span class="badge badge-free">Free</span></li>
+                            <li>C++ <span class="badge badge-paid">Paid</span></li>
+                            <li>Data Science <span class="badge badge-paid">Paid</span></li>
+                            <li>Artificial Intelligence <span class="badge badge-paid">Paid</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <button class="nav-btn-link" onclick="openResultModal()">
+                Check Result
+            </button>
+        </nav>
+
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search free &amp; paid courses...">
+        </div>
+    </div>
+
+    <div class="header-actions">
+        <a href="./cart.html" class="cart-btn">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="cart-badge">0</span>
+        </a>
+        <a href="./login.html" class="login-btn btn-swipe">Log In</a>
+        <a href="./signup.html" class="signup-btn btn-swipe">Sign Up</a>
+        <a href="./enrollment.html" class="enroll-btn">Enroll Now</a>
+    </div>
+</header>
+
+
+<div class="side-floating-bar">
+  <a href="tel:03041111570" class="side-item">
+    <i class="fa-solid fa-phone"></i>
+    <span class="side-tooltip">0304-111-1570</span>
+  </a>
+
+  <a href="mailto:support@educore.com" class="side-item">
+    <i class="fa-solid fa-envelope"></i>
+    <span class="side-tooltip">support@educore.com</span>
+  </a>
+
+  <a href="./faq.html" class="side-item accent-item">
+    <i class="fa-solid fa-circle-question"></i>
+    <span class="side-tooltip">Any Question?</span>
+  </a>
+</div>
+
+
+<footer class="site-footer">
+
+  <div class="stakeholders-strip">
+    <div class="strip-container">
+      <div class="stakeholder-badge">
+        <i class="fa-solid fa-handshake"></i>
+        <span>PROJECT PARTNERS</span>
+      </div>
+      <div class="partners-logos">
+        <div class="partner-box">
+          <small>CONCEIVED BY</small>
+          <strong>Ministry of IT &amp; Telecom</strong>
+        </div>
+        <div class="partner-box">
+          <small>POWERED BY</small>
+          <strong>Ignite Tech Fund</strong>
+        </div>
+        <div class="partner-box">
+          <small>ACADEMIC PARTNER</small>
+          <strong>EduCore Global Academy</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-main">
+    <div class="footer-container">
+
+      <div class="footer-col brand-col">
+        <h3 class="footer-logo">Edu<span>Core</span></h3>
+        <p class="brand-desc">
+          Empowering future developers and creators with cutting-edge Web Development, AI, and Digital Marketing training programs.
+        </p>
+        <div class="contact-info">
+          <p><i class="fa-solid fa-location-dot"></i> A-25, Tech Zone, Karachi, Pakistan</p>
+          <p><i class="fa-solid fa-phone"></i> +92 21 111 729 526</p>
+          <p><i class="fa-solid fa-envelope"></i> support@educore.com</p>
+        </div>
+        
+        <a href="#" class="google-play-btn">
+          <i class="fa-brands fa-google-play"></i>
+          <div class="btn-text">
+            <small>GET IT ON</small>
+            <span>Google Play</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="col-title">Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="./index.html">Home</a></li>
+          <li><a href="./courses.html">Our Courses</a></li>
+          <li><a href="./enrollment.html">Enroll Now</a></li>
+          <li><a href="./faq.html">FAQs</a></li>
+          <li><a href="./contact.html">Contact Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="col-title">Our Programs</h4>
+        <ul class="footer-links">
+          <li><a href="#">Modern Web Dev</a></li>
+          <li><a href="#">AI &amp; Data Science</a></li>
+          <li><a href="#">Digital Marketing</a></li>
+          <li><a href="#">UI/UX Design</a></li>
+          <li><a href="#">Cyber Security</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="col-title">Connect With Us</h4>
+        <p class="social-text">Follow us on social networks for daily technical updates and events.</p>
+        <div class="footer-socials">
+          <a href="https://facebook.com" target="_blank" class="social-icon" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://instagram.com" target="_blank" class="social-icon" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://youtube.com" target="_blank" class="social-icon" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="https://linkedin.com" target="_blank" class="social-icon" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://github.com" target="_blank" class="social-icon" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="bottom-container">
+      <p>&copy; 2026 <strong>EduCore Mass IT Training</strong>. All Rights Reserved.</p>
+      <div class="legal-links">
+        <a href="#">Privacy Policy</a>
+        <span>|</span>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+<button id="backToTopBtn" title="Go to top">
+  <i class="fa-solid fa-arrow-up"></i>
+</button>
