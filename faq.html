@@ -1,13 +1,943 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiSkills Training Program - Frequently Asked Questions (FAQs)</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+   <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ===================================================
+           1. GLOBAL VARIABLES & THEME CONFIG
+        ==================================================== */
+  
+:root {
+    --theme-gradient: linear-gradient(90deg, hsla(236, 100%, 8%, 1) 0%, hsla(211, 100%, 28%, 1) 100%);
+    --theme-dark-bg: #000328;
+    --theme-accent-blue: #38bdf8;
+    
+    --primary-blue: #0056b3;
+    --primary-blue-hover: #0046a1;
+    --text-dark: #334155;
+    --text-heading: #0f172a;
+    --bg-body: #ffffff;
+    --bg-card: #ffffff;
+    --border-light: #edf2f7;
+    --border-input: #dbe3ec;
+    --icon-grey: #94a3b8;
+}
+
+
+
+        /* Modern Reset & Base Styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color:var(--bg-body);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+
+
+        .faq-logo-img {
+    width: 50px;
+    height: auto;
+    object-fit: contain;
+}
+/* 
+        /* Top Header Styling */
+         /* .site-header {
+            background: var(--theme-gradient);
+            color: #ffffff;
+            padding: 18px 30px;
+            box-shadow: var(--shadow-header);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }  */
+
+        /* .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }  */
+/* 
+         .site-logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }  */
+
+         /* .site-logo span {
+            color: var(--orange-accent);
+        }  */
+
+        /* .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }  */
+
+         /* .nav-links a:hover {
+            color: var(--primary-blue-hover);
+        }  */
+
+        /* Main Wrapper */
+        .faq-wrapper {
+            max-width: 1100px;
+            width: 92%;
+            margin: 40px auto;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 40px 50px;
+            border: 1px solid var(--border-light);
+            flex: 1;
+        }
+
+        /* Page Header & Search Bar */
+        .faq-header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .faq-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 10px;
+        }
+
+        .faq-header p {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+        }
+
+        /* Search Box */
+        .search-box-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 25px auto;
+        }
+
+        .search-box-container input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            font-size: 15px;
+            border: 2px solid var(--border-input);
+            border-radius: 30px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background-color: #ffffff;
+        }
+
+        .search-box-container input:focus {
+          border-color: var(--theme-gradient);
+    box-shadow: 0 0 10px rgba(2, 45, 64, 0.3);
+        }
+
+        .search-box-container i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--icon-grey);
+            font-size: 16px;
+        }
+
+        /* Category Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            background-color: #f1f5f9;
+            border: 1px solid var(--border-input);
+            color: var(--text-dark);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--theme-gradient);
+            color: #ffffff;
+            border-color: var(--text-dark);
+        }
+
+/* Container Box (Image jaisa Light Background) */
+.faq-icon-container {
+    flex-shrink: 0;
+    width: 90px;
+    height: 85px;
+    background-color: #fcfcfc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.faq-icon-svg {
+    width: 65px;
+    height: 65px;
+}
+
+
+        /* FAQ List Container */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Individual FAQ Item */
+        .faq-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 24px 0;
+            border-bottom: 1px dashed #dcdcdc;
+            transition: background-color 0.2s ease;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-icon-container {
+            flex-shrink: 0;
+            width: 70px;
+            height: 70px;
+            border: 1px solid var(--border-input);
+            background-color: #fdfbf7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 25px;
+            border-radius: 8px;
+            color: var(--primary-blue-hover);
+            font-size: 28px;
+        }
+
+        .faq-content {
+            flex-grow: 1;
+        }
+
+        .faq-question {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 10px;
+            line-height: 1.35;
+        }
+
+        .faq-answer {
+            font-size: 15px;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .answer-prefix {
+            color: var(--theme-dark-bg);
+            font-weight: 700;
+            font-size: 20px;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .faq-answer a {
+            color: var(--primary-blue-hover);
+            text-decoration: underline;
+        }
+
+        .faq-answer a:hover {
+            color: var(--orange-accent-hover);
+        }
+
+        /* No Results Message */
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            color: var(--icon-grey);
+            font-size: 16px;
+        }
+
+        .no-results i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Support Banner */
+        .support-banner {
+            margin-top: 40px;
+            background: var(--theme-gradient);
+            /* background: linear-gradient(135deg, #fff3e6 0%, #ffedd5 100%); */
+            border: 1px solid var(--icon-grey);
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .support-banner h3 {
+            color: var(--icon-grey);
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .support-banner p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Site Footer */
+        .site-footer {
+            background: var(--theme-dark-bg);
+            color: #94a3b8;
+            padding: 30px 15px;
+            text-align: center;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        .site-footer a {
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            .site-header {
+                padding: 15px;
+            }
+
+            .header-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .faq-wrapper {
+                padding: 25px 20px;
+            }
+
+            .faq-item {
+                flex-direction: column;
+            }
+
+            .faq-icon-container {
+                margin-right: 0;
+                margin-bottom: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+
+            .faq-question {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
 <!-- header -->
 <div id="header-placeholder"></div>
 
 <!-- header -->
 
+<!-- Master SVG Icon Definition (Theme Gradient & Primary Blue Accent) -->
+<svg style="display: none;">
+    <defs>
+        <!-- Theme Gradient Definition -->
+        <linearGradient id="themeGradientSVG" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="hsla(236, 100%, 8%, 1)" />
+            <stop offset="100%" stop-color="hsla(211, 100%, 28%, 1)" />
+        </linearGradient>
+    </defs>
+
+    
 
 
+
+
+<div class="faq-wrapper">
+    <!-- Header Section -->
+    <div class="faq-header">
+        <h1>Frequently Asked Questions</h1>
+        <p>Find quick answers to your questions about DigiSkills Training Program, LMS, courses, and certifications.</p>
+
+        <!-- Search Bar -->
+        <div class="search-box-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="faqSearch" placeholder="Search questions or keywords (e.g. LMS, Batch-05, Free, Certificate)..." onkeyup="filterFAQs()">
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-btn active" onclick="filterCategory('all',event)">All Questions</button>
+            <button class="filter-btn" onclick="filterCategory('general',event)">General</button>
+            <button class="filter-btn" onclick="filterCategory('enrollment',event)">Enrollments</button>
+            <button class="filter-btn" onclick="filterCategory('courses',event)">Courses & LMS</button>
+            <button class="filter-btn" onclick="filterCategory('certificate',event)">Certificates</button>
+        </div>
+    </div>
+
+    <!-- FAQ Items List -->
+    <div class="faq-list" id="faqList">
+
+        <!-- Q1 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div><div class="faq-content">
+                <div class="faq-question">Q1. What is DigiSkills Training Program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    DigiSkills Training Program is Pakistan’s first Online Training Program to empower the youth with skills that are in-demand in freelance market. It consists of multiple online skill-based training courses. The very unique feature of this program is that the course content has been designed specifically for a Pakistani audience in a mix of Urdu-English language.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q2. Why should I join this program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You should join this program to enhance/learn skills that are in-demand in freelance markets. Learning these skills will enable you to become part of rapidly growing freelance market and earn without looking for a job.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+               <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q3. Is the DigiSkills Training Program a private or Government program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    DigiSkills Training Program is an initiative of the Government of Pakistan spearheaded by Ministry of IT & Telecom through Ignite - National Technology Fund (formerly National ICT R&D Fund) and executed by Virtual University of Pakistan.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q4. When will the Enrollments for Batch-05 of DigiSkills 3.0 open?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    Enrollments for Batch-05 courses will open in November 2026. The Exact Date will be announced later.
+                    <div class="faq-note"><strong>Note:</strong> Enrollments will be on First Come First Served basis.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+               <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q5. When will the classes start?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    The classes of Batch-04 will start on <strong>3rd August 2026</strong>. The exact date will be announced later.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q6. Do I have to pay to join the training?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    There is no fee and the program is being offered absolutely for <strong>FREE!</strong> All you have to do is sign up for the program and start training in courses which suits you.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q7. Which courses are being offered in this training program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    There are currently 24 courses that are being offered in this program.
+                    <ol>
+                        <li>Freelancing</li>
+                        <li>E-Commerce Management</li>
+                        <li>Creative Writing</li>
+                        <li>Graphics Design</li>
+                        <li>QuickBooks</li>
+                        <li>WordPress</li>
+                        <li>AutoCAD</li>
+                        <li>Search Engine Optimization (SEO)</li>
+                        <li>Digital Marketing</li>
+                        <li>Digital Literacy</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+<img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q8. What is the minimum educational qualification required for this program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    There is no minimum educational requirement to take the DigiSkills training and we encourage everyone who can read, write and understand English to take the training to build their future as a freelancer.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+               <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q9. What are the technical requirements of this program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    To access the DigiSkills program, you need to have a <strong>good stable internet connection</strong> at home along with a desktop, laptop, or an android phone.<br><br>
+                    You can download our mobile app from the link below:<br>
+                    <a href="https://play.google.com/store/apps/details?id=pk.digiskills.lms" target="_blank">https://play.google.com/store/apps/details?id=pk.digiskills.lms</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q10. Where do I get this training?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    This is an online training program. Once you sign up for this program and enroll the courses, you get access to DigiSkills Online Learning Management System. On LMS all modules videos and content you are enrolled in will be available. You can access it from anywhere, like from your home or office, all you need is a computer with Internet connectivity. You can self-pace the training or you can follow the announced time table which will be available on Portal.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q11 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q11. How do I study?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    All the videos and learning material for each module will be available on DigiSkills Online Learning Platform. You can self-pace the training or you can follow the announced time table which will be available on Portal.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q12 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q12. I am already a freelancer, will freelancing course be helpful to me?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    Even if you are a freelancer, you can enroll in our DigiSkills Training Program to learn new skills to make more money or enhance your freelancing portfolio by learning from experienced freelancers and experts. This course will definitely offer something new and helpful to existing freelancers.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q13 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q13. Will this initiative offer jobs to freelancers or is it just to train them?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    This program has been launched to train people in those skills that are demanded in freelance markets. It will not offer jobs to trainees, rather, it will offer skill-based trainings, which will enable them to get projects from freelance markets.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q14 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q14. What is the maximum limit of courses I can take summed over all the batches?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    There are a total of 24 courses that are being offered currently in this program. In one batch, a trainee can take up to a maximum of <strong>two (2) courses</strong>. In this way, you can get training of all the 24 courses in 12 batches. Though, it is recommended to learn 2 to 3 skills only and then concentrate on them to start earning instead of just keep enrolling courses and not being expert in anyone.<br><br>
+                    The limit is imposed to make sure a trainee gets the maximum value out of the course(s) they are enrolled in and can actively participate in discussions, coaching, and assignments.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q15 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q15. Do I need professional advice in selection of the course(s)?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    Choosing the right course depends mainly on your interest, and sometimes on your previous education.<br><br>
+                    Always pick a course that genuinely interests you. When you enjoy a skill, you learn it faster and with more passion.<br><br>
+                    All courses are important and valuable.<br><br>
+                    To help you decide, you can also check the <strong>course introductions</strong> and <strong>learning outcomes</strong> available on our website.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q16 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q16. How can I signup and enroll in the courses offered by the training program?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You can sign up for this program by visiting <a href="https://digiskills.pk/Register.aspx" target="_blank">https://digiskills.pk/Register.aspx</a>.<br><br>
+                    After Signup, you can enroll in any two courses of your choice.
+                    <div class="faq-note"><strong>Note:</strong> Enrollment will open one month prior to the commencement of each upcoming batch.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q17 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q17. I have registered with DigiSkills.pk, but unable to activate my account.</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You can Sign in with your <strong>registered Email Address</strong> using your <strong>current Password</strong> and regenerate activation email to activate your account.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q18 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q18. I have enrolled in the courses, but unable to access study material and videos of the courses?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    The course related study material, videos and all related links such as, Course Website, Announcements, and Discussions etc. will be accessible after the start of the batch. We encourage you to sign up and you will automatically be notified once the batch starts.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q19 -->
+        <div class="faq-item" data-category="enrollment">
+            <div class="faq-icon-container">
+               <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q19. How can I reset my lost Password?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You can reset your password yourself through <strong>“Forgot Password”</strong> link available on “Sign In” page and follow the given instructions. If the problem persists, you can contact the support team using Contact Us interface.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q20 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q20. When will the videos and course contents of each week be available on LMS to the registered students?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    The content and videos of each week will be made available on the respective Monday by 11:00 AM.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q21 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q21. How to use LMS?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    Following link will help you in understanding about the use of LMS:<br>
+                    <a href="https://lms.digiskills.pk/OrientationVideo.aspx" target="_blank">https://lms.digiskills.pk/OrientationVideo.aspx</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q23 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q23. What if I need to ask a question?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You can ask questions at any time using the DigiSkills Learning Management System or DigiSkills.pk Contact Us page. Our coaches are there to respond your queries.<br><br>
+                    There are three interfaces where you can ask questions:
+                    <ol>
+                        <li><strong>Discussion board:</strong> If you are an enrolled trainee, then visit the discussion board of LMS to post your query. On the discussion board, you can ask a question, help other trainees by commenting on their queries, and see previous queries related to that specific topic.</li>
+                        <li><strong>Online support:</strong> You can send your general queries related to LMS, Course and other matters related to DigiSkills.pk.</li>
+                        <li><strong>Mobile phone number:</strong> You can call on 0304-111-1570, and ask your question directly from the coach.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q24 -->
+        <div class="faq-item" data-category="certificate">
+            <div class="faq-icon-container">
+              <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q24. Will I get any certificate after completing the training?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    Yes, you will get an e-Certificate from DigiSkills Training Program if you fulfill the course completion criteria. DigiSkills e-Certificate will be issued by the Virtual University of Pakistan.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q25 -->
+        <div class="faq-item" data-category="certificate">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q25. How can we get a hard copy of E-Certificate?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    The eligible trainees will only get the soft copy of a verified e-certificate for each of their respective courses. You can access a verified e-certificate as soon as course certificates become available in your Learning Management System.<br><br>
+                    To download your e-certificate from LMS, please consider these steps:
+                    <ol>
+                        <li>Login to <a href="https://lms.digiskills.pk/" target="_blank">https://lms.digiskills.pk/</a></li>
+                        <li>Click on the <strong>My Results</strong> button under the <strong>Trainee Services</strong> section (available on the homepage).</li>
+                        <li>Now click on the <strong>View</strong> option for any of the completed courses, it will redirect you to the e-certificate.</li>
+                        <li><strong>Download</strong> and <strong>Print</strong> options are available on the top right corner of that page.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q26 -->
+        <div class="faq-item" data-category="courses">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q26. Can I access content of the courses I enrolled in the previous batches?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    You can only access Videos, Hands-on Exercises and their solutions of previously enrolled courses under the "My Previous Courses" section on LMS. However, other content like Handouts, Internet Links, Books, etc. will not be available.
+                </div>
+            </div>
+        </div>
+
+        <!-- Q27 -->
+        <div class="faq-item" data-category="general">
+            <div class="faq-icon-container">
+                <img src="./images/logo-removebg-preview.png" alt="Edu Core Logo" class="faq-logo-img">
+            </div>
+            <div class="faq-content">
+                <div class="faq-question">Q27. After the completion of training, how can I get work from freelance markets?</div>
+                <div class="faq-answer">
+                    <span class="answer-prefix">A.</span>
+                    This program will help the trainees to learn new skills. As soon as a trainee learns any skill, he/she can create an online profile on any freelance marketplace. Trainees are encouraged to find jobs online on their own through freelancing platforms. During the training, our coaches will help you in creating your profile and guide in bidding for the projects in freelance markets.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- No Search Results Found Message -->
+    <div class="no-results" id="noResults">
+        <i class="fa-solid fa-circle-question"></i>
+        <p>No questions found matching your search query.</p>
+    </div>
+
+    <!-- Support Banner Callout -->
+    <div class="support-banner">
+        <h3>Still have questions?</h3>
+        <p>Need further assistance? Contact our support coaches via the LMS Discussion Board or call us directly at <strong>0304-111-1570</strong>.</p>
+    </div>
+</div>
+
+<!-- footer -->
+ <div id="footer-placeholder"></div>
+ <!-- footer -->
+
+
+
+    <script src="./app.js"></script>
+
+<!-- GSAP CDN Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+    let currentCategory = 'all';
+    let searchTimeout = null;
+
+    // Page Load Animation (Initial entrance)
+    window.addEventListener('DOMContentLoaded', () => {
+        gsap.from(".faq-item", {
+            duration: 0.6,
+            y: 20,
+            opacity: 0,
+            stagger: 0.08,
+            ease: "power2.out"
+        });
+    });
+
+    // Debounced Search Function
+    function debounce(func, delay = 250) {
+        return function (...args) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    // GSAP Filter & Animation Function
+    function executeFilter() {
+        const queryInput = document.getElementById('faqSearch');
+        const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
+        const items = document.querySelectorAll('.faq-item');
+        
+        let visibleItems = [];
+        let hiddenItems = [];
+
+        items.forEach(item => {
+            const question = item.querySelector('.faq-question')?.textContent.toLowerCase() || '';
+            const answer = item.querySelector('.faq-answer')?.textContent.toLowerCase() || '';
+            const category = item.getAttribute('data-category');
+
+            const matchesSearch = question.includes(query) || answer.includes(query);
+            const matchesCategory = (currentCategory === 'all' || category === currentCategory);
+
+            if (matchesSearch && matchesCategory) {
+                visibleItems.push(item);
+            } else {
+                hiddenItems.push(item);
+            }
+        });
+
+        // Hide unmatched items
+        hiddenItems.forEach(item => {
+            item.style.display = 'none';
+        });
+
+        // GSAP Animation for visible items
+        if (visibleItems.length > 0) {
+            visibleItems.forEach(item => item.style.display = 'flex');
+            
+            gsap.fromTo(visibleItems, 
+                { opacity: 0, y: 15 }, 
+                { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power1.out" }
+            );
+        }
+
+        // Show/Hide No Results UI
+        const noResults = document.getElementById('noResults');
+        if (noResults) {
+            noResults.style.display = (visibleItems.length === 0) ? 'block' : 'none';
+        }
+    }
+
+    const filterFAQs = debounce(executeFilter, 250);
+
+    // Category Filter Switcher
+    function filterCategory(category, evt) {
+        currentCategory = category;
+
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        if (evt && evt.target) {
+            evt.target.classList.add('active');
+        }
+
+        executeFilter();
+    }
+</script>
 
 
 
 <!-- footer -->
  <div id="footer-placeholder"></div>
  <!-- footer -->
+
+</body>
+</html>
