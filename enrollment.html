@@ -1,674 +1,350 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>EduCore | Enrollment</title>
-
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-
-<link rel="stylesheet" href="./enrollment.css">
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduCore | Enrollment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./enrollment.css">
 </head>
-
 
 <body>
 
-
-
-<!-- =================================
-            HEADER (SEPARATE)
-================================= -->
-
-
-<header class="main-enroll-header">
-
-
-<div class="enroll-logo">
-
-
-<img src="./images/logo.png">
-
-
-<span>
-EduCore
-</span>
-
-
-</div>
-
-
-
-
-<nav class="enroll-nav">
-
-
-<a href="index.html">
-Home
-</a>
-
-
-<a href="#courses">
-Courses
-</a>
-
-
-<a href="quiz.html">
-Quiz
-</a>
-
-
-<a href="#result">
-Result
-</a>
-
-
-</nav>
-
-
-
-
-<a href="index.html" class="back-home-btn">
-
-
-<i class="fa-solid fa-house"></i>
-
-Back Home
-
-
-</a>
-
-
-</header>
-
-
-
-
-
-
-
-<!-- =================================
-        MOVING HERO SLIDER
-================================= -->
-
-
-<section class="hero-slider">
-
-
-<div class="slider-content">
-
-
-<span class="slider-badge">
-
-Admissions Open 2026
-
-</span>
-
-
-
-<h1>
-
-Become An EduCore Student
-
-</h1>
-
-
-
-<p>
-
-Learn professional skills from expert mentors,
-build real world projects and grow your career.
-
-</p>
-
-
-
-<div class="slider-buttons">
-
-
-<a href="#studentPortal" class="primary-btn">
-
-Apply Now
-
-<i class="fa-solid fa-arrow-right"></i>
-
-</a>
-
-
-
-
-<a href="quiz.html" class="secondary-btn">
-
-Take Quiz
-
-<i class="fa-solid fa-play"></i>
-
-</a>
-
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-<div class="slider-design">
-
-
-<div class="circle circle-one"></div>
-
-<div class="circle circle-two"></div>
-
-<div class="circle circle-three"></div>
-
-
-<i class="fa-solid fa-graduation-cap"></i>
-
-
-</div>
-
-
-
+    <div id="header-placeholder"></div>
+
+    <!-- HERO SLIDER -->
+    <section class="hero-slider">
+        <div class="slider-content">
+            <span class="slider-badge">Admissions Open 2026</span>
+            <h1>Become An EduCore Student</h1>
+            <p>Learn professional skills from expert mentors, build real world projects and grow your career.</p>
+            <div class="slider-buttons">
+                <a href="#studentPortal" class="primary-btn">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="./quiz.html" class="secondary-btn">Take Quiz <i class="fa-solid fa-play"></i></a>
+            </div>
+        </div>
+        <div class="slider-design">
+            <div class="circle circle-one"></div>
+            <div class="circle circle-two"></div>
+            <div class="circle circle-three"></div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <section class="stats-glass-wrapper">
+    <div class="glass-glow glow-1"></div>
+    <div class="glass-glow glow-2"></div>
+
+    <div class="stats-glass-container">
+        <div class="glass-stat-card">
+            <div class="stat-icon-box">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <h2 class="counter" data-target="200000" data-suffix="+">0</h2>
+            <p>STUDENTS TRAINED</p>
+        </div>
+
+        <div class="glass-stat-card">
+            <div class="stat-icon-box">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <h2 class="counter" data-target="400" data-suffix="+">0</h2>
+            <p>TRAINERS</p>
+        </div>
+
+        <div class="glass-stat-card">
+            <div class="stat-icon-box">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <h2 class="counter" data-target="70" data-suffix="%">0</h2>
+            <p>EMPLOYMENT SUCCESS</p>
+        </div>
+
+        <div class="glass-stat-card">
+            <div class="stat-icon-box">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <h2 class="counter" data-target="150" data-suffix="+">0</h2>
+            <p>STARTUPS LAUNCHED</p>
+        </div>
+    </div>
 </section>
 
 
-
-
-
-
-
-
-<!-- =================================
-        MOVING STATS SLIDER
-================================= -->
-
-
-<section class="stats-slider">
-
-
-<div class="stats-track">
-
-
-
-<div class="stats-card">
-
-<i class="fa-solid fa-user-graduate"></i>
-
-<h2>
-5000+
-</h2>
-
-<p>
-Students
-</p>
-
-</div>
-
-
-
-
-
-<div class="stats-card">
-
-<i class="fa-solid fa-book-open"></i>
-
-<h2>
-150+
-</h2>
-
-<p>
-Courses
-</p>
-
-</div>
-
-
-
-
-
-
-<div class="stats-card">
-
-<i class="fa-solid fa-award"></i>
-
-<h2>
-98%
-</h2>
-
-<p>
-Success Rate
-</p>
-
-</div>
-
-
-
-
-
-
-<div class="stats-card">
-
-<i class="fa-solid fa-chalkboard-user"></i>
-
-<h2>
-40+
-</h2>
-
-<p>
-Expert Mentors
-</p>
-
-</div>
-
-
-
-
-</div>
-
-
-</section>
-
-
-
-
-
-
-
-
-
-<!-- =================================
-        STUDENT PORTAL
-================================= -->
-
-
-<section class="student-portal" id="studentPortal">
-
-
-
-<div class="portal-heading">
-
-
-<h2>
-
-Student Portal
-
-</h2>
-
-
-<p>
-
-Register, Download ID Card and Check Result
-
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-<!-- PORTAL BUTTONS -->
-
-
-<div class="portal-buttons">
-
-
-<button class="portal-btn active"
-onclick="showPortal('registration')">
-
-
-<i class="fa-solid fa-user-plus"></i>
-
-Registration
-
-
+    <!-- STUDENT PORTAL -->
+    <section class="student-portal" id="studentPortal">
+
+        <!-- PORTAL BUTTONS -->
+        <div class="portal-buttons">
+            <button class="portal-btn active" onclick="showPortal('registration')">
+                <i class="fa-solid fa-clipboard-list"></i> Registration Form
+            </button>
+            <button class="portal-btn" onclick="showPortal('idcard')">
+                <i class="fa-solid fa-address-card"></i> Download ID Card
+            </button>
+            <button class="portal-btn" onclick="showPortal('testStatus')">
+                <i class="fa-solid fa-square-check"></i> Entry Test Status
+            </button>
+            <button class="portal-btn" onclick="showPortal('result')">
+                <i class="fa-solid fa-file-lines"></i> Result
+            </button>
+        </div>
+
+        <!-- 1. REGISTRATION FORM -->
+        <div class="portal-box active" id="registration">
+            <form class="registration-form">
+
+                <!-- Location & Course Details -->
+                <div class="form-section">
+                    <h3><i class="fa-solid fa-location-dot"></i> Location & Course Details</h3>
+                    <div class="form-grid">
+                        <div class="input-box">
+                            <label>Select Country*</label>
+                            <select required>
+                                <option value="">Select country</option>
+                                <option value="Pakistan">Pakistan</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Select class preference*</label>
+                            <select required>
+                                <option value="">Select class preference</option>
+                                <option value="Onsite">Onsite</option>
+                                <option value="Online">Online</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Select Gender*</label>
+                            <select required>
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Select City*</label>
+                            <select required>
+                                <option value="">Select city</option>
+                                <option value="Karachi">Karachi</option>
+                                <option value="Lahore">Lahore</option>
+                                <option value="Islamabad">Islamabad</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Select Course*</label>
+                            <select required>
+                                <option value="">Select course</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Python">Python Development</option>
+                                <option value="Digital Marketing">Digital Marketing</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Select Campus*</label>
+                            <select required>
+                                <option value="">Select campus</option>
+                                <option value="Main Campus">Main Campus</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3><i class="fa-solid fa-user"></i> Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="input-box">
+                            <label>Full Name*</label>
+                            <input type="text" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Father Name*</label>
+                            <input type="text" placeholder="Enter father's name" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Date of Birth*</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Email*</label>
+                            <input type="email" placeholder="your.email@example.com" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Phone*</label>
+                            <input type="tel" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Father's Phone*</label>
+                            <input type="tel" placeholder="Enter phone number" required>
+                        </div>
+                        <div class="input-box">
+                            <label>ID Number (CNIC / B-Form)*</label>
+                            <input type="text" placeholder="Enter ID number" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Father's ID Number*</label>
+                            <input type="text" placeholder="Enter father's ID number" required>
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Address* (0/220 characters)</label>
+                        <textarea placeholder="Enter your complete address (minimum 10 characters)" maxlength="220" rows="3" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Education & Technical Details -->
+                <div class="form-section">
+                    <h3><i class="fa-solid fa-graduation-cap"></i> Education & Technical Details</h3>
+                    <div class="form-grid">
+                        <div class="input-box">
+                            <label>Computer Proficiency*</label>
+                            <select required>
+                                <option value="">Select your computer proficiency</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Last Qualification*</label>
+                            <select required>
+                                <option value="">Last qualification</option>
+                                <option value="Matric">Matric</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Graduation">Graduation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Where did you hear about us?*</label>
+                        <select required>
+                            <option value="">Where did you hear about us?</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Website">Website</option>
+                        </select>
+                    </div>
+                    <div class="input-box radio-group">
+                        <label>Do you have a Laptop?*</label>
+                        <div class="options">
+                            <label><input type="radio" name="laptop" value="Yes" required> Yes</label>
+                            <label><input type="radio" name="laptop" value="No"> No</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Picture -->
+                <div class="form-section">
+                    <h3><i class="fa-solid fa-upload"></i> Upload Picture</h3>
+                    <div class="upload-container">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <label for="picture-upload" class="upload-btn">+ Upload Picture</label>
+                        <input type="file" id="picture-upload" accept="image/*" hidden required>
+                        <p class="upload-instructions">
+                            • With white or blue background<br>
+                            • File size must be less than 1MB<br>
+                            • File type: jpg, jpeg, png<br>
+                            • Face should be clearly visible without glasses
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="form-section">
+                    <h3><i class="fa-solid fa-shield-halved"></i> Terms and Conditions</h3>
+                    <div class="terms-box">
+                        <label><input type="checkbox" required> I hereby solemnly declare that all information provided in this application is true and accurate to the best of my knowledge.</label>
+                        <label><input type="checkbox" required> I accept the responsibility to maintain good conduct throughout the program and commit to focusing solely on learning.</label>
+                        <label><input type="checkbox" required> Upon completion of the course, I agree to successfully complete any project assigned as part of the program requirements.</label>
+                    </div>
+                    <p class="terms-note">By submitting this form, you agree to our <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a>.</p>
+                </div>
+
+                <div class="notice-box">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <div>
+                        <strong>Important Notice:</strong>
+                        <p>Please ensure all information provided is accurate. Incomplete or false information may result in rejection of your application.</p>
+                    </div>
+                </div>
+<button type="submit" class="submit-btn">
+    <i class="fa-solid fa-paper-plane"></i> Submit Application
 </button>
-
-
-
-
-
-<button class="portal-btn"
-onclick="showPortal('idcard')">
-
-
-<i class="fa-solid fa-id-card"></i>
-
-Student ID Card
-
-
-</button>
-
-
-
-
-
-<button class="portal-btn"
-onclick="showPortal('result')">
-
-
-<i class="fa-solid fa-square-poll-vertical"></i>
-
-Result
-
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<!-- ==========================
-        REGISTRATION FORM
-========================== -->
-
-
-<div class="portal-box active" id="registration">
-
-
-
-<h3>
-
-Student Registration Form
-
-</h3>
-
-
-
-<form class="registration-form">
-
-
-<div class="form-grid">
-
-
-
-<div class="input-box">
-
-<label>
-Full Name
-</label>
-
-<input type="text">
-
-</div>
-
-
-
-
-
-<div class="input-box">
-
-<label>
-Father Name
-</label>
-
-<input type="text">
-
-</div>
-
-
-
-
-
-<div class="input-box">
-
-<label>
-Email
-</label>
-
-<input type="email">
-
-</div>
-
-
-
-
-
-<div class="input-box">
-
-<label>
-Phone Number
-</label>
-
-<input type="tel">
-
-</div>
-
-
-
-
-
-<div class="input-box">
-
-<label>
-Select Course
-</label>
-
-
-<select>
-
-<option>
-Choose Course
-</option>
-
-<option>
-Frontend Development
-</option>
-
-<option>
-Digital Marketing
-</option>
-
-<option>
-Python
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-
-
-<div class="input-box">
-
-<label>
-Student Photo
-</label>
-
-<input type="file">
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-<button class="submit-btn">
-
-Submit Application
-
-</button>
-
-
-</form>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<!-- ==========================
-        ID CARD
-========================== -->
-
-
-<div class="portal-box" id="idcard">
-
-
-
-<div class="id-card">
-
-
-<div class="id-header">
-
-
-<img src="./images/logo.png">
-
-
-<h3>
-EduCore Student Card
-</h3>
-
-
-</div>
-
-
-
-<div class="id-body">
-
-
-<img src="https://placehold.co/120"
-class="student-photo">
-
-
-<h3>
-Student Name
-</h3>
-
-
-<p>
-Student ID:
-</p>
-
-
-<p>
-Course:
-</p>
-
-
-
-<button class="download-btn">
-
-Download ID Card
-
-</button>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<!-- ==========================
-        RESULT
-========================== -->
-
-
-<div class="portal-box" id="result">
-
-
-
-<div class="result-box">
-
-
-<h3>
-Check Result
-</h3>
-
-
-<input type="text"
-placeholder="Student ID">
-
-
-
-<input type="password"
-placeholder="Password">
-
-
-
-<button class="result-btn">
-
-Check Result
-
-</button>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-</section>
-
-
-
-
-
-
-<script src="./enrollment.js"></script>
-
-
+                <!-- <button type="submit" class="submit-btn">Submit Application</button> -->
+            </form>
+        </div>
+
+        <!-- 2. DOWNLOAD ID CARD -->
+        <div class="portal-box" id="idcard">
+            <div class="search-box-panel">
+                <h2>Download ID Card</h2>
+                <p>Enter the CNIC you provided during form submission.</p>
+                <span class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Don't use dashes (-) in CNIC number.</span>
+                <div class="input-box">
+                    <label>CNIC Number*</label>
+                    <input type="text" id="cnicSearch" placeholder="4220109966883">
+                </div>
+                <button class="search-btn" onclick="searchIDCard()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            </div>
+
+            <!-- Card Result Area -->
+            <div class="id-card-display" id="idCardDisplay" style="display: none;">
+                <div class="id-card">
+                    <div class="id-header">
+                        <img src="./images/logo.png" alt="Logo">
+                        <h3>EduCore Student Card</h3>
+                    </div>
+                    <div class="id-body">
+                        <img src="https://placehold.co/120" class="student-photo" id="cardPhoto">
+                        <h3 id="cardName">Student Name</h3>
+                        <p id="cardId">Student ID: -</p>
+                        <p id="cardCourse">Course: -</p>
+                        <button class="download-btn"><i class="fa-solid fa-download"></i> Download ID Card</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. ENTRY TEST STATUS -->
+        <div class="portal-box" id="testStatus">
+            <div class="search-box-panel">
+                <h2>Check Your Entry Test Status</h2>
+                <p>Enter your roll number to view your entry test status</p>
+                <div class="input-box">
+                    <label>Roll Number*</label>
+                    <input type="text" placeholder="ENTER YOUR ROLL NUMBER">
+                </div>
+                <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Status</button>
+            </div>
+        </div>
+
+        <!-- 4. RESULT -->
+        <div class="portal-box" id="result">
+            <div class="search-box-panel">
+                <h2>Check Your Result</h2>
+                <p>Enter your roll number to view your results</p>
+                <div class="input-box">
+                    <label>Roll Number*</label>
+                    <input type="text" placeholder="ENTER YOUR ROLL NUMBER">
+                </div>
+                <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i> Search Result</button>
+            </div>
+        </div>
+
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="./enrollment.js"></script>
+    <script src="./app.js"></script>
 </body>
 
 </html>
