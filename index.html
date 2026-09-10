@@ -6,80 +6,48 @@
     <title>EduCore Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./style.css">
+
+    <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
+    <script type="module">
+        import { protectPage } from "./authGuard.js";
+        // Sirf Admin access kar sakta hai
+        protectPage(["Admin"]);
+    </script>
 </head>
 <body>
-<!-- header    first -->
-
 
 <!-- ===========================
-      TOP ANNOUNCEMENT BAR
+     TOP ANNOUNCEMENT BAR
 =========================== -->
-
 <div class="announcement-bar" id="topBar">
-
     <div class="announcement-content">
-
         <div class="announcement-left">
-
             <span class="offer-badge">
                 🔥 Admissions Open
             </span>
-
             <span class="offer-text">
                 New Web Development, Digital Marketing & AI batches are now live.
             </span>
-
         </div>
 
         <a href="./enrollment.html" class="offer-btn">
-
             Take Eligibility Quiz
-
             <i class="fa-solid fa-arrow-right"></i>
-
         </a>
-
     </div>
 
     <button class="close-btn" onclick="closeBar()">
-
         <i class="fa-solid fa-xmark"></i>
-
     </button>
-
 </div>
 
-
-<!-- header frst close -->
-
-
-
-<!-- header -->
+<!-- HEADER PLACEHOLDER -->
 <div id="header-placeholder"></div>
 
-<!-- header -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ====================================
-      FLOATING SIDEBAR NAVIGATION 
+     FLOATING SIDEBAR NAVIGATION 
 ===================================== -->
 <div class="side-floating-bar">
-
   <!-- Phone Contact -->
   <a href="tel:03200918060" class="side-item">
     <i class="fa-solid fa-phone"></i>
@@ -97,36 +65,10 @@
     <i class="fa-solid fa-circle-question"></i>
     <span class="side-tooltip">FAQs</span>
   </a>
-
 </div>
-<!-- ====================================
-      FLOATING SIDEBAR NAVIGATION 
-===================================== -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <!-- /////////////////////nav end//////////////////////// -->
-
+<!-- HERO SLIDER -->
 <div class="page-container">
-
     <section class="hero-slider">
         <div class="slider-container">
             <div class="slider-content">
@@ -139,7 +81,6 @@
             </div>
 
             <div class="slider-graphics-pure">
-                
                 <div class="circles-group">
                     <div class="pure-circle c-light"></div>
                     <div class="pure-circle c-teal"></div>
@@ -175,66 +116,15 @@
                     <div class="tr-sharp color-1"></div>
                     <div class="tr-sharp color-2"></div>
                 </div>
-
             </div>
         </div>
     </section>
-
 </div>
 
+<!-- FOOTER PLACEHOLDER -->
+<div id="footer-placeholder"></div>
 
-
-    <!-- ///////////////////////slider end//////////////////// -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- footer -->
- <div id="footer-placeholder"></div>
- <!-- footer -->
-
-
-
-    <!-- JavaScript-->
-    <script src="./app.js"></script>
+<!-- JavaScript -->
+<script type="module" src="./app.js"></script>
 </body>
 </html>

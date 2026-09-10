@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduCore - Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --theme-gradient: linear-gradient(135deg, #000328 0%, #00458e 100%);
+            --theme-accent-blue: #38bdf8;
+            --primary-blue: #0056b3;
+            --primary-blue-hover: #0046a1;
+            --border-input: rgba(219, 227, 236, 0.3);
+            --icon-grey: #94a3b8;
+            --text-muted: #cbd5e1;
+            --orange-accent: #f58220;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--theme-gradient);
+            position: relative;
+            overflow: hidden;
+            padding: 20px 0;
+        }
+
+        .glass-card {
+            width: 420px;
+            padding: 35px 32px;
+            background: rgba(0, 5, 30, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+        }
+
+        .role-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 22px;
+            gap: 4px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .role-btn.active {
+            background: var(--primary-blue);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 86, 179, 0.4);
+        }
+
+        .glass-card h2 { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #ffffff; }
+        .glass-card h2 span { color: var(--orange-accent); }
+
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+
+        .input-field { position: relative; display: flex; align-items: center; }
+        .input-field i.field-icon { position: absolute; left: 14px; color: var(--icon-grey); font-size: 15px; pointer-events: none; z-index: 2; }
+        .input-field input {
+            width: 100%;
+            padding: 12px 42px 12px 40px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border-input);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .input-field input:focus { border-color: var(--theme-accent-blue); background: rgba(255, 255, 255, 0.15); }
+
+        .toggle-password { position: absolute; right: 14px; color: var(--icon-grey); cursor: pointer; font-size: 16px; z-index: 5; }
+        .toggle-password:hover { color: var(--theme-accent-blue); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover { background: var(--primary-blue-hover); transform: translateY(-2px); }
+
+        .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--icon-grey); font-size: 12px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
+        .divider span { padding: 0 10px; }
+
+        .social-buttons { display: flex; justify-content: center; gap: 16px; }
+        .social-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+        }
+        .social-btn img { width: 20px; height: 20px; }
+        .social-btn i { font-size: 20px; }
+        .social-btn:hover { transform: translateY(-3px); border-color: var(--orange-accent); }
+
+        .footer-text { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+        .footer-text a { color: var(--orange-accent); text-decoration: none; font-weight: 600; }
+
+        /* file:// warning banner */
+        .env-warning {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--orange-accent); color: #1a1a1a;
+            padding: 10px 16px; font-size: 13px; font-weight: 600;
+            text-align: center; z-index: 2000;
+        }
+
+        /* Glossy Popup Modal */
+        .custom-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 1000;
+        }
+        .custom-modal-overlay.active { opacity: 1; pointer-events: all; }
+        .custom-modal {
+            width: 360px; padding: 25px; background: rgba(10, 20, 50, 0.9);
+            border: 1px solid var(--theme-accent-blue); border-radius: 16px;
+            text-align: center; transform: scale(0.8); transition: all 0.3s ease;
+        }
+        .custom-modal-overlay.active .custom-modal { transform: scale(1); }
+        .custom-modal h3 { font-size: 20px; margin-bottom: 10px; color: #fff; }
+        .custom-modal p { font-size: 13.5px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5; }
+        .custom-modal-btns { display: flex; gap: 10px; justify-content: center; }
+        .modal-btn { padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .modal-btn-confirm { background: var(--primary-blue); color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card" id="signupCard">
+        <div class="role-selector">
+            <button type="button" class="role-btn active" data-role="Student">
+                <i class="fa-solid fa-user-graduate"></i> Student
+            </button>
+            <button type="button" class="role-btn" data-role="Teacher">
+                <i class="fa-solid fa-chalkboard-user"></i> Teacher
+            </button>
+        </div>
+
+        <h2>Create <span id="roleHeading">Student</span> Account</h2>
+
+        <form id="signupForm">
+            <div class="input-group">
+                <label>Full Name</label>
+                <div class="input-field">
+                    <i class="fa-solid fa-user field-icon"></i>
+                    <input type="text" id="fullName" placeholder="John Doe" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-field">
+                    <i class="fa-solid fa-envelope field-icon"></i>
+                    <input type="email" id="email" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-field">
+                    <i class="fa-solid fa-lock field-icon"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Sign Up as Student</button>
+        </form>
+
+        <div class="divider"><span>OR REGISTER WITH</span></div>
+
+        <div class="social-buttons">
+            <button type="button" class="social-btn" id="googleSignUp" title="Google Sign Up">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            </button>
+            <button type="button" class="social-btn" id="githubSignUp" title="GitHub Sign Up">
+                <i class="fa-brands fa-github" style="color: #ffffff;"></i>
+            </button>
+            <button type="button" class="social-btn" id="facebookSignUp" title="Facebook Sign Up">
+                <i class="fa-brands fa-facebook-f" style="color: #1877f2;"></i>
+            </button>
+        </div>
+
+        <div class="footer-text">
+            Already have an account? <a href="./login.html">Log In</a>
+        </div>
+    </div>
+
+    <!-- Glossy Modal Structure -->
+    <div class="custom-modal-overlay" id="customModal">
+        <div class="custom-modal">
+            <h3 id="modalTitle">Notice</h3>
+            <p id="modalMessage">This is a custom message.</p>
+            <div class="custom-modal-btns">
+                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Standard UI Script -->
+    <script>
+        if (typeof gsap !== 'undefined') {
+            gsap.from("#signupCard", { duration: 0.8, y: 30, opacity: 0, ease: "power3.out" });
+        }
+
+        // Same file:// gotcha as login.html — see the comment there.
+        if (window.location.protocol === "file:") {
+            const banner = document.createElement("div");
+            banner.className = "env-warning";
+            banner.textContent = "⚠️ You opened this file directly (file://) — Google/GitHub/Facebook sign-in will NOT work this way. Serve it over http://localhost with a local server.";
+            document.body.prepend(banner);
+        }
+
+        window.selectedRole = "Student";
+
+        const roleBtns = document.querySelectorAll(".role-btn");
+        const roleHeading = document.getElementById("roleHeading");
+        const submitBtn = document.getElementById("submitBtn");
+
+        roleBtns.forEach(btn => {
+            btn.addEventListener("click", function(e) {
+                e.preventDefault();
+                roleBtns.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                window.selectedRole = this.getAttribute("data-role");
+                if (roleHeading) roleHeading.innerText = window.selectedRole;
+                if (submitBtn) submitBtn.innerText = `Sign Up as ${window.selectedRole}`;
+            });
+        });
+    </script>
+
+    <!-- Firebase Authentication Module -->
+    <script type="module">
+        import {
+            auth,
+            db,
+            createUserWithEmailAndPassword,
+            sendEmailVerification,
+            signInWithPopup,
+            googleProvider,
+            facebookProvider,
+            githubProvider,
+            doc,
+            setDoc,
+            getDoc,
+            serverTimestamp,
+            getAuthErrorMessage
+        } from "./firebaseConfig.js";
+
+        import { redirectToDashboard } from "./authGuard.js";
+
+        // Password Toggle
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener("click", () => {
+                const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+                passwordInput.setAttribute("type", type);
+                togglePassword.classList.toggle("fa-eye");
+                togglePassword.classList.toggle("fa-eye-slash");
+            });
+        }
+
+        // Glossy Popup Modal
+        const modalOverlay = document.getElementById("customModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalMessage = document.getElementById("modalMessage");
+        const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+
+        function showPopup(title, message, callback = null) {
+            modalTitle.innerText = title;
+            modalMessage.innerText = message;
+            modalOverlay.classList.add("active");
+
+            modalConfirmBtn.onclick = () => {
+                modalOverlay.classList.remove("active");
+                if (callback) callback();
+            };
+        }
+
+        // Form Submission (Sign Up) — role can only ever be Student or
+        // Teacher here since Admin has no button in the role-selector.
+        // (Firestore rules also enforce this server-side — see firestore.rules.)
+        const signupForm = document.getElementById("signupForm");
+        signupForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fullName = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = passwordInput.value.trim();
+            const role = window.selectedRole || "Student";
+
+            try {
+                // 1. Create User
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Save User to Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    fullName: fullName,
+                    email: email,
+                    role: role,
+                    createdAt: serverTimestamp()
+                });
+
+                // 3. Send Email Verification
+                await sendEmailVerification(user);
+
+                // 4. Form Reset / Inputs Empty
+                signupForm.reset();
+
+                showPopup("Account Created!", `Verification email sent! Redirecting to ${role} page...`, () => {
+                    redirectToDashboard(role);
+                });
+
+            } catch (error) {
+                showPopup("Sign Up Failed", getAuthErrorMessage(error));
+            }
+        });
+
+        // Social Sign Up Handlers
+        const handleSocialSignUp = async (provider, name) => {
+            const role = window.selectedRole || "Student";
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        fullName: user.displayName || "Social User",
+                        email: user.email,
+                        role: role,
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                signupForm.reset();
+
+                showPopup("Success", `Registered and Logged in as ${role}!`, () => {
+                    redirectToDashboard(role);
+                });
+
+            } catch (error) {
+                showPopup("Sign Up Error", getAuthErrorMessage(error));
+            }
+        };
+
+        document.getElementById("googleSignUp").addEventListener("click", () => handleSocialSignUp(googleProvider, "Google"));
+        document.getElementById("facebookSignUp").addEventListener("click", () => handleSocialSignUp(facebookProvider, "Facebook"));
+        document.getElementById("githubSignUp").addEventListener("click", () => handleSocialSignUp(githubProvider, "GitHub"));
+    </script>
+</body>
+</html>

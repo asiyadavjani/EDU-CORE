@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduCore - Log In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --theme-gradient: linear-gradient(135deg, #000328 0%, #00458e 100%);
+            --theme-accent-blue: #38bdf8;
+            --primary-blue: #0056b3;
+            --primary-blue-hover: #0046a1;
+            --border-input: rgba(219, 227, 236, 0.3);
+            --icon-grey: #94a3b8;
+            --text-muted: #cbd5e1;
+            --orange-accent: #f58220;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--theme-gradient);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card {
+            width: 420px;
+            padding: 35px 32px;
+            background: rgba(0, 5, 30, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .role-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 22px;
+            gap: 4px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .role-btn.active {
+            background: var(--primary-blue);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 86, 179, 0.4);
+        }
+
+        .glass-card h2 { text-align: center; font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #ffffff; }
+        .glass-card h2 span { color: var(--orange-accent); }
+
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+
+        .input-field { position: relative; display: flex; align-items: center; }
+        .input-field i.field-icon { position: absolute; left: 14px; color: var(--icon-grey); font-size: 15px; pointer-events: none; }
+        .input-field input {
+            width: 100%;
+            padding: 12px 42px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border-input);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .input-field input:focus { border-color: var(--theme-accent-blue); background: rgba(255, 255, 255, 0.15); }
+
+        .toggle-password { position: absolute; right: 14px; color: var(--icon-grey); cursor: pointer; font-size: 15px; }
+        .toggle-password:hover { color: var(--theme-accent-blue); }
+
+        .forgot-pass { text-align: right; margin-bottom: 18px; }
+        .forgot-pass a { color: var(--theme-accent-blue); font-size: 12px; text-decoration: none; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover { background: var(--primary-blue-hover); transform: translateY(-2px); }
+
+        .divider { display: flex; align-items: center; text-align: center; margin: 22px 0; color: var(--icon-grey); font-size: 12px; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
+        .divider span { padding: 0 10px; }
+
+        .social-buttons { display: flex; justify-content: center; gap: 16px; }
+        .social-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;
+        }
+        .social-btn img { width: 20px; height: 20px; }
+        .social-btn i { font-size: 20px; }
+        .social-btn:hover { transform: translateY(-3px); border-color: var(--orange-accent); }
+
+        .footer-text { text-align: center; margin-top: 22px; font-size: 13px; color: var(--text-muted); }
+        .footer-text a { color: var(--orange-accent); text-decoration: none; font-weight: 600; }
+
+        /* file:// warning banner */
+        .env-warning {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--orange-accent); color: #1a1a1a;
+            padding: 10px 16px; font-size: 13px; font-weight: 600;
+            text-align: center; z-index: 2000;
+        }
+
+        /* Glossy Popup Modal */
+        .custom-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 1000;
+        }
+        .custom-modal-overlay.active { opacity: 1; pointer-events: all; }
+        .custom-modal {
+            width: 360px; padding: 25px; background: rgba(10, 20, 50, 0.85);
+            border: 1px solid var(--theme-accent-blue); border-radius: 16px;
+            text-align: center; transform: scale(0.8); transition: all 0.3s ease;
+        }
+        .custom-modal-overlay.active .custom-modal { transform: scale(1); }
+        .custom-modal h3 { font-size: 20px; margin-bottom: 10px; color: #fff; }
+        .custom-modal p { font-size: 13.5px; color: var(--text-muted); margin-bottom: 18px; }
+        .custom-modal input {
+            width: 100%; padding: 10px 14px; background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-input); border-radius: 8px; color: #fff; margin-bottom: 15px; outline: none;
+        }
+        .custom-modal-btns { display: flex; gap: 10px; justify-content: center; }
+        .modal-btn { padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .modal-btn-confirm { background: var(--primary-blue); color: #fff; }
+        .modal-btn-cancel { background: rgba(255, 255, 255, 0.15); color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card" id="loginCard">
+        <div class="role-selector">
+            <button type="button" class="role-btn active" data-role="Student">
+                <i class="fa-solid fa-user-graduate"></i> Student
+            </button>
+            <button type="button" class="role-btn" data-role="Teacher">
+                <i class="fa-solid fa-chalkboard-user"></i> Teacher
+            </button>
+            <button type="button" class="role-btn" data-role="Admin">
+                <i class="fa-solid fa-user-shield"></i> Admin
+            </button>
+        </div>
+
+        <h2><span id="roleHeading">Student</span> Log In</h2>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-field">
+                    <i class="fa-solid fa-envelope field-icon"></i>
+                    <input type="email" id="email" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-field">
+                    <i class="fa-solid fa-lock field-icon"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
+                </div>
+            </div>
+
+            <div class="forgot-pass">
+                <a href="#" id="forgotPasswordBtn">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Log In as Student</button>
+        </form>
+
+        <div class="divider"><span>OR CONTINUE WITH</span></div>
+
+        <div class="social-buttons">
+            <button type="button" class="social-btn" id="googleLogin" title="Google Login">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            </button>
+            <button type="button" class="social-btn" id="githubLogin" title="GitHub Login">
+                <i class="fa-brands fa-github" style="color: #ffffff;"></i>
+            </button>
+            <button type="button" class="social-btn" id="facebookLogin" title="Facebook Login">
+                <i class="fa-brands fa-facebook-f" style="color: #1877f2;"></i>
+            </button>
+        </div>
+
+        <div class="footer-text">
+            Don't have an account? <a href="./signup.html">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Glossy Modal Structure -->
+    <div class="custom-modal-overlay" id="customModal">
+        <div class="custom-modal">
+            <h3 id="modalTitle">Notice</h3>
+            <p id="modalMessage">This is a custom message.</p>
+            <input type="email" id="modalInput" placeholder="Enter your email" style="display: none;">
+            <div class="custom-modal-btns">
+                <button class="modal-btn modal-btn-cancel" id="modalCancelBtn" style="display: none;">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Standard UI Script -->
+    <script>
+        if (typeof gsap !== 'undefined') {
+            gsap.from("#loginCard", { duration: 0.8, y: 30, opacity: 0, ease: "power3.out" });
+        }
+
+        // If this page was opened by double-clicking the file (file://),
+        // Firebase popup sign-in (Google/GitHub/Facebook) can never work —
+        // there's no http(s) origin for Firebase to authorize. Serve this
+        // folder with a local server (e.g. VS Code "Live Server", or
+        // `npx serve`) and open it via http://localhost instead.
+        if (window.location.protocol === "file:") {
+            const banner = document.createElement("div");
+            banner.className = "env-warning";
+            banner.textContent = "⚠️ You opened this file directly (file://) — Google/GitHub/Facebook sign-in will NOT work this way. Serve it over http://localhost with a local server.";
+            document.body.prepend(banner);
+        }
+
+        window.selectedRole = "Student";
+
+        const roleBtns = document.querySelectorAll(".role-btn");
+        const roleHeading = document.getElementById("roleHeading");
+        const submitBtn = document.getElementById("submitBtn");
+
+        roleBtns.forEach(btn => {
+            btn.addEventListener("click", function(e) {
+                e.preventDefault();
+                roleBtns.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                window.selectedRole = this.getAttribute("data-role");
+                if (roleHeading) roleHeading.innerText = window.selectedRole;
+                if (submitBtn) submitBtn.innerText = `Log In as ${window.selectedRole}`;
+            });
+        });
+    </script>
+
+    <!-- Firebase Authentication Module -->
+    <script type="module">
+        import {
+            auth,
+            db,
+            signInWithEmailAndPassword,
+            sendPasswordResetEmail,
+            signInWithPopup,
+            googleProvider,
+            facebookProvider,
+            githubProvider,
+            doc,
+            getDoc,
+            setDoc,
+            serverTimestamp,
+            getAuthErrorMessage
+        } from "./firebaseConfig.js";
+
+        import { redirectToDashboard } from "./authGuard.js";
+
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener("click", () => {
+                const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+                passwordInput.setAttribute("type", type);
+                togglePassword.classList.toggle("fa-eye");
+                togglePassword.classList.toggle("fa-eye-slash");
+            });
+        }
+
+        // Glossy Popup Modal
+        const modalOverlay = document.getElementById("customModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalMessage = document.getElementById("modalMessage");
+        const modalInput = document.getElementById("modalInput");
+        const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+        const modalCancelBtn = document.getElementById("modalCancelBtn");
+
+        function showPopup(title, message, isPrompt = false, callback = null) {
+            modalTitle.innerText = title;
+            modalMessage.innerText = message;
+            modalInput.style.display = isPrompt ? "block" : "none";
+            modalCancelBtn.style.display = isPrompt ? "inline-block" : "none";
+            modalInput.value = "";
+            modalOverlay.classList.add("active");
+
+            modalConfirmBtn.onclick = () => {
+                modalOverlay.classList.remove("active");
+                if (callback) callback(isPrompt ? modalInput.value.trim() : true);
+            };
+
+            modalCancelBtn.onclick = () => modalOverlay.classList.remove("active");
+        }
+
+        // Form Submit Handler
+        const loginForm = document.getElementById("loginForm");
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById("email");
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            const currentRole = window.selectedRole || "Student";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+
+                const userDoc = await getDoc(doc(db, "users", uid));
+
+                if (userDoc.exists()) {
+                    const actualRole = userDoc.data().role;
+
+                    if (actualRole !== currentRole) {
+                        showPopup("Access Denied", `This account is registered as ${actualRole}. Please select the ${actualRole} tab to log in.`);
+                        return;
+                    }
+
+                    // Input Fields Empty Karo
+                    loginForm.reset();
+
+                    showPopup("Success!", `Logged in as ${actualRole}!`, false, () => {
+                        redirectToDashboard(actualRole);
+                    });
+                } else {
+                    showPopup("Error", "User record not found in Database.");
+                }
+            } catch (error) {
+                showPopup("Login Failed", getAuthErrorMessage(error));
+            }
+        });
+
+        // Forgot Password Handler
+        document.getElementById("forgotPasswordBtn").addEventListener("click", (e) => {
+            e.preventDefault();
+            showPopup("Reset Password", "Please enter your registered email address:", true, async (email) => {
+                if (email) {
+                    try {
+                        await sendPasswordResetEmail(auth, email);
+                        showPopup("Email Sent", "Password reset link sent to your inbox!");
+                    } catch (error) {
+                        showPopup("Error", getAuthErrorMessage(error));
+                    }
+                }
+            });
+        });
+
+        // Social Logins Handler
+        const handleSocialLogin = async (provider, name) => {
+            const currentRole = window.selectedRole || "Student";
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const uid = user.uid;
+
+                const userDocRef = doc(db, "users", uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const actualRole = userDoc.data().role;
+
+                    if (actualRole !== currentRole) {
+                        showPopup("Access Denied", `This account is registered as ${actualRole}. Please select the ${actualRole} tab.`);
+                        return;
+                    }
+
+                    loginForm.reset();
+
+                    showPopup("Success", `${name} Sign-In successful as ${actualRole}!`, false, () => {
+                        redirectToDashboard(actualRole);
+                    });
+                } else {
+                    // New social users always land as Student or Teacher —
+                    // never Admin. Admin accounts are created separately
+                    // (see setup-admin.html), not through this form.
+                    if (currentRole === "Admin") {
+                        showPopup("Access Denied", "Admin accounts can't be created through social sign-in. Ask whoever set up EduCore to create your Admin login.");
+                        return;
+                    }
+
+                    await setDoc(userDocRef, {
+                        fullName: user.displayName || "Social User",
+                        email: user.email,
+                        role: currentRole,
+                        createdAt: serverTimestamp()
+                    });
+
+                    loginForm.reset();
+
+                    showPopup("Success", `Registered and Logged in as ${currentRole}!`, false, () => {
+                        redirectToDashboard(currentRole);
+                    });
+                }
+            } catch (error) {
+                showPopup("Auth Error", getAuthErrorMessage(error));
+            }
+        };
+
+        document.getElementById("googleLogin").addEventListener("click", () => handleSocialLogin(googleProvider, "Google"));
+        document.getElementById("facebookLogin").addEventListener("click", () => handleSocialLogin(facebookProvider, "Facebook"));
+        document.getElementById("githubLogin").addEventListener("click", () => handleSocialLogin(githubProvider, "GitHub"));
+    </script>
+</body>
+</html>
