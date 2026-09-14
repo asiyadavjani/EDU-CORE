@@ -270,6 +270,7 @@ function renderResultStage({ passed, percent, correctCount, total, resultGrade, 
             <a href="./enrollment.html?portal=testStatus">Check Entry Test Status</a>
             <a href="./enrollment.html?portal=result">View Full Result</a>
             <a href="./enrollment.html?portal=idcard">Download ID Card</a>
+            <a href="./login.html">Login to Track Your Status</a>
         </div>
         ${!passed ? '<p style="margin-top:20px;font-size:13px;"><a href="./quiz.html">Retake the test</a></p>' : ''}
     `;

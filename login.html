@@ -135,6 +135,22 @@
         .footer-text { text-align: center; margin-top: 22px; font-size: 13px; color: var(--text-muted); }
         .footer-text a { color: var(--orange-accent); text-decoration: none; font-weight: 600; }
 
+        .back-home-link {
+            position: fixed;
+            top: 22px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            z-index: 10;
+            transition: color 0.3s ease;
+        }
+        .back-home-link:hover { color: var(--theme-accent-blue); }
+
         /* file:// warning banner */
         .env-warning {
             position: fixed; top: 0; left: 0; right: 0;
@@ -170,6 +186,8 @@
     </style>
 </head>
 <body>
+
+    <a href="./index.html" class="back-home-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
 
     <div class="glass-card" id="loginCard">
         <div class="role-selector">

@@ -13,7 +13,7 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { CHART_COLORS, renderChart, emptyChartConfig } from "../charts.js";
+import { CHART_COLORS, CHART_PALETTE, renderChart, emptyChartConfig } from "../charts.js";
 import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
 
 /*=========================================
@@ -74,6 +74,7 @@ function refreshStats() {
     renderCountsChart();
     renderCampusChart();
     renderTrackRecordChart();
+    renderStudentsByCourseChart();
 }
 
 /*=========================================
@@ -214,6 +215,44 @@ function renderTrackRecordChart() {
     });
 }
 
+// How many ACCEPTED students are on each course — answers "which students
+// are on which course" at a glance instead of scrolling the whole
+// Applications list. Uses the same `course` (title string) matching as
+// everywhere else in this app — see setApplicationDecision()'s comment.
+function renderStudentsByCourseChart() {
+    if (typeof Chart === "undefined") return;
+    if (courses.length === 0) {
+        renderChart("chartStudentsByCourse", emptyChartConfig("bar", "No courses yet"));
+        return;
+    }
+
+    const accepted = applications.filter(a => a.applicationStatus === "Accepted");
+    const counts = courses.map(c => accepted.filter(a => a.course === c.title).length);
+
+    if (accepted.length === 0) {
+        renderChart("chartStudentsByCourse", emptyChartConfig("bar", "No accepted students yet"));
+        return;
+    }
+
+    renderChart("chartStudentsByCourse", {
+        type: "bar",
+        data: {
+            labels: courses.map(c => c.title),
+            datasets: [{
+                data: counts,
+                backgroundColor: CHART_PALETTE,
+                borderRadius: 6,
+                maxBarThickness: 34
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
 function renderAttendanceChart() {
     if (typeof Chart === "undefined") return;
     if (attendance.length === 0) {
@@ -295,18 +334,28 @@ function renderApplications() {
     container.innerHTML = filtered.map(s => {
         const status = s.applicationStatus || "Entry Test Pending";
         const showActions = status === "Awaiting Approval";
+        // Accepted but no matching Diploma Track course was found at the
+        // time — common cause is the course being saved as "Skill Course"
+        // (the form's default) instead of "Diploma Track", or the course
+        // not existing yet when this student was accepted. Offer a one-click
+        // fix here instead of making Admin Reject + re-Accept to retry it.
+        const showReassign = status === "Accepted" && !s.assignedTeacherUid;
         return `
             <div class="admin-row-card">
                 <div class="admin-row-main">
                     <h3>${s.name || "-"} <span class="admin-badge ${badgeForApplicationStatus(status)}">${status}</span></h3>
                     <p><strong>Roll No:</strong> ${s.rollNumber || "-"} &nbsp; | &nbsp; <strong>CNIC:</strong> ${s.cnic || "-"}</p>
                     <p><strong>Course:</strong> ${s.course || "-"} &nbsp; | &nbsp; <strong>Entry Test:</strong> ${s.entryTestStatus || "-"} (${s.marksObtained ?? "-"})</p>
-                    ${status === "Accepted" ? `<p><strong>Teacher:</strong> ${s.assignedTeacherName || "Not assigned yet (create a matching Diploma Track course with a teacher)"} &nbsp; | &nbsp; <strong>Progress:</strong> ${s.progressPercent ?? 0}%</p>` : ``}
+                    ${status === "Accepted" ? `<p><strong>Teacher:</strong> ${s.assignedTeacherName || "Not assigned yet"} &nbsp; | &nbsp; <strong>Progress:</strong> ${s.progressPercent ?? 0}%</p>` : ``}
                 </div>
                 ${showActions ? `
                 <div class="admin-row-actions">
                     <button class="admin-btn-accept" data-cnic="${s.cnic}" data-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
                     <button class="admin-btn-reject" data-cnic="${s.cnic}" data-action="reject"><i class="fa-solid fa-xmark"></i> Reject</button>
+                </div>` : ``}
+                ${showReassign ? `
+                <div class="admin-row-actions">
+                    <button class="admin-btn-secondary" data-cnic="${s.cnic}" data-action="reassign"><i class="fa-solid fa-rotate"></i> Assign Teacher</button>
                 </div>` : ``}
             </div>
         `;
@@ -316,7 +365,11 @@ function renderApplications() {
         btn.addEventListener("click", () => {
             const cnic = btn.dataset.cnic;
             const action = btn.dataset.action;
-            setApplicationDecision(cnic, action === "accept" ? "Accepted" : "Rejected");
+            if (action === "reassign") {
+                reassignTeacher(cnic);
+            } else {
+                setApplicationDecision(cnic, action === "accept" ? "Accepted" : "Rejected");
+            }
         });
     });
 }
@@ -344,6 +397,37 @@ async function setApplicationDecision(cnic, decision) {
         }
 
         await updateDoc(doc(db, "students", cnic), updateData);
+        await loadApplications();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+// Re-runs just the teacher-matching step from setApplicationDecision()
+// above, for a student who's already Accepted but never got matched to a
+// teacher (courseId/Name did exist yet, or the course's Category wasn't
+// "Diploma Track" at the time). Doesn't touch applicationStatus, so this is
+// safe to click as many times as needed while fixing the course.
+async function reassignTeacher(cnic) {
+    try {
+        const app = applications.find(a => a.cnic === cnic);
+        const matchedCourse = app
+            ? courses.find(c => c.category === "Diploma Track" && c.title === app.course)
+            : null;
+
+        if (!matchedCourse) {
+            alert(
+                "No matching Diploma Track course found for \"" + (app?.course || "this student's course") + "\".\n\n" +
+                "Go to the Courses tab and check: the course's Title must exactly match this, its Category must be \"Diploma Track\" (not \"Skill Course\"), and it must have a Teacher assigned. Then come back and click \"Assign Teacher\" again."
+            );
+            return;
+        }
+
+        await updateDoc(doc(db, "students", cnic), {
+            assignedTeacherId: matchedCourse.teacherId || null,
+            assignedTeacherUid: matchedCourse.teacherUid || null,
+            assignedTeacherName: matchedCourse.teacherName || null
+        });
         await loadApplications();
     } catch (error) {
         alert(friendlyFirestoreError(error));

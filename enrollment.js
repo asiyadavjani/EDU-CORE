@@ -286,6 +286,7 @@ async function checkTestStatus() {
                         <h3 style="color: #0056b3; margin-bottom: 8px;">Candidate: ${student.name}</h3>
                         <p><strong>Roll No:</strong> ${student.rollNumber}</p>
                         <p><strong>Status:</strong> ${statusLine}</p>
+                        <p style="margin-top:12px;font-size:13px;"><a href="./login.html">Login to track your status anytime</a></p>
                     </div>
                 `;
                 statusBox.style.display = "block";
@@ -326,6 +327,7 @@ async function checkResult() {
                 resultDisplay.innerHTML = `
                     <div class="result-details-box" style="padding: 25px; background: #fffbeb; border-radius: 15px; border: 1px solid #fde68a; margin-top: 20px; text-align: left;">
                         <p style="color:#92400e;">Result not available yet – you haven't attempted the entry test. <a href="./quiz.html">Take the entry test here</a>.</p>
+                        <p style="margin-top:10px;font-size:13px;"><a href="./login.html">Login to track your status anytime</a></p>
                     </div>
                 `;
                 resultDisplay.style.display = "block";
@@ -343,6 +345,7 @@ async function checkResult() {
                     <p><strong>Marks Obtained:</strong> ${student.marksObtained != null ? student.marksObtained : "-"}</p>
                     <p><strong>Grade:</strong> <span style="background: ${student.entryTestStatus === 'Passed' ? '#0056b3' : '#dc2626'}; color: #fff; padding: 3px 10px; border-radius: 20px; font-weight: 600;">${student.resultGrade || "-"}</span></p>
                     <p><strong>Entry Test:</strong> ${student.entryTestStatus}</p>
+                    <p style="margin-top:14px;font-size:13px;border-top:1px solid #edf2f7;padding-top:12px;"><a href="./login.html">Login to track your full admission status</a></p>
                 </div>
             `;
             resultDisplay.style.display = "block";

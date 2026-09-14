@@ -88,6 +88,9 @@ body {
 .dash-sidebar-footer {
     padding-top: 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .dash-logout-btn {
@@ -102,11 +105,34 @@ body {
     font-size: 13px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     transition: var(--transition-fast);
 }
 
 .dash-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dash-home-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.dash-home-btn:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
@@ -764,7 +790,9 @@ body {
         border-top: none;
         padding-top: 0;
         margin-left: 10px;
+        flex-direction: row;
     }
+    .dash-home-btn,
     .dash-logout-btn {
         width: auto;
         white-space: nowrap;
