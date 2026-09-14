@@ -19,6 +19,20 @@
 
     --orange-accent: #f58220;
     --shadow-header: 0 8px 25px rgba(0, 0, 0, .04);
+
+    /* admin.css / teacher.css / student.css already reference these four —
+       they were never actually defined here, so every border-radius and
+       transition that used them was silently resolving to nothing (square
+       corners, no hover transition) instead of erroring. Adding them here
+       is purely additive: nothing that already worked changes, but every
+       card/button that was quietly falling back to "no radius" picks up
+       real rounded corners and a smooth hover the moment this loads. */
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 18px;
+    --border-radius-full: 999px;
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, .08);
+    --transition-fast: all 0.2s ease;
 }
 
 /* Reset Base */
@@ -902,4 +916,130 @@ width: 90px;
     .footer-container {
         grid-template-columns: 1fr;
     }
+}
+
+/*===================================================
+  6. HEADER — MOBILE FIT  (added)
+
+  Bug: .center-nav @900px par hide ho jata hai, lekin .header-actions
+  (cart + Log In + Sign Up + Enroll Now) apni poori width lete rehte hain.
+  390px par ye buttons viewport se bahar chale jate the aur har page
+  horizontally scroll hone lagta tha — index, faq, quiz aur enrollment
+  sab par (enrollment sab se zyada, ~337px).
+
+  body { overflow-x: hidden } isay chhupa nahi paata: html par set na ho
+  to browser phir bhi scroll karne deta hai, aur chhupa bhi deta to
+  buttons kat jaate — masla hal nahi hota. Isliye header ko actually
+  fit karaya gaya hai.
+
+  Ye block sirf add kiya gaya hai, upar ka koi rule change nahi hua.
+====================================================*/
+@media (max-width: 900px) {
+    .main-header {
+        padding: 0 14px;
+        gap: 10px;
+    }
+
+    .brand-logo { height: 62px; }
+    .brand-name { font-size: 19px; }
+
+    .header-actions { gap: 8px; }
+
+    .cart-btn {
+        margin-right: 2px;
+        margin-top: 10px;
+        font-size: 16px;
+    }
+
+    /* Sign Up login page par bhi mojood hai, is liye chhoti screen par
+       sirf Log In aur Enroll Now rakhe gaye hain */
+    .signup-btn { display: none; }
+
+    .login-btn,
+    .enroll-btn {
+        padding: 7px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 520px) {
+    .brand-logo { height: 52px; }
+    .brand-name { font-size: 17px; }
+
+    /* Sab se chhoti screens par primary action hi rehta hai */
+    .login-btn { display: none; }
+}
+
+@media (max-width: 360px) {
+    .brand-name { display: none; }   /* logo akela kaafi hai */
+}
+
+/*===================================================
+  7. FOOTER PARTNER STRIP — MOBILE WRAP  (added)
+
+  .strip-container flex row hai aur .partners-logos ke teen boxes
+  (Ministry of IT / Ignite Tech Fund / EduCore Global Academy) wrap
+  nahi hote the, is liye ~360px se neeche footer viewport se bahar
+  nikal jata tha. Ye har us page par hota hai jahan common.html ka
+  footer inject hota hai.
+====================================================*/
+@media (max-width: 760px) {
+    .strip-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .partners-logos {
+        flex-wrap: wrap;
+        gap: 14px 18px;
+    }
+}
+
+/*===================================================
+  8. HEADER — TABLET / SMALL LAPTOP FIT  (added)
+
+  900px se 1150px ke beech .center-nav abhi bhi visible hota hai aur
+  uske andar 280px ka search box .header-actions ki jagah kha jata hai,
+  jis se "Sign Up" aur "Enroll Now" viewport se bahar nikal jate the.
+  Is range mein search hide kar diya (neeche 900px par wo pehle hi
+  .center-nav ke saath hide hai) aur baqi spacing thori kam ki hai.
+====================================================*/
+@media (min-width: 901px) and (max-width: 1150px) {
+    .main-header { padding: 0 20px; }
+
+    .brand-logo { height: 72px; }
+    .brand-name { font-size: 20px; }
+
+    .center-nav { gap: 18px; }
+    .nav-links  { gap: 16px; }
+
+    .search-container { display: none; }
+
+    .header-actions { gap: 10px; }
+    .cart-btn { margin-right: 4px; }
+
+    .login-btn,
+    .signup-btn,
+    .enroll-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
+/*===================================================
+  9. LONG LINKS — WRAP INSTEAD OF PUSHING  (added)
+
+  FAQ answers mein poore URLs plain text ki tarah likhe hain
+  (lms.digiskills..., play.google.com/...). Ye ek lamba word hote
+  hain jo tootta nahi, is liye chhoti screens par page ko chaura
+  kar dete the.
+====================================================*/
+.faq-question,
+.faq-answer,
+.faq-answer a,
+.faq-note {
+    overflow-wrap: anywhere;
 }

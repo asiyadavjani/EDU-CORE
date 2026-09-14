@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed teachers — EduCore (one-time setup)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Open Sans',system-ui,sans-serif; }
+  body { background:#f6f8fc; color:#334155; padding:40px 20px; }
+  .wrap { max-width:720px; margin:0 auto; }
+  h1 { font-size:26px; color:#0f172a; margin-bottom:8px; }
+  .sub { color:#64748b; font-size:15px; margin-bottom:26px; line-height:1.6; }
+  .card { background:#fff; border:1px solid #e6ecf5; border-radius:14px; padding:26px; margin-bottom:18px; }
+  .warn { background:#fff8e6; border-color:#f5d98a; }
+  .warn strong { color:#8a5a00; display:block; margin-bottom:6px; }
+  .warn p { font-size:14px; color:#7a5410; line-height:1.6; }
+  ol { margin:12px 0 0 20px; font-size:14px; line-height:1.9; color:#475569; }
+  code { background:#eef2f8; padding:2px 6px; border-radius:4px; font-family:ui-monospace,monospace; font-size:13px; }
+  button { background:#0b6bd3; color:#fff; border:none; padding:13px 24px; border-radius:9px;
+           font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  button:hover:not(:disabled) { background:#00458e; }
+  button:disabled { background:#94a3b8; cursor:not-allowed; }
+  button.danger { background:#b91c1c; }
+  button.danger:hover:not(:disabled) { background:#8f1414; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  #log { margin-top:18px; font-size:13.5px; line-height:1.8; font-family:ui-monospace,monospace;
+         background:#0f172a; color:#cbd5e1; border-radius:10px; padding:16px; max-height:340px;
+         overflow:auto; display:none; white-space:pre-wrap; }
+  .ok { color:#4ade80; } .err { color:#fca5a5; } .dim { color:#94a3b8; }
+  a.back { display:inline-block; margin-top:20px; color:#0b6bd3; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Seed teachers</h1>
+  <p class="sub">
+    Ye page sirf ek dafa chalana hai. Ye aapke Firestore ke <code>teachers</code> collection mein
+    10 teacher profiles daal dega, taake homepage ka mosaic bhar jaye. Uske baad aap normally
+    Admin panel se teachers add / edit karte rahein.
+  </p>
+
+  <div class="card warn">
+    <strong>Chalane se pehle</strong>
+    <p>
+      Firestore rules aam taur par sirf logged-in Admin ko likhne deti hain. Agar neeche
+      "permission denied" aaye, to pehle doosre tab mein Admin account se login karein,
+      phir is page ko refresh kar ke dobara try karein.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="seedBtn"><i class="fa-solid fa-database"></i> Add 10 teachers</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Seeded teachers hata dein</button>
+    </div>
+    <ol>
+      <li>Har doc ki id <code>SEED-TCH-01</code> … <code>SEED-TCH-10</code> hogi</li>
+      <li>Dobara chalane par wohi docs overwrite honge — duplicate nahi banenge</li>
+      <li>Sab <code>status: "approved"</code> ke saath aayenge, is liye foran homepage par dikhenge</li>
+      <li>Photos khali hain — Admin panel se upload karein, tab tak initials dikhenge</li>
+    </ol>
+    <div id="log"></div>
+  </div>
+
+  <a class="back" href="./index.html">&larr; Homepage par wapas</a>
+</div>
+
+<script type="module">
+import { db } from "./firebaseConfig.js";
+import { doc, setDoc, deleteDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* Same field names admin.js writes, plus the new `status`. Keep these in
+   sync with admin.js → handleTeacherSubmit if you ever change the shape. */
+const TEACHERS = [
+  { name: "Ayesha Siddiqui", title: "Lead Instructor, Web Development",
+    bio: "Ayesha ne 9 saal product companies mein React aur Node par kaam kiya hai. Unki class mein pehle din se code likhna shuru hota hai — har hafte ek deployable feature banta hai." },
+  { name: "Bilal Ahmed", title: "Head of AI & Data Science",
+    bio: "Bilal machine learning models production mein deploy karte hain. Course mein wo asli datasets use karte hain, toy examples nahi — taake students ko adhoori aur gandi data se deal karna aa jaye." },
+  { name: "Hina Raza", title: "Digital Marketing Strategist",
+    bio: "Hina ne local brands ke liye bara ad budget manage kiya hai. Har student asli paise se ek campaign chalata hai aur uske numbers class ke saamne defend karta hai." },
+  { name: "Usman Tariq", title: "Graphic Design & UI/UX Lead",
+    bio: "Usman design ko craft ki tarah parhate hain — grid, type aur colour pehle, tools baad mein. Course khatam hone tak har student ke paas 4 case studies ka portfolio hota hai." },
+  { name: "Sana Khan", title: "Networking & Cybersecurity Trainer",
+    bio: "Sana Cisco-certified hain aur enterprise networks sambhal chuki hain. Lab sessions asli switches par hote hain, simulator par nahi — CCNA exam mein yahi farq karta hai." },
+  { name: "Fahad Memon", title: "Mobile App Development Instructor",
+    bio: "Fahad ke students ki 30 se zyada apps Play Store par live hain. Wo publishing process bhi parhate hain — store listing, review policy aur updates sab." },
+  { name: "Zainab Qureshi", title: "Python & Automation Instructor",
+    bio: "Zainab scripting se shuru karwati hain aur teesre hafte tak students apne rozmarra ke kaam automate kar rahe hote hain. Unka focus parhne laayak code likhne par hai." },
+  { name: "Imran Baig", title: "Cloud & DevOps Trainer",
+    bio: "Imran ne banking systems ko cloud par migrate kiya hai. Class mein CI/CD pipeline shuru se banti hai, aur students apna kaam khud deploy karte hain." },
+  { name: "Maria Aslam", title: "Database & Backend Instructor",
+    bio: "Maria SQL ko sawaalon se parhati hain — pehle problem, phir query. Normalisation aur indexing par unki grip hai, aur wo slow queries theek karna sikhati hain." },
+  { name: "Ahsan Sheikh", title: "Freelancing & Career Coach",
+    bio: "Ahsan ne Upwork par 300+ projects complete kiye hain. Wo proposal likhna, rate set karna aur client se baat karna sikhate hain — sirf skill nahi, kaam lena bhi." }
+];
+
+const logEl  = document.getElementById("log");
+const seedBtn = document.getElementById("seedBtn");
+const undoBtn = document.getElementById("undoBtn");
+
+function log(msg, cls) {
+  logEl.style.display = "block";
+  const span = document.createElement("span");
+  if (cls) span.className = cls;
+  span.textContent = msg + "\n";
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function idFor(i) {
+  return "SEED-TCH-" + String(i + 1).padStart(2, "0");
+}
+
+function explain(error) {
+  if (error && error.code === "permission-denied") {
+    return "Permission denied — Firestore rules ne likhne nahi diya. Doosre tab mein Admin se login kar ke refresh karein.";
+  }
+  return (error && error.message) ? error.message : String(error);
+}
+
+seedBtn.addEventListener("click", async () => {
+  seedBtn.disabled = true;
+  logEl.innerHTML = "";
+  log("Writing " + TEACHERS.length + " teacher profiles…", "dim");
+
+  let done = 0;
+  for (let i = 0; i < TEACHERS.length; i++) {
+    const t = TEACHERS[i];
+    try {
+      await setDoc(doc(db, "teachers", idFor(i)), {
+        name: t.name,
+        title: t.title,
+        bio: t.bio,
+        photo: "",
+        status: "approved",
+        uid: null,
+        updatedAt: serverTimestamp()
+      });
+      done++;
+      log("  ✓ " + t.name, "ok");
+    } catch (error) {
+      console.error(error);
+      log("  ✗ " + t.name + " — " + explain(error), "err");
+      break;
+    }
+  }
+
+  if (done === TEACHERS.length) {
+    log("\nHo gaya. Ab homepage kholein — mosaic bhar chuka hoga.", "ok");
+    undoBtn.disabled = false;
+  } else {
+    log("\n" + done + "/" + TEACHERS.length + " likhe gaye. Upar wali error dekhein.", "err");
+  }
+  seedBtn.disabled = false;
+});
+
+undoBtn.addEventListener("click", async () => {
+  if (!confirm("Seeded 10 teachers delete kar dein? Admin panel se add kiye gaye teachers par asar nahi hoga.")) return;
+  undoBtn.disabled = true;
+  logEl.innerHTML = "";
+  log("Deleting seeded profiles…", "dim");
+
+  for (let i = 0; i < TEACHERS.length; i++) {
+    try {
+      await deleteDoc(doc(db, "teachers", idFor(i)));
+      log("  ✓ " + idFor(i) + " deleted", "ok");
+    } catch (error) {
+      log("  ✗ " + idFor(i) + " — " + explain(error), "err");
+    }
+  }
+  log("\nDone.", "ok");
+  undoBtn.disabled = false;
+});
+</script>
+</body>
+</html>

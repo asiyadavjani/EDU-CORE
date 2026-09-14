@@ -3,32 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard</title>
-    <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; }
-        #authLoading {
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; color: #555; font-size: 14px;
-        }
-        #pageContent { display: none; padding: 24px; }
-    </style>
-</head>
-<body>
-    <!-- Shown immediately; swapped out once the role check below passes.
-         This is what stops a Teacher/Admin from ever seeing a flash of
-         this page's real content before getting redirected away. -->
-    <div id="authLoading">Checking access…</div>
+    <title>Student Dashboard | EduCore</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../enrollment.css">
+    <link rel="stylesheet" href="./student.css">
 
-    <div id="pageContent">
-        <h1>student</h1>
-    </div>
-
+    <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
     <script type="module">
-        // NOTE: this file lives in /student/, authGuard.js lives one folder
-        // up at the project root — hence "../authGuard.js", not "./authGuard.js".
         import { protectPage } from "../authGuard.js";
         // Sirf Student access kar sakta hai
         protectPage(["Student"], { loadingEl: "authLoading", contentEl: "pageContent" });
     </script>
+</head>
+<body>
+    <!-- Shown immediately; swapped out once the role check below passes. -->
+    <div id="authLoading">
+        <div class="auth-spinner"></div>
+        <p class="auth-loading-text">Checking access…</p>
+    </div>
+
+    <div id="pageContent">
+        <div class="dash-shell">
+
+            <!-- SIDEBAR -->
+            <aside class="dash-sidebar">
+                <div class="dash-sidebar-brand"><i class="fa-solid fa-graduation-cap"></i> EduCore <span>Student</span></div>
+                <nav class="dash-nav" id="dashNav">
+                    <div class="dash-nav-item active" data-tab="overview"><i class="fa-solid fa-gauge-high"></i> Overview</div>
+                    <div class="dash-nav-item" data-tab="result"><i class="fa-solid fa-file-lines"></i> Test Result</div>
+                    <div class="dash-nav-item" data-tab="idcard"><i class="fa-solid fa-address-card"></i> ID Card</div>
+                </nav>
+                <div class="dash-sidebar-footer">
+                    <button id="logoutBtn" class="dash-logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </aside>
+
+            <!-- MAIN -->
+            <div class="dash-main">
+                <div class="dash-topbar">
+                    <div class="dash-topbar-title">
+                        <h1 id="dashGreeting">Welcome back</h1>
+                        <p id="dashSubGreeting">Here's where your admission stands.</p>
+                    </div>
+                    <div class="dash-topbar-user">
+                        <div class="dash-user-avatar" id="dashUserAvatar">S</div>
+                        <div>
+                            <span class="dash-user-name" id="studentNameLabel">Student</span>
+                            <span class="dash-user-role">Student Account</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-content">
+
+                    <!-- LINK RECORD (only shown if this login isn't linked to an admission record yet) -->
+                    <div id="linkSection" class="claim-wrap" style="display:none;">
+                        <div class="claim-card">
+                            <i class="fa-solid fa-link claim-icon"></i>
+                            <h2>Link your admission record</h2>
+                            <p>Enter the CNIC / ID number you used when you registered. This only needs to be done once — after that, this dashboard will always show your own status automatically.</p>
+                            <div class="input-box">
+                                <label>CNIC / ID Number</label>
+                                <input type="text" id="linkCnicInput" placeholder="4220109966883">
+                            </div>
+                            <button type="button" class="dash-btn-primary" id="linkFindBtn"><i class="fa-solid fa-magnifying-glass"></i> Find My Record</button>
+                            <div id="linkMessage" class="link-message" style="display:none;"></div>
+
+                            <!-- Confirm preview, shown after a record is found -->
+                            <div id="linkConfirmBox" class="link-confirm-box" style="display:none;">
+                                <p>Is this you?</p>
+                                <h3 id="linkConfirmName">-</h3>
+                                <p id="linkConfirmDetails">-</p>
+                                <div class="link-confirm-actions">
+                                    <button type="button" class="dash-btn-primary" id="linkConfirmYesBtn"><i class="fa-solid fa-check"></i> Yes, this is me</button>
+                                    <button type="button" class="dash-btn-secondary" id="linkConfirmNoBtn">Cancel</button>
+                                </div>
+                            </div>
+
+                            <p class="claim-empty-note">Haven't registered yet? <a href="../enrollment.html">Apply here first</a>.</p>
+                        </div>
+                    </div>
+
+                    <!-- OVERVIEW TAB -->
+                    <div class="dash-tab-panel active" id="tab-overview">
+                        <div class="dash-stats-row">
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-blue"><i class="fa-solid fa-clipboard-check"></i></div>
+                                <div>
+                                    <span class="dash-stat-value" id="statAppStatus">-</span>
+                                    <span class="dash-stat-label">Application Status</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-teal"><i class="fa-solid fa-book"></i></div>
+                                <div>
+                                    <span class="dash-stat-value" id="statCourse">-</span>
+                                    <span class="dash-stat-label">Course</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-orange"><i class="fa-solid fa-square-check"></i></div>
+                                <div>
+                                    <span class="dash-stat-value" id="statTestResult">-</span>
+                                    <span class="dash-stat-label">Entry Test</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-dark"><i class="fa-solid fa-chart-line"></i></div>
+                                <div>
+                                    <span class="dash-stat-value" id="statProgress">0%</span>
+                                    <span class="dash-stat-label">Course Progress</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dash-panel">
+                            <div class="dash-panel-head"><h2><i class="fa-solid fa-route"></i> Admission Journey</h2></div>
+                            <div class="status-stepper" id="statusStepper"></div>
+                        </div>
+
+                        <div class="dash-charts-row" id="dashChartsRow" style="display:none;">
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-chart-pie"></i> Course Progress</h3>
+                                <div class="dash-chart-box"><canvas id="chartMyProgress"></canvas></div>
+                            </div>
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-calendar-check"></i> My Attendance</h3>
+                                <div class="dash-chart-box"><canvas id="chartMyAttendanceStudent"></canvas></div>
+                            </div>
+                        </div>
+
+                        <div class="dash-panel" id="progressPanel" style="margin-top:22px; display:none;">
+                            <div class="dash-panel-head"><h2><i class="fa-solid fa-chalkboard-user"></i> My Course</h2></div>
+                            <p id="progressTeacherLine" style="margin-bottom:14px;color:var(--text-dark);font-size:13.5px;"></p>
+                            <div class="dash-progress-track"><div class="dash-progress-fill" id="progressFill" style="width:0%"></div></div>
+                            <p id="progressRemark" style="margin-top:12px;font-size:13px;color:var(--text-dark);"></p>
+                        </div>
+
+                        <div class="dash-panel dash-cta-panel" id="quizCtaPanel" style="margin-top:22px; display:none;">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                            <div>
+                                <h3>Your entry test is still pending</h3>
+                                <p>Take it now to move your application forward.</p>
+                            </div>
+                            <a href="../quiz.html" class="dash-btn-primary">Take Entry Test</a>
+                        </div>
+                    </div>
+
+                    <!-- RESULT TAB -->
+                    <div class="dash-tab-panel" id="tab-result">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-file-lines"></i> Statement of Result</h2></div>
+                        <div id="resultContent" class="dash-panel"></div>
+                    </div>
+
+                    <!-- ID CARD TAB -->
+                    <div class="dash-tab-panel" id="tab-idcard">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-address-card"></i> ID Card</h2></div>
+                        <div class="id-card-display" style="display:block;">
+                            <div class="id-card">
+                                <div class="id-header">
+                                    <img src="../images/logo-removebg-preview.png" alt="Logo">
+                                    <h3>EduCore Student Card</h3>
+                                </div>
+                                <div class="id-body">
+                                    <img src="https://placehold.co/120" class="student-photo" id="cardPhoto">
+                                    <h3 id="cardName">Student Name</h3>
+                                    <p id="cardId">Student ID: -</p>
+                                    <p id="cardCourse">Course: -</p>
+                                    <p id="cardStatus">Status: -</p>
+                                    <button class="download-btn"><i class="fa-solid fa-download"></i> Download ID Card</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+    <script type="module" src="./student.js"></script>
 </body>
 </html>

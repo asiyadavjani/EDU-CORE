@@ -3,32 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard</title>
-    <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; }
-        #authLoading {
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; color: #555; font-size: 14px;
-        }
-        #pageContent { display: none; padding: 24px; }
-    </style>
-</head>
-<body>
-    <!-- Shown immediately; swapped out once the role check below passes.
-         This is what stops a Student/Admin from ever seeing a flash of
-         this page's real content before getting redirected away. -->
-    <div id="authLoading">Checking access…</div>
+    <title>Teacher Dashboard | EduCore</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="./teacher.css">
 
-    <div id="pageContent">
-        <h1>Teacher</h1>
-    </div>
-
+    <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
     <script type="module">
-        // NOTE: this file lives in /teacher/, authGuard.js lives one folder
-        // up at the project root — hence "../authGuard.js", not "./authGuard.js".
         import { protectPage } from "../authGuard.js";
         // Sirf Teacher access kar sakta hai
         protectPage(["Teacher"], { loadingEl: "authLoading", contentEl: "pageContent" });
     </script>
+</head>
+<body>
+    <!-- Shown immediately; swapped out once the role check below passes. -->
+    <div id="authLoading">
+        <div class="auth-spinner"></div>
+        <p class="auth-loading-text">Checking access…</p>
+    </div>
+
+    <div id="pageContent">
+
+        <!-- APPLICATION STATUS SCREEN — shown instead of the dashboard
+             while this teacher's application is pending/rejected, or if no
+             application doc is found at all. Replaces the old "claim a
+             profile" screen (see teacher.js for why that was insecure). -->
+        <div id="appStatusScreen" class="appstatus-wrap" style="display:none;">
+            <div class="appstatus-card">
+                <i class="fa-solid fa-hourglass-half appstatus-icon" id="appStatusIcon"></i>
+                <h2 id="appStatusTitle">Application Under Review</h2>
+                <p id="appStatusMessage">Thanks for applying! Your teacher application is pending review.</p>
+                <button type="button" id="appStatusLogoutBtn" class="appstatus-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="dash-shell" id="dashShell">
+
+            <!-- SIDEBAR -->
+            <aside class="dash-sidebar">
+                <div class="dash-sidebar-brand"><i class="fa-solid fa-graduation-cap"></i> EduCore <span>Teacher</span></div>
+                <nav class="dash-nav" id="dashNav">
+                    <div class="dash-nav-item active" data-tab="overview"><i class="fa-solid fa-gauge-high"></i> Overview</div>
+                    <div class="dash-nav-item" data-tab="courses"><i class="fa-solid fa-book"></i> My Courses</div>
+                    <div class="dash-nav-item" data-tab="students"><i class="fa-solid fa-user-graduate"></i> My Students</div>
+                    <div class="dash-nav-item" data-tab="attendance"><i class="fa-solid fa-calendar-check"></i> Attendance</div>
+                    <div class="dash-nav-item" data-tab="profile"><i class="fa-solid fa-id-badge"></i> My Profile</div>
+                </nav>
+                <div class="dash-sidebar-footer">
+                    <button id="logoutBtn" class="dash-logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </div>
+            </aside>
+
+            <!-- MAIN -->
+            <div class="dash-main">
+                <div class="dash-topbar">
+                    <div class="dash-topbar-title">
+                        <h1 id="dashGreeting">Welcome back</h1>
+                        <p id="dashSubGreeting">Here's what's happening with your classes.</p>
+                    </div>
+                    <div class="dash-topbar-user">
+                        <div class="dash-user-avatar" id="dashUserAvatar">T</div>
+                        <div>
+                            <span class="dash-user-name" id="teacherNameLabel">Teacher</span>
+                            <span class="dash-user-role">Teacher Account</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-content">
+
+                    <!-- OVERVIEW TAB -->
+                    <div class="dash-tab-panel active" id="tab-overview">
+                        <div class="dash-stats-row">
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-blue"><i class="fa-solid fa-book"></i></div>
+                                <div>
+                                    <span class="dash-stat-value counter" id="statMyCourses" data-target="0">0</span>
+                                    <span class="dash-stat-label">My Courses</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-teal"><i class="fa-solid fa-user-graduate"></i></div>
+                                <div>
+                                    <span class="dash-stat-value counter" id="statMyStudents" data-target="0">0</span>
+                                    <span class="dash-stat-label">My Students</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-orange"><i class="fa-solid fa-chart-line"></i></div>
+                                <div>
+                                    <span class="dash-stat-value" id="statAvgProgress">0%</span>
+                                    <span class="dash-stat-label">Average Progress</span>
+                                </div>
+                            </div>
+                            <div class="dash-stat-card">
+                                <div class="dash-stat-icon icon-dark"><i class="fa-solid fa-star"></i></div>
+                                <div>
+                                    <span class="dash-stat-value counter" id="statTopScorers" data-target="0">0</span>
+                                    <span class="dash-stat-label">Passed Entry Test</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dash-charts-row">
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-chart-column"></i> Student Progress</h3>
+                                <div class="dash-chart-box"><canvas id="chartStudentProgress"></canvas></div>
+                            </div>
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-book-open"></i> My Courses Breakdown</h3>
+                                <div class="dash-chart-box"><canvas id="chartCourseBreakdown"></canvas></div>
+                            </div>
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-ranking-star"></i> Teacher Ranking</h3>
+                                <div class="dash-chart-box"><canvas id="chartRanking"></canvas></div>
+                                <p class="dash-chart-note" id="rankingNote"></p>
+                            </div>
+                            <div class="dash-chart-card">
+                                <h3><i class="fa-solid fa-calendar-check"></i> My Attendance Activity</h3>
+                                <div class="dash-chart-box"><canvas id="chartMyAttendance"></canvas></div>
+                            </div>
+                        </div>
+
+                        <div class="dash-panel">
+                            <div class="dash-panel-head"><h2><i class="fa-solid fa-list-check"></i> Recent Students</h2></div>
+                            <div id="overviewStudentsList" class="dash-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- MY COURSES TAB -->
+                    <div class="dash-tab-panel" id="tab-courses">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-book"></i> My Courses</h2></div>
+                        <div id="myCoursesList" class="dash-list-grid"></div>
+                    </div>
+
+                    <!-- MY STUDENTS TAB -->
+                    <div class="dash-tab-panel" id="tab-students">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-user-graduate"></i> My Students</h2></div>
+                        <div id="myStudentsList" class="dash-list"></div>
+                    </div>
+
+                    <!-- ATTENDANCE TAB -->
+                    <div class="dash-tab-panel" id="tab-attendance">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-calendar-check"></i> Mark Attendance</h2></div>
+                        <div class="dash-panel">
+                            <div class="dash-form-grid">
+                                <div class="input-box">
+                                    <label>Course</label>
+                                    <select id="attendanceCourseSelect"><option value="">-- select course --</option></select>
+                                </div>
+                                <div class="input-box">
+                                    <label>Date</label>
+                                    <input type="date" id="attendanceDate">
+                                </div>
+                            </div>
+                            <div id="attendanceStudentsList" class="dash-list"></div>
+                            <button type="button" class="dash-btn-primary" id="attendanceSaveBtn" style="margin-top:16px;" disabled>
+                                <i class="fa-solid fa-floppy-disk"></i> Save Attendance
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MY PROFILE TAB -->
+                    <div class="dash-tab-panel" id="tab-profile">
+                        <div class="dash-panel-head"><h2><i class="fa-solid fa-id-badge"></i> My Profile</h2></div>
+                        <form id="profileForm" class="dash-form">
+                            <div class="dash-form-grid">
+                                <div class="input-box">
+                                    <label>Full Name*</label>
+                                    <input type="text" id="profileName" required>
+                                </div>
+                                <div class="input-box">
+                                    <label>Title / Specialty*</label>
+                                    <input type="text" id="profileTitle" required>
+                                </div>
+                            </div>
+                            <div class="input-box full-width">
+                                <label>Bio</label>
+                                <textarea id="profileBio" rows="3"></textarea>
+                            </div>
+                            <div class="input-box full-width">
+                                <label>Photo (max 300KB)</label>
+                                <input type="file" id="profilePhotoInput" accept="image/*">
+                                <img id="profilePhotoPreview" style="display:none;" class="dash-photo-preview">
+                            </div>
+                            <button type="submit" class="dash-btn-primary" id="profileSubmitBtn"><i class="fa-solid fa-floppy-disk"></i> Save Profile</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+    <script type="module" src="./teacher.js"></script>
 </body>
 </html>

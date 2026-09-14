@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed demo data — EduCore (one-time setup)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Open Sans',system-ui,sans-serif; }
+  body { background:#f6f8fc; color:#334155; padding:40px 20px; }
+  .wrap { max-width:720px; margin:0 auto; }
+  h1 { font-size:26px; color:#0f172a; margin-bottom:8px; }
+  .sub { color:#64748b; font-size:15px; margin-bottom:26px; line-height:1.6; }
+  .card { background:#fff; border:1px solid #e6ecf5; border-radius:14px; padding:26px; margin-bottom:18px; }
+  .warn { background:#fff8e6; border-color:#f5d98a; }
+  .warn strong { color:#8a5a00; display:block; margin-bottom:6px; }
+  .warn p { font-size:14px; color:#7a5410; line-height:1.6; }
+  ol { margin:12px 0 0 20px; font-size:14px; line-height:1.9; color:#475569; }
+  code { background:#eef2f8; padding:2px 6px; border-radius:4px; font-family:ui-monospace,monospace; font-size:13px; }
+  button { background:#0b6bd3; color:#fff; border:none; padding:13px 24px; border-radius:9px;
+           font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  button:hover:not(:disabled) { background:#00458e; }
+  button:disabled { background:#94a3b8; cursor:not-allowed; }
+  button.danger { background:#b91c1c; }
+  button.danger:hover:not(:disabled) { background:#8f1414; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  #log { margin-top:18px; font-size:13.5px; line-height:1.8; font-family:ui-monospace,monospace;
+         background:#0f172a; color:#cbd5e1; border-radius:10px; padding:16px; max-height:340px;
+         overflow:auto; display:none; white-space:pre-wrap; }
+  .ok { color:#4ade80; } .err { color:#fca5a5; } .dim { color:#94a3b8; }
+  a.back { display:inline-block; margin-top:20px; color:#0b6bd3; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Seed demo data</h1>
+  <p class="sub">
+    Ye page bhi sirf ek dafa chalana hai (<code>seed-teachers.html</code> jaisa hi, lekin
+    us se alag / independent). Ye 4 demo teachers, 6 demo courses (3 campuses, har ek mein
+    paid + free), 20 demo accepted students (8 abhi studying, 12 graduate — 100% progress),
+    pichle 5 dino ki demo attendance, 6 success stories (isi 12 graduates mein se), 3 blog
+    posts aur 3 news/event items daal deta hai — taake Admin/Teacher/Student dashboards ke
+    graphs aur homepage ke naye sections (Courses, Success Stories, Popular Blogs, News &amp;
+    Events) khali na dikhein, bharay hue dikhein.
+  </p>
+
+  <div class="card warn">
+    <strong>Chalane se pehle</strong>
+    <p>
+      Doosre tab mein Admin account se login karein, phir is page ko refresh kar ke
+      "Add demo data" dabayein. Login na ho to teachers/courses/attendance likhte waqt
+      "permission denied" aayega.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="seedBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> Add demo data</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Demo data hata dein</button>
+    </div>
+    <ol>
+      <li>Teachers: <code>DEMO-TCH-01</code> … <code>04</code> &nbsp;|&nbsp; Courses: <code>DEMO-CRS-01</code> … <code>06</code></li>
+      <li>Students: fake CNIC <code>9999100000001</code> … <code>20</code> se shuru (asli kisi se match nahi karenge)</li>
+      <li>Success stories: <code>DEMO-STR-01</code> … <code>06</code> &nbsp;|&nbsp; Blogs: <code>DEMO-BLG-01</code> … <code>03</code> &nbsp;|&nbsp; News: <code>DEMO-NEV-01</code> … <code>03</code></li>
+      <li>Dobara "Add" dabane par same records overwrite honge — duplicate nahi banenge</li>
+      <li>"Demo data hata dein" sab kuch (teachers, courses, students, attendance, success stories, blogs, news) wapas nikal deta hai — asli data ko haath nahi lagata</li>
+      <li>Ye sab sirf ek shuruaati demo hai — Admin dashboard ke "Success Stories" / "Blog Posts" / "News &amp; Events" tabs se apna asli content kabhi bhi add/edit/delete kar sakte hain</li>
+    </ol>
+    <div id="log"></div>
+  </div>
+
+  <a class="back" href="./admin/admin.html">&larr; Admin dashboard par wapas</a>
+</div>
+
+<script type="module">
+import { db } from "./firebaseConfig.js";
+import {
+  doc, setDoc, deleteDoc, getDocs, query, collection, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* ---------------------------------------------------------------------
+   4 demo teachers. Unlike seed-teachers.html (jahan uid hamesha null
+   hota hai, kyunke wo sirf homepage mosaic ke liye hai), in demo
+   teachers ko ek fake-lekin-non-null uid diya gaya hai. Wajah: Teacher
+   dashboard ka ranking/course-progress chart students ko unke
+   assignedTeacherUid se group karta hai — agar uid null hota to ye
+   demo students charts mein bilkul dikhte hi nahi (chupa diye jate).
+   Ye uid kisi real login se match nahi karta, is liye koi security
+   risk nahi — sirf ek label hai jisse demo data aapas mein link ho.
+--------------------------------------------------------------------- */
+const DEMO_TEACHERS = [
+  { id: "DEMO-TCH-01", uid: "demo-teacher-uid-01", name: "Ali Rehman",
+    title: "Diploma Instructor, Full-Stack Web Development",
+    bio: "Ali 6 saal se web apps bana rahe hain aur Full-Stack diploma batch ko end-to-end sikhate hain — frontend se lekar deployment tak." },
+  { id: "DEMO-TCH-02", uid: "demo-teacher-uid-02", name: "Mehwish Iqbal",
+    title: "Diploma Instructor, Digital Marketing",
+    bio: "Mehwish ne kai local brands ke liye campaigns chalaye hain. Students asli budget se practice karte hain, sirf theory nahi." },
+  { id: "DEMO-TCH-03", uid: "demo-teacher-uid-03", name: "Danish Aziz",
+    title: "Diploma Instructor, Python & Data Analysis",
+    bio: "Danish data analysis aur automation parhate hain, asli datasets ke sath — taake students job-ready bane." },
+  { id: "DEMO-TCH-04", uid: "demo-teacher-uid-04", name: "Rabia Farooq",
+    title: "Skill Course Instructor, UI/UX Design",
+    bio: "Rabia short skill courses mein UI/UX ke basics se leke ek chhota portfolio piece tak le jati hain." }
+];
+
+/* ---------------------------------------------------------------------
+   6 demo courses — har campus (Main / North / Online) mein 1 paid
+   Diploma Track (jis par students admit honge) + 1 free Skill Course
+   (sirf catalog, koi admission nahi) — taake "per campus paid vs free"
+   graph dono taraf se bhara hua dikhe.
+--------------------------------------------------------------------- */
+const DEMO_COURSES = [
+  { id: "DEMO-CRS-01", title: "Full-Stack Web Development", category: "Diploma Track",
+    campus: "Main Campus", price: 15000, teacher: DEMO_TEACHERS[0],
+    description: "Frontend, backend aur deployment tak mukammal diploma track." },
+  { id: "DEMO-CRS-02", title: "Graphic Design Fundamentals", category: "Skill Course",
+    campus: "Main Campus", price: 0, teacher: DEMO_TEACHERS[3],
+    description: "Design basics — grid, type aur colour — ek chhoti free skill course." },
+
+  { id: "DEMO-CRS-03", title: "Digital Marketing Bootcamp", category: "Diploma Track",
+    campus: "North Campus", price: 12000, teacher: DEMO_TEACHERS[1],
+    description: "SEO, social aur paid ads — asli campaign chala kar sikhein." },
+  { id: "DEMO-CRS-04", title: "Freelancing on Upwork", category: "Skill Course",
+    campus: "North Campus", price: 0, teacher: null,
+    description: "Proposal likhna, rate set karna aur client se baat karna — free short course." },
+
+  { id: "DEMO-CRS-05", title: "Python for Data Analysis", category: "Diploma Track",
+    campus: "Online Campus", price: 18000, teacher: DEMO_TEACHERS[2],
+    description: "Python, pandas aur real datasets ke sath data analysis diploma." },
+  { id: "DEMO-CRS-06", title: "UI/UX Design Essentials", category: "Skill Course",
+    campus: "Online Campus", price: 0, teacher: DEMO_TEACHERS[3],
+    description: "UI/UX ke fundamentals — ek chhota free skill course." }
+];
+
+const DIPLOMA_COURSES = DEMO_COURSES.filter(c => c.category === "Diploma Track");
+
+/* ---------------------------------------------------------------------
+   20 demo "Accepted" students, sirf 3 Diploma courses par (Skill
+   Courses par admission nahi hoti — wo catalog/cart items hain).
+   marksObtained/progressPercent jaan-boojh kar alag-alag rakhe hain
+   taake charts mein real variation dikhe, sirf seedhi line nahi.
+
+   Pehle 8 abhi "studying" hain (progress 20-95%). Baaki 12 (4 har
+   Diploma course par) 100% progress par hain — matlab "Graduates":
+   Admin dashboard ka "Our Track Record" chart applicationStatus ==
+   "Accepted" + progressPercent >= 100 ko graduate ginta hai. Koi
+   alag "Completed" status nahi hai is data model mein — 100%
+   progress hi "poora ho gaya" ka sabse honest tareeqa hai.
+--------------------------------------------------------------------- */
+const DEMO_STUDENTS = [
+  { cnic: "9999100000001", name: "Zara Hassan",   gender: "Female", city: "Lahore",
+    course: DEMO_COURSES[0], progress: 90, marks: 18, grade: "A+" },
+  { cnic: "9999100000002", name: "Bilal Sarwar",  gender: "Male",   city: "Lahore",
+    course: DEMO_COURSES[0], progress: 65, marks: 13, grade: "B"  },
+  { cnic: "9999100000003", name: "Komal Yousuf",  gender: "Female", city: "Lahore",
+    course: DEMO_COURSES[0], progress: 40, marks: 15, grade: "B+" },
+
+  { cnic: "9999100000004", name: "Hassan Raza",   gender: "Male",   city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 80, marks: 16, grade: "A"  },
+  { cnic: "9999100000005", name: "Iqra Shahid",   gender: "Female", city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 55, marks: 14, grade: "B+" },
+  { cnic: "9999100000006", name: "Owais Malik",   gender: "Male",   city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 30, marks: 12, grade: "B"  },
+
+  { cnic: "9999100000007", name: "Sana Tariq",    gender: "Female", city: "Karachi",
+    course: DEMO_COURSES[4], progress: 95, marks: 19, grade: "A+" },
+  { cnic: "9999100000008", name: "Fahad Nadeem",  gender: "Male",   city: "Karachi",
+    course: DEMO_COURSES[4], progress: 20, marks: 17, grade: "A"  },
+
+  // --- Graduates (100% progress) ---
+  { cnic: "9999100000009", name: "Ahmed Raza",    gender: "Male",   city: "Lahore",
+    course: DEMO_COURSES[0], progress: 100, marks: 19, grade: "A+" },
+  { cnic: "9999100000010", name: "Mahnoor Sheikh", gender: "Female", city: "Lahore",
+    course: DEMO_COURSES[0], progress: 100, marks: 18, grade: "A+" },
+  { cnic: "9999100000011", name: "Usman Ghani",   gender: "Male",   city: "Lahore",
+    course: DEMO_COURSES[0], progress: 100, marks: 17, grade: "A"  },
+  { cnic: "9999100000012", name: "Aliya Khan",    gender: "Female", city: "Lahore",
+    course: DEMO_COURSES[0], progress: 100, marks: 16, grade: "A"  },
+
+  { cnic: "9999100000013", name: "Farhan Qureshi", gender: "Male",   city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 100, marks: 18, grade: "A+" },
+  { cnic: "9999100000014", name: "Noor Fatima",   gender: "Female", city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 100, marks: 17, grade: "A"  },
+  { cnic: "9999100000015", name: "Zeeshan Abbas",  gender: "Male",   city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 100, marks: 19, grade: "A+" },
+  { cnic: "9999100000016", name: "Sidra Batool",  gender: "Female", city: "Islamabad",
+    course: DEMO_COURSES[2], progress: 100, marks: 16, grade: "A"  },
+
+  { cnic: "9999100000017", name: "Kamran Ali",    gender: "Male",   city: "Karachi",
+    course: DEMO_COURSES[4], progress: 100, marks: 18, grade: "A+" },
+  { cnic: "9999100000018", name: "Rida Naz",      gender: "Female", city: "Karachi",
+    course: DEMO_COURSES[4], progress: 100, marks: 17, grade: "A"  },
+  { cnic: "9999100000019", name: "Tariq Mehmood", gender: "Male",   city: "Karachi",
+    course: DEMO_COURSES[4], progress: 100, marks: 19, grade: "A+" },
+  { cnic: "9999100000020", name: "Sana Yousaf",   gender: "Female", city: "Karachi",
+    course: DEMO_COURSES[4], progress: 100, marks: 16, grade: "A"  }
+];
+
+/* ---------------------------------------------------------------------
+   Success stories for the homepage's new "Success Stories" section.
+   Deliberately reuse 6 of the "Graduate" students above (same name,
+   same course) instead of inventing brand-new identities. Outcomes and
+   highlights stay generic — a role, a plain one-line result — rather
+   than a specific income figure, which would read as a precise,
+   verifiable claim rather than illustrative demo content. Like
+   everything else on this page, these are placeholders: swap them for
+   real graduates any time from Admin → Success Stories.
+--------------------------------------------------------------------- */
+const DEMO_SUCCESS_STORIES = [
+  { id: "DEMO-STR-01", name: "Ahmed Raza", outcome: "Frontend Developer",
+    course: "Full-Stack Web Development", highlight: "Hired within weeks",
+    story: "Diploma khatam hone ke kuch hafton baad hi ek software house mein frontend role mil gaya. Ab real client projects par kaam karta hoon." },
+  { id: "DEMO-STR-02", name: "Mahnoor Sheikh", outcome: "Freelance Web Developer",
+    course: "Full-Stack Web Development", highlight: "Freelance & thriving",
+    story: "Course ke doran hi apna pehla freelance project mila. Ab ghar baithe apne clients ke liye websites banati hoon." },
+  { id: "DEMO-STR-03", name: "Farhan Qureshi", outcome: "Digital Marketing Executive",
+    course: "Digital Marketing Bootcamp", highlight: "Now leads campaigns",
+    story: "Practical campaigns chalane ka tajurba kaam aaya — ab ek marketing agency mein campaigns handle karta hoon." },
+  { id: "DEMO-STR-04", name: "Noor Fatima", outcome: "Social Media Manager",
+    course: "Digital Marketing Bootcamp", highlight: "Manages brand pages",
+    story: "Social media strategy seekh kar ab local brands ke pages khud manage karti hoon." },
+  { id: "DEMO-STR-05", name: "Kamran Ali", outcome: "Data Analyst",
+    course: "Python for Data Analysis", highlight: "Fintech data role",
+    story: "Data analysis diploma ke baad ek fintech company mein data role mil gaya." },
+  { id: "DEMO-STR-06", name: "Rida Naz", outcome: "Junior Data Analyst",
+    course: "Python for Data Analysis", highlight: "Real-dataset experience",
+    story: "Python aur real datasets ka tajurba interview mein sabse zyada kaam aaya." }
+];
+
+/* Blog posts for "Popular Blogs" — genuinely generic educational content
+   (not claims about any real person or company), same idea as any
+   edtech blog's evergreen starter posts. Swap/add real ones any time
+   from Admin → Blog Posts. */
+const DEMO_BLOGS = [
+  { id: "DEMO-BLG-01", title: "5 Skills Every Web Developer Needs in 2026", category: "Web Development",
+    excerpt: "HTML aur CSS se aagey — 2026 mein employers web developers mein ye 5 cheezein dhoondte hain.",
+    body: "Web development har saal thoda badalta hai, lekin kuch skills hamesha kaam aati hain.\n\n1. Responsive design — mobile par bhi utna hi clean dikhna chahiye jitna desktop par.\n2. Git aur version control — team mein kaam karne ke liye zaroori hai.\n3. API integration — real apps external data par chalte hain.\n4. Basic performance sense — image size, load time, aur simple optimizations.\n5. Communication — code se zyada zaroori hota hai clearly explain karna ke aapne kya banaya aur kyun.\n\nInme se koi bhi raaton-raat nahi aata — practice aur real projects hi rasta hain." },
+  { id: "DEMO-BLG-02", title: "Freelancing 101: Getting Your First Client on Upwork", category: "Career",
+    excerpt: "Pehla client sabse mushkil hota hai. Yahan ek simple, practical shuruaat hai.",
+    body: "Upwork par pehla client milna aksar sabse bada rukawat lagta hai — lekin approach sahi ho to ye utna mushkil nahi.\n\nPehle apna profile ek chhoti si niche par focus karein — 'main sab kuch kar sakta hoon' se behtar hai 'main ye ek cheez achi tarah karta hoon'.\n\nShuru ke proposals mein rate kam rakhein, sirf pehli 2-3 reviews milne tak — uske baad rate barha sakte hain.\n\nHar proposal client ke job post ko dhyan se parh kar likhein, generic message copy-paste na karein — clients ye foran pehchan lete hain." },
+  { id: "DEMO-BLG-03", title: "Why Data Analysis Is One of Pakistan's Fastest-Growing Careers", category: "Data & AI",
+    excerpt: "Har company ke paas data hai, lekin bohot kam log usay samajh kar decisions le sakte hain.",
+    body: "Pakistan mein tech aur e-commerce companies badh rahi hain, aur inme se har ek ke paas users, sales aur operations ka data ikattha ho raha hai.\n\nData analyst ka kaam hota hai is data ko samajh kar simple, actionable insights nikalna — jaise 'kis din sabse zyada sales hoti hai' ya 'kaunsa marketing channel sabse zyada kaam kar raha hai'.\n\nShuru karne ke liye Excel se ho sakta hai, phir Python/pandas aur basic SQL — ye teeno mil kar zyada tar entry-level data roles ke liye kaafi hain.\n\nSabse zyada farq practice se padta hai — apne shehar ke kisi bhi public dataset par khud se sawal poochh kar analysis shuru karein." }
+];
+
+/* News & Events — grounded in facts already stated elsewhere on this
+   same site (the homepage's own admissions-open banner, its "1 October"
+   batch mention, and the existing eligibility quiz) rather than
+   invented external claims. Dates are relative to when this file was
+   written, not hardcoded to a specific past year. */
+const DEMO_NEWS = [
+  { id: "DEMO-NEV-01", title: "New Web Development, Digital Marketing & AI Batches Now Open",
+    date: "2026-09-10",
+    excerpt: "Admissions open hain — teeno tracks mein seats available hain, campus aur online dono options ke saath.",
+    link: "./enrollment.html" },
+  { id: "DEMO-NEV-02", title: "Agla Intake: 1 October 2026 Se Shuru",
+    date: "2026-09-14",
+    excerpt: "Seats limited hain. Pehle eligibility quiz dein ya seedha apna course choose kar ke enroll karein.",
+    link: "./enrollment.html" },
+  { id: "DEMO-NEV-03", title: "Free Eligibility Quiz Ab Live",
+    date: "2026-09-01",
+    excerpt: "3 minute ka quiz dein aur pata karein aapke liye kaunsa track sabse zyada munasib hai.",
+    link: "./quiz.html" }
+];
+
+function buildStudentDoc(s) {
+  return {
+    name: s.name,
+    fatherName: "Demo Guardian",
+    dob: "2003-01-01",
+    email: s.cnic + "@example-demo.com",
+    phone: "03000000000",
+    fatherPhone: "03000000001",
+    cnic: s.cnic,
+    fatherCnic: "",
+    address: "Demo address, " + s.city,
+    country: "Pakistan",
+    classPreference: "Evening",
+    gender: s.gender,
+    city: s.city,
+    course: s.course.title,
+    campus: s.course.campus,
+    computerProficiency: "Intermediate",
+    lastQualification: "Intermediate",
+    hearAboutUs: "Facebook",
+    hasLaptop: "Yes",
+    photo: "",
+    rollNumber: "EC-DEMO" + s.cnic.slice(-3),
+    entryTestStatus: "Passed",
+    marksObtained: s.marks + " / 20",
+    resultGrade: s.grade,
+    quizAttemptedAt: serverTimestamp(),
+    applicationStatus: "Accepted",
+    assignedTeacherId: s.course.teacher.id,
+    assignedTeacherUid: s.course.teacher.uid,
+    assignedTeacherName: s.course.teacher.name,
+    progressPercent: s.progress,
+    registrationDate: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+}
+
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+/* Attendance ke liye aaj se pichle 5 din — jab bhi ye script chalegi,
+   hamesha "recent" dikhega, kisi hardcoded purani date par nahi atka
+   rahega. */
+function last5Dates() {
+  const out = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    out.push(dateStr(d));
+  }
+  return out;
+}
+
+const logEl   = document.getElementById("log");
+const seedBtn = document.getElementById("seedBtn");
+const undoBtn = document.getElementById("undoBtn");
+
+function log(msg, cls) {
+  logEl.style.display = "block";
+  const span = document.createElement("span");
+  if (cls) span.className = cls;
+  span.textContent = msg + "\n";
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function explain(error) {
+  if (error && error.code === "permission-denied") {
+    return "Permission denied — doosre tab mein Admin se login kar ke is page ko refresh karein.";
+  }
+  return (error && error.message) ? error.message : String(error);
+}
+
+seedBtn.addEventListener("click", async () => {
+  seedBtn.disabled = true;
+  logEl.innerHTML = "";
+  let ok = true;
+
+  try {
+    log("Teachers likh rahe hain…", "dim");
+    for (const t of DEMO_TEACHERS) {
+      await setDoc(doc(db, "teachers", t.id), {
+        name: t.name, title: t.title, bio: t.bio, photo: "",
+        status: "approved", uid: t.uid, updatedAt: serverTimestamp()
+      });
+      log("  ✓ " + t.name, "ok");
+    }
+
+    log("Courses likh rahe hain…", "dim");
+    for (const c of DEMO_COURSES) {
+      await setDoc(doc(db, "courses", c.id), {
+        title: c.title, category: c.category, campus: c.campus, price: c.price,
+        teacherId: c.teacher ? c.teacher.id : null,
+        teacherName: c.teacher ? c.teacher.name : null,
+        teacherUid: c.teacher ? c.teacher.uid : null,
+        description: c.description, updatedAt: serverTimestamp()
+      });
+      log("  ✓ " + c.title + " (" + c.campus + ")", "ok");
+    }
+
+    log("Students likh rahe hain…", "dim");
+    for (const s of DEMO_STUDENTS) {
+      await setDoc(doc(db, "students", s.cnic), buildStudentDoc(s));
+      log("  ✓ " + s.name + " — " + s.course.title + " (" + s.progress + "% progress)", "ok");
+    }
+
+    log("Attendance likh rahe hain (pichle 5 din)…", "dim");
+    const dates = last5Dates();
+    for (const course of DIPLOMA_COURSES) {
+      const roster = DEMO_STUDENTS.filter(s => s.course.id === course.id);
+      for (const date of dates) {
+        const records = roster.map(s => ({
+          cnic: s.cnic, name: s.name,
+          status: Math.random() < 0.85 ? "present" : "absent"
+        }));
+        const presentCount = records.filter(r => r.status === "present").length;
+        await setDoc(doc(db, "attendance", course.id + "_" + date), {
+          courseId: course.id, courseName: course.title,
+          teacherId: course.teacher.id, teacherUid: course.teacher.uid, teacherName: course.teacher.name,
+          date, records, presentCount, totalCount: records.length,
+          updatedAt: serverTimestamp()
+        });
+      }
+      log("  ✓ " + course.title + " — " + dates.length + " din", "ok");
+    }
+
+    log("Success stories likh rahe hain…", "dim");
+    for (const s of DEMO_SUCCESS_STORIES) {
+      await setDoc(doc(db, "successStories", s.id), {
+        name: s.name, outcome: s.outcome, course: s.course,
+        highlight: s.highlight, story: s.story, photo: "",
+        updatedAt: serverTimestamp()
+      });
+      log("  ✓ " + s.name, "ok");
+    }
+
+    log("Blog posts likh rahe hain…", "dim");
+    for (const b of DEMO_BLOGS) {
+      await setDoc(doc(db, "blogs", b.id), {
+        title: b.title, category: b.category, excerpt: b.excerpt,
+        body: b.body, image: "", updatedAt: serverTimestamp()
+      });
+      log("  ✓ " + b.title, "ok");
+    }
+
+    log("News & events likh rahe hain…", "dim");
+    for (const n of DEMO_NEWS) {
+      await setDoc(doc(db, "newsEvents", n.id), {
+        title: n.title, date: n.date, excerpt: n.excerpt, link: n.link,
+        image: "", updatedAt: serverTimestamp()
+      });
+      log("  ✓ " + n.title, "ok");
+    }
+  } catch (error) {
+    console.error(error);
+    log("✗ " + explain(error), "err");
+    ok = false;
+  }
+
+  if (ok) {
+    log("\nHo gaya. Admin/Teacher/Student dashboards khol kar graphs dekhein.", "ok");
+    undoBtn.disabled = false;
+  } else {
+    log("\nRuk gaya — upar wali error dekhein.", "err");
+  }
+  seedBtn.disabled = false;
+});
+
+undoBtn.addEventListener("click", async () => {
+  if (!confirm("Sara demo data (teachers, courses, students, attendance) delete kar dein?")) return;
+  undoBtn.disabled = true;
+  logEl.innerHTML = "";
+
+  try {
+    log("Attendance dhoond kar delete kar rahe hain…", "dim");
+    const diplomaIds = DIPLOMA_COURSES.map(c => c.id);
+    const attSnap = await getDocs(query(collection(db, "attendance"), where("courseId", "in", diplomaIds)));
+    for (const d of attSnap.docs) {
+      await deleteDoc(d.ref);
+    }
+    log("  ✓ " + attSnap.size + " attendance record(s) deleted", "ok");
+
+    log("Students delete kar rahe hain…", "dim");
+    for (const s of DEMO_STUDENTS) {
+      await deleteDoc(doc(db, "students", s.cnic));
+      log("  ✓ " + s.name, "ok");
+    }
+
+    log("Courses delete kar rahe hain…", "dim");
+    for (const c of DEMO_COURSES) {
+      await deleteDoc(doc(db, "courses", c.id));
+      log("  ✓ " + c.title, "ok");
+    }
+
+    log("Teachers delete kar rahe hain…", "dim");
+    for (const t of DEMO_TEACHERS) {
+      await deleteDoc(doc(db, "teachers", t.id));
+      log("  ✓ " + t.name, "ok");
+    }
+
+    log("Success stories delete kar rahe hain…", "dim");
+    for (const s of DEMO_SUCCESS_STORIES) {
+      await deleteDoc(doc(db, "successStories", s.id));
+      log("  ✓ " + s.name, "ok");
+    }
+
+    log("Blog posts delete kar rahe hain…", "dim");
+    for (const b of DEMO_BLOGS) {
+      await deleteDoc(doc(db, "blogs", b.id));
+      log("  ✓ " + b.title, "ok");
+    }
+
+    log("News & events delete kar rahe hain…", "dim");
+    for (const n of DEMO_NEWS) {
+      await deleteDoc(doc(db, "newsEvents", n.id));
+      log("  ✓ " + n.title, "ok");
+    }
+
+    log("\nDone — sara demo data hat gaya.", "ok");
+  } catch (error) {
+    console.error(error);
+    log("✗ " + explain(error), "err");
+  }
+  undoBtn.disabled = false;
+});
+</script>
+</body>
+</html>

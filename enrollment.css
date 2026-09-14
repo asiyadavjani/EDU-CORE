@@ -493,6 +493,15 @@ body {
     gap: 12px;
 }
 
+.upload-preview-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: var(--border-radius-full);
+    border: 3px solid var(--primary-blue);
+    background: var(--bg-body);
+}
+
 .upload-icon {
     font-size: 40px;
     color: var(--primary-blue);
@@ -731,5 +740,34 @@ button.submit-btn:hover,
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+/*===================================================
+  ENROLLMENT FORM — MOBILE FIT  (added)
+
+  .form-grid hamesha 2 columns par set tha aur uska koi responsive
+  override nahi tha. Grid ka `1fr` asal mein minmax(auto, 1fr) hai,
+  aur ek <input> ka min-content ~300px hota hai — is liye 768px se
+  neeche form viewport se bahar nikal jata tha (390px par ~337px).
+
+  min-width: 0 grid items ko sikurne deta hai, aur 768px se neeche
+  form single column ho jata hai.
+====================================================*/
+.form-grid > *,
+.input-box {
+    min-width: 0;
+}
+
+.input-box input,
+.input-box select,
+.input-box textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 }
