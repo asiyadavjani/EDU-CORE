@@ -41,9 +41,9 @@ let authRunId = 0;
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
-        return "Database permission denied. Firestore rules ko check karein.";
+        return "Database permission denied. Please check the Firestore rules.";
     }
-    return "Kuch masla ho gaya. (" + (error && error.message ? error.message : "unknown error") + ")";
+    return "Something went wrong. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
 function val(id) {
@@ -220,7 +220,7 @@ function renderMyCourses() {
     document.getElementById("statMyCourses").setAttribute("data-target", myCourses.length);
 
     if (myCourses.length === 0) {
-        container.innerHTML = '<p class="dash-empty-note">Abhi tak koi course assign nahi hua. Admin se apne course assign karwayein.</p>';
+        container.innerHTML = '<p class="dash-empty-note">No course assigned yet. Ask the Admin to assign your course(s).</p>';
         return;
     }
     container.innerHTML = myCourses.map(c => `
@@ -251,7 +251,7 @@ function renderMyStudents() {
     const container = document.getElementById("myStudentsList");
 
     if (myStudents.length === 0) {
-        container.innerHTML = '<p class="dash-empty-note">Abhi tak koi student aapko assign nahi hua. Jab Admin kisi student ki application accept karega (jiska course aapke naam se match ho), wo yahan show hoga.</p>';
+        container.innerHTML = '<p class="dash-empty-note">No students assigned to you yet. Once the Admin accepts a student\'s application for a course matching your name, they\'ll show up here.</p>';
         return;
     }
 
@@ -311,7 +311,7 @@ async function saveStudentProgress(cnic, percent, remark, row) {
 function renderStudentProgressChart() {
     if (typeof Chart === "undefined") return;
     if (myStudents.length === 0) {
-        renderChart("chartStudentProgress", emptyChartConfig("bar", "Abhi koi student nahi"));
+        renderChart("chartStudentProgress", emptyChartConfig("bar", "No students yet"));
         return;
     }
     const top = myStudents.slice(0, 8);
@@ -331,7 +331,7 @@ function renderStudentProgressChart() {
 function renderCourseBreakdownChart() {
     if (typeof Chart === "undefined") return;
     if (myCourses.length === 0) {
-        renderChart("chartCourseBreakdown", emptyChartConfig("doughnut", "Abhi koi course nahi"));
+        renderChart("chartCourseBreakdown", emptyChartConfig("doughnut", "No courses yet"));
         return;
     }
     // Student count per course, matched by title the same way
@@ -381,7 +381,7 @@ function renderRankingChart(allAcceptedStudents) {
         .sort((a, b) => b.avg - a.avg);
 
     if (ranked.length === 0) {
-        renderChart("chartRanking", emptyChartConfig("bar", "Abhi ranking ke liye data nahi"));
+        renderChart("chartRanking", emptyChartConfig("bar", "No ranking data yet"));
         if (note) note.innerText = "";
         return;
     }
@@ -407,8 +407,8 @@ function renderRankingChart(allAcceptedStudents) {
     if (note) {
         const myRank = ranked.findIndex(t => t.uid === myUid);
         note.innerText = myRank >= 0
-            ? `Aapki ranking: #${myRank + 1} of ${ranked.length} (students ke average progress se)`
-            : "Aapke students ka average progress abhi available nahi.";
+            ? `Your ranking: #${myRank + 1} of ${ranked.length} (based on students' average progress)`
+            : "Your students' average progress isn't available yet.";
     }
 }
 
@@ -437,7 +437,7 @@ async function loadAttendanceForSelection() {
     const saveBtn = document.getElementById("attendanceSaveBtn");
 
     if (!courseId || !dateInput.value) {
-        container.innerHTML = '<p class="dash-empty-note">Course aur date dono select karein.</p>';
+        container.innerHTML = '<p class="dash-empty-note">Please select both a course and a date.</p>';
         saveBtn.disabled = true;
         return;
     }
@@ -446,7 +446,7 @@ async function loadAttendanceForSelection() {
     const roster = myStudents.filter(s => s.course === course?.title);
 
     if (roster.length === 0) {
-        container.innerHTML = '<p class="dash-empty-note">Is course mein abhi koi student assign nahi hai.</p>';
+        container.innerHTML = '<p class="dash-empty-note">No students are assigned to this course yet.</p>';
         saveBtn.disabled = true;
         attendanceDraft = [];
         return;
@@ -551,7 +551,7 @@ async function loadMyAttendance() {
 function renderMyAttendanceChart() {
     if (typeof Chart === "undefined") return;
     if (myAttendance.length === 0) {
-        renderChart("chartMyAttendance", emptyChartConfig("bar", "Abhi attendance nahi mari"));
+        renderChart("chartMyAttendance", emptyChartConfig("bar", "No attendance recorded yet"));
         return;
     }
     const byDate = {};
@@ -589,7 +589,7 @@ function renderOverview() {
 
     const container = document.getElementById("overviewStudentsList");
     if (myStudents.length === 0) {
-        container.innerHTML = '<p class="dash-empty-note">Koi student abhi tak nahi hai.</p>';
+        container.innerHTML = '<p class="dash-empty-note">No students yet.</p>';
         return;
     }
     container.innerHTML = myStudents.slice(0, 5).map(s => `
@@ -625,7 +625,7 @@ async function handleProfileSubmit(e) {
     e.preventDefault();
 
     if (profilePhotoUploading) {
-        alert("Photo abhi upload ho rahi hai — thoda intezar karein aur dobara Save dabayein.");
+        alert("The photo is still uploading — please wait a moment and click Save again.");
         return;
     }
 

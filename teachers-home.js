@@ -83,7 +83,7 @@ function tileHTML(t, index) {
     return `
         <button class="tm-tile" type="button"
                 data-id="${esc(t.id)}"
-                aria-label="${esc(t.name)} ka profile dekhein">
+                aria-label="View ${esc(t.name)}'s profile">
             <span class="tm-tile-inner tone-${index % 4}">
                 <span class="tm-initials">${esc(initials(t.name))}</span>
                 ${hasPhoto ? `<img src="${esc(t.photo)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
@@ -136,7 +136,7 @@ async function loadTeachersSection() {
             .filter(t => (t.status || "approved") === "approved");
 
         if (teachers.length === 0) {
-            grid.innerHTML = '<p class="teachers-empty-note">Teacher profiles jald add honge.</p>';
+            grid.innerHTML = '<p class="teachers-empty-note">Teacher profiles coming soon.</p>';
             return;
         }
 
@@ -150,7 +150,7 @@ async function loadTeachersSection() {
         }));
     } catch (error) {
         console.error(error);
-        grid.innerHTML = '<p class="teachers-empty-note">Teacher profiles abhi load nahi ho sake.</p>';
+        grid.innerHTML = '<p class="teachers-empty-note">Teacher profiles couldn\'t be loaded right now.</p>';
     }
 }
 
@@ -163,7 +163,7 @@ function openTeacherModal(teacher) {
 
     document.getElementById("teacherModalName").innerText = teacher.name || "";
     document.getElementById("teacherModalTitleText").innerText = teacher.title || "Instructor";
-    document.getElementById("teacherModalBio").innerText = teacher.bio || "Bio jald add hoga.";
+    document.getElementById("teacherModalBio").innerText = teacher.bio || "Bio coming soon.";
 
     /* No placehold.co round-trip — show initials when there is no photo,
        and fall back to them again if a stored photo fails to decode. */

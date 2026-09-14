@@ -293,7 +293,7 @@
       if (grid.querySelector(".tm-tile")) return;
       var note = grid.querySelector(".teachers-empty-note");
       if (note && /loading/i.test(note.textContent)) {
-        note.textContent = "Teacher profiles abhi load nahi ho sake. Page refresh kar ke dobara koshish karein.";
+        note.textContent = "Teacher profiles couldn't be loaded. Please refresh the page and try again.";
       }
     }, 8000);
   }
@@ -336,7 +336,7 @@
       if (grid.querySelector(cardSelector)) return;
       var note = grid.querySelector(".ec-empty-note");
       if (note && /loading/i.test(note.textContent)) {
-        note.textContent = "Abhi load nahi ho saka. Page refresh kar ke dobara koshish karein.";
+        note.textContent = "Couldn't be loaded. Please refresh the page and try again.";
       }
     }, 8000);
   }

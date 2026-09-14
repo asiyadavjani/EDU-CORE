@@ -64,9 +64,9 @@ let timerInterval = null;
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
-        return "Database permission denied. Firebase Console → Firestore → Rules mein 'students' aur 'rollIndex' collections par read/write allow karein.";
+        return "Database permission denied. Allow read/write for the 'students' and 'rollIndex' collections in Firebase Console → Firestore → Rules.";
     }
-    return "Kuch masla ho gaya, thori dair baad dobara try karein. (" + (error && error.message ? error.message : "unknown error") + ")";
+    return "Something went wrong, please try again in a moment. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
 function showStage(id) {
@@ -114,7 +114,7 @@ async function startTest() {
 
         if (!snap.exists()) {
             messageBox.className = "quiz-message error";
-            messageBox.innerHTML = "Is CNIC se koi registration nahi mila. <a href=\"./enrollment.html\">Pehle registration form fill karein</a>.";
+            messageBox.innerHTML = "No registration found for this CNIC. <a href=\"./enrollment.html\">Please fill the registration form first</a>.";
             messageBox.style.display = "block";
             return;
         }
@@ -123,7 +123,7 @@ async function startTest() {
 
         if (student.entryTestStatus === "Passed") {
             messageBox.className = "quiz-message info";
-            messageBox.innerHTML = "Aap pehle hi entry test Pass kar chuke hain (Marks: " + (student.marksObtained ?? "-") + "). <a href=\"./enrollment.html?portal=result\">Result dekhein</a>.";
+            messageBox.innerHTML = "You've already passed the entry test (Marks: " + (student.marksObtained ?? "-") + "). <a href=\"./enrollment.html?portal=result\">View result</a>.";
             messageBox.style.display = "block";
             return;
         }
@@ -211,7 +211,7 @@ async function submitQuiz(autoSubmitted) {
 
     if (!autoSubmitted) {
         const unanswered = answers.some(a => a === null);
-        if (unanswered && !confirm("Kuch questions abhi tak answer nahi huay. Phir bhi submit karein?")) {
+        if (unanswered && !confirm("Some questions are still unanswered. Submit anyway?")) {
             return;
         }
     }
@@ -261,7 +261,7 @@ function renderResultStage({ passed, percent, correctCount, total, resultGrade, 
     box.innerHTML = `
         <div class="quiz-result-banner ${passed ? 'passed' : 'failed'}">
             <h2>${passed ? '🎉 Congratulations, you Passed!' : 'Sorry, you did not pass this time.'}</h2>
-            ${autoSubmitted ? '<p style="margin-bottom:10px;color:#92400e;">Time khatam hone ki wajah se test automatically submit ho gaya.</p>' : ''}
+            ${autoSubmitted ? '<p style="margin-bottom:10px;color:#92400e;">Time ran out, so the test was submitted automatically.</p>' : ''}
             <p><strong>Score:</strong> ${correctCount} / ${total} (${percent}%)</p>
             <p><strong>Grade:</strong> ${resultGrade}</p>
             <p><strong>Roll Number:</strong> ${currentStudent.rollNumber}</p>

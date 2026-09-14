@@ -27,9 +27,9 @@ let pendingLinkCnic = null;
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
-        return "Database permission denied. Firestore rules ko check karein.";
+        return "Database permission denied. Please check the Firestore rules.";
     }
-    return "Kuch masla ho gaya. (" + (error && error.message ? error.message : "unknown error") + ")";
+    return "Something went wrong. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
 function showTab(tabName) {
@@ -242,7 +242,7 @@ async function loadMyAttendanceChart(s) {
 
 function renderMyAttendanceStudentChart(present, total) {
     if (total === 0) {
-        renderChart("chartMyAttendanceStudent", emptyChartConfig("doughnut", "Abhi attendance nahi mari gayi"));
+        renderChart("chartMyAttendanceStudent", emptyChartConfig("doughnut", "No attendance recorded yet"));
         return;
     }
     const absent = total - present;
@@ -301,7 +301,7 @@ function renderStepper(status) {
 function renderResultTab(s) {
     const container = document.getElementById("resultContent");
     if (s.entryTestStatus !== "Passed" && s.entryTestStatus !== "Failed") {
-        container.innerHTML = `<p class="dash-empty-note">Aapne abhi tak entry test attempt nahi kiya. <a href="../quiz.html">Yahan se entry test dein</a>.</p>`;
+        container.innerHTML = `<p class="dash-empty-note">You haven't attempted the entry test yet. <a href="../quiz.html">Take the entry test here</a>.</p>`;
         return;
     }
     container.innerHTML = `

@@ -35,9 +35,9 @@ let newsEvents = [];
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
-        return "Database permission denied. Firebase Console → Firestore → Rules check karein (Admin role wale user ko in collections par access chahiye).";
+        return "Database permission denied. Check Firebase Console → Firestore → Rules (the Admin role needs access to these collections).";
     }
-    return "Kuch masla ho gaya. (" + (error && error.message ? error.message : "unknown error") + ")";
+    return "Something went wrong. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
 function genId(prefix) {
@@ -89,16 +89,16 @@ function refreshNotifications() {
 
     const items = [
         ...teachers.filter(t => (t.status || "approved") === "pending")
-            .map(t => ({ text: `${t.name || "Teacher"} ne apply kiya hai`, tab: "teacherApplications" })),
+            .map(t => ({ text: `${t.name || "Teacher"} applied`, tab: "teacherApplications" })),
         ...applications.filter(a => a.applicationStatus === "Awaiting Approval")
-            .map(s => ({ text: `${s.name || "Student"} ka application review ke liye ready hai`, tab: "applications" })),
+            .map(s => ({ text: `${s.name || "Student"}'s application is ready for review`, tab: "applications" })),
         ...orders.filter(o => o.paymentStatus === "Pending")
-            .map(o => ({ text: `${o.studentName || "Order"} ka payment confirm karna hai`, tab: "orders" }))
+            .map(o => ({ text: `${o.studentName || "Order"}'s payment needs confirmation`, tab: "orders" }))
     ];
 
     if (items.length === 0) {
         badge.style.display = "none";
-        list.innerHTML = '<p class="admin-empty-note">Koi naya notification nahi.</p>';
+        list.innerHTML = '<p class="admin-empty-note">No new notifications.</p>';
         return;
     }
 
@@ -124,7 +124,7 @@ function refreshNotifications() {
 function renderCountsChart() {
     if (typeof Chart === "undefined") return;
     if (teachers.length === 0 && applications.length === 0) {
-        renderChart("chartCounts", emptyChartConfig("bar", "Abhi data nahi"));
+        renderChart("chartCounts", emptyChartConfig("bar", "No data yet"));
         return;
     }
     renderChart("chartCounts", {
@@ -148,7 +148,7 @@ function renderCountsChart() {
 function renderCampusChart() {
     if (typeof Chart === "undefined") return;
     if (courses.length === 0) {
-        renderChart("chartCampus", emptyChartConfig("bar", "Abhi koi course nahi"));
+        renderChart("chartCampus", emptyChartConfig("bar", "No courses yet"));
         return;
     }
 
@@ -192,7 +192,7 @@ function renderTrackRecordChart() {
     const graduates = applications.filter(a => a.applicationStatus === "Accepted" && (a.progressPercent || 0) >= 100).length;
 
     if (courses.length === 0 && graduates === 0) {
-        renderChart("chartTrackRecord", emptyChartConfig("bar", "Abhi data nahi"));
+        renderChart("chartTrackRecord", emptyChartConfig("bar", "No data yet"));
         return;
     }
 
@@ -217,7 +217,7 @@ function renderTrackRecordChart() {
 function renderAttendanceChart() {
     if (typeof Chart === "undefined") return;
     if (attendance.length === 0) {
-        renderChart("chartAttendance", emptyChartConfig("doughnut", "Abhi attendance nahi mari gayi"));
+        renderChart("chartAttendance", emptyChartConfig("doughnut", "No attendance recorded yet"));
         return;
     }
 
@@ -288,7 +288,7 @@ function renderApplications() {
         : applications.filter(a => (a.applicationStatus || "Entry Test Pending") === filter);
 
     if (filtered.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Is filter mein koi record nahi mila.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No records match this filter.</p>';
         return;
     }
 
@@ -369,7 +369,7 @@ async function loadCourses() {
 function renderCourses() {
     const container = document.getElementById("coursesList");
     if (courses.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi course nahi bana. Upar form se add karein.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No courses created yet. Add one using the form above.</p>';
         return;
     }
     container.innerHTML = courses.map(c => `
@@ -466,7 +466,7 @@ async function handleCourseSubmit(e) {
 }
 
 async function deleteCourse(id) {
-    if (!confirm("Ye course delete karna hai? Ye undo nahi ho sakta.")) return;
+    if (!confirm("Delete this course? This can't be undone.")) return;
     try {
         await deleteDoc(doc(db, "courses", id));
         await loadCourses();
@@ -504,7 +504,7 @@ function teacherStatus(t) {
 function renderTeachers() {
     const container = document.getElementById("teachersList");
     if (teachers.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi teacher add nahi hua. Upar form se add karein.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No teachers added yet. Add one using the form above.</p>';
         return;
     }
     container.innerHTML = teachers.map(t => {
@@ -579,7 +579,7 @@ function renderTeacherApplications() {
     const filtered = filter === "all" ? withStatus : withStatus.filter(t => t.status === filter);
 
     if (filtered.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Is filter mein koi application nahi mili.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No applications match this filter.</p>';
         return;
     }
 
@@ -650,7 +650,7 @@ async function handleTeacherSubmit(e) {
     e.preventDefault();
 
     if (teacherPhotoUploading) {
-        alert("Photo abhi upload ho rahi hai — thoda intezar karein aur dobara Save dabayein.");
+        alert("The photo is still uploading — please wait a moment and click Save again.");
         return;
     }
 
@@ -687,7 +687,7 @@ async function handleTeacherSubmit(e) {
 }
 
 async function deleteTeacher(id) {
-    if (!confirm("Ye teacher profile delete karna hai?")) return;
+    if (!confirm("Delete this teacher profile?")) return;
     try {
         await deleteDoc(doc(db, "teachers", id));
         await loadTeachers();
@@ -714,7 +714,7 @@ async function loadOrders() {
 function renderOrders() {
     const container = document.getElementById("ordersList");
     if (orders.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi order nahi aaya.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No orders yet.</p>';
         return;
     }
     container.innerHTML = orders.map(o => `
@@ -815,7 +815,7 @@ async function loadStories() {
 function renderStories() {
     const container = document.getElementById("storiesList");
     if (successStories.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi success story nahi. Upar form se add karein.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No success stories yet. Add one using the form above.</p>';
         return;
     }
     container.innerHTML = successStories.map(s => `
@@ -868,7 +868,7 @@ function resetStoryForm() {
 async function handleStorySubmit(e) {
     e.preventDefault();
     if (storyPhotoState.uploading) {
-        alert("Photo abhi upload ho rahi hai — thoda intezar karein aur dobara Save dabayein.");
+        alert("The photo is still uploading — please wait a moment and click Save again.");
         return;
     }
     const editId = val("storyEditId");
@@ -896,7 +896,7 @@ async function handleStorySubmit(e) {
 }
 
 async function deleteStory(id) {
-    if (!confirm("Ye success story delete karna hai?")) return;
+    if (!confirm("Delete this success story?")) return;
     try {
         await deleteDoc(doc(db, "successStories", id));
         await loadStories();
@@ -925,7 +925,7 @@ async function loadBlogs() {
 function renderBlogs() {
     const container = document.getElementById("blogsList");
     if (blogs.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi blog post nahi. Upar form se add karein.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No blog posts yet. Add one using the form above.</p>';
         return;
     }
     container.innerHTML = blogs.map(b => `
@@ -979,7 +979,7 @@ function resetBlogForm() {
 async function handleBlogSubmit(e) {
     e.preventDefault();
     if (blogImageState.uploading) {
-        alert("Image abhi upload ho rahi hai — thoda intezar karein aur dobara Save dabayein.");
+        alert("The image is still uploading — please wait a moment and click Save again.");
         return;
     }
     const editId = val("blogEditId");
@@ -1006,7 +1006,7 @@ async function handleBlogSubmit(e) {
 }
 
 async function deleteBlog(id) {
-    if (!confirm("Ye blog post delete karna hai?")) return;
+    if (!confirm("Delete this blog post?")) return;
     try {
         await deleteDoc(doc(db, "blogs", id));
         await loadBlogs();
@@ -1034,7 +1034,7 @@ async function loadNewsEvents() {
 function renderNewsEvents() {
     const container = document.getElementById("newsList");
     if (newsEvents.length === 0) {
-        container.innerHTML = '<p class="admin-empty-note">Abhi koi news/event nahi. Upar form se add karein.</p>';
+        container.innerHTML = '<p class="admin-empty-note">No news/events yet. Add one using the form above.</p>';
         return;
     }
     const sorted = [...newsEvents].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
@@ -1089,7 +1089,7 @@ function resetNewsForm() {
 async function handleNewsSubmit(e) {
     e.preventDefault();
     if (newsImageState.uploading) {
-        alert("Image abhi upload ho rahi hai — thoda intezar karein aur dobara Save dabayein.");
+        alert("The image is still uploading — please wait a moment and click Save again.");
         return;
     }
     const editId = val("newsEditId");
@@ -1116,7 +1116,7 @@ async function handleNewsSubmit(e) {
 }
 
 async function deleteNews(id) {
-    if (!confirm("Ye news/event delete karna hai?")) return;
+    if (!confirm("Delete this news/event?")) return;
     try {
         await deleteDoc(doc(db, "newsEvents", id));
         await loadNewsEvents();

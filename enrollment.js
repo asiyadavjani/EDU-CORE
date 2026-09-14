@@ -25,9 +25,9 @@ let studentPhotoUploading = false; // true while the picture-upload input's Clou
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
-        return "Database permission denied. Firebase Console → Firestore → Rules mein 'students' aur 'rollIndex' collections par read/write allow karein.";
+        return "Database permission denied. Allow read/write for the 'students' and 'rollIndex' collections in Firebase Console → Firestore → Rules.";
     }
-    return "Kuch masla ho gaya, thori dair baad dobara try karein. (" + (error && error.message ? error.message : "unknown error") + ")";
+    return "Something went wrong, please try again in a moment. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
 function generateRollNumber() {
@@ -84,7 +84,7 @@ async function handleRegistrationSubmit(e) {
     e.preventDefault();
 
     if (studentPhotoUploading) {
-        alert("Photo abhi upload ho rahi hai — thoda intezar karein aur dobara Submit dabayein.");
+        alert("The photo is still uploading — please wait a moment and click Submit again.");
         return;
     }
 
@@ -325,7 +325,7 @@ async function checkResult() {
             if (resultDisplay) {
                 resultDisplay.innerHTML = `
                     <div class="result-details-box" style="padding: 25px; background: #fffbeb; border-radius: 15px; border: 1px solid #fde68a; margin-top: 20px; text-align: left;">
-                        <p style="color:#92400e;">Result abhi available nahi – aapne entry test attempt nahi kiya. <a href="./quiz.html">Yahan se entry test dein</a>.</p>
+                        <p style="color:#92400e;">Result not available yet – you haven't attempted the entry test. <a href="./quiz.html">Take the entry test here</a>.</p>
                     </div>
                 `;
                 resultDisplay.style.display = "block";

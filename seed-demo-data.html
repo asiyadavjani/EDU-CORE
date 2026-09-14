@@ -35,41 +35,41 @@
 <div class="wrap">
   <h1>Seed demo data</h1>
   <p class="sub">
-    Ye page bhi sirf ek dafa chalana hai (<code>seed-teachers.html</code> jaisa hi, lekin
-    us se alag / independent). Ye 4 demo teachers, 6 demo courses (3 campuses, har ek mein
-    paid + free), 20 demo accepted students (8 abhi studying, 12 graduate — 100% progress),
-    pichle 5 dino ki demo attendance, 6 success stories (isi 12 graduates mein se), 3 blog
-    posts aur 3 news/event items daal deta hai — taake Admin/Teacher/Student dashboards ke
-    graphs aur homepage ke naye sections (Courses, Success Stories, Popular Blogs, News &amp;
-    Events) khali na dikhein, bharay hue dikhein.
+    This page also only needs to be run once (like <code>seed-teachers.html</code>, but
+    separate / independent from it). It adds 4 demo teachers, 6 demo courses (3 campuses,
+    each with a paid + free option), 20 demo accepted students (8 currently studying, 12
+    graduates — 100% progress), the last 5 days of demo attendance, 6 success stories (drawn
+    from those same 12 graduates), 3 blog posts, and 3 news/event items — so the
+    Admin/Teacher/Student dashboard graphs and the homepage's newer sections (Courses,
+    Success Stories, Popular Blogs, News &amp; Events) show up filled in instead of empty.
   </p>
 
   <div class="card warn">
-    <strong>Chalane se pehle</strong>
+    <strong>Before running this</strong>
     <p>
-      Doosre tab mein Admin account se login karein, phir is page ko refresh kar ke
-      "Add demo data" dabayein. Login na ho to teachers/courses/attendance likhte waqt
-      "permission denied" aayega.
+      Log in with an Admin account in another tab, then refresh this page and click
+      "Add demo data". If you're not logged in, you'll get "permission denied" while
+      writing teachers/courses/attendance.
     </p>
   </div>
 
   <div class="card">
     <div class="row">
       <button id="seedBtn"><i class="fa-solid fa-wand-magic-sparkles"></i> Add demo data</button>
-      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Demo data hata dein</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Remove demo data</button>
     </div>
     <ol>
       <li>Teachers: <code>DEMO-TCH-01</code> … <code>04</code> &nbsp;|&nbsp; Courses: <code>DEMO-CRS-01</code> … <code>06</code></li>
-      <li>Students: fake CNIC <code>9999100000001</code> … <code>20</code> se shuru (asli kisi se match nahi karenge)</li>
+      <li>Students: fake CNICs starting <code>9999100000001</code> … <code>20</code> (won't match any real one)</li>
       <li>Success stories: <code>DEMO-STR-01</code> … <code>06</code> &nbsp;|&nbsp; Blogs: <code>DEMO-BLG-01</code> … <code>03</code> &nbsp;|&nbsp; News: <code>DEMO-NEV-01</code> … <code>03</code></li>
-      <li>Dobara "Add" dabane par same records overwrite honge — duplicate nahi banenge</li>
-      <li>"Demo data hata dein" sab kuch (teachers, courses, students, attendance, success stories, blogs, news) wapas nikal deta hai — asli data ko haath nahi lagata</li>
-      <li>Ye sab sirf ek shuruaati demo hai — Admin dashboard ke "Success Stories" / "Blog Posts" / "News &amp; Events" tabs se apna asli content kabhi bhi add/edit/delete kar sakte hain</li>
+      <li>Clicking "Add" again overwrites the same records — no duplicates are created</li>
+      <li>"Remove demo data" pulls all of it back out (teachers, courses, students, attendance, success stories, blogs, news) — your real data is untouched</li>
+      <li>This is all just a starter demo — you can add/edit/delete your own real content any time from the Admin dashboard's "Success Stories" / "Blog Posts" / "News &amp; Events" tabs</li>
     </ol>
     <div id="log"></div>
   </div>
 
-  <a class="back" href="./admin/admin.html">&larr; Admin dashboard par wapas</a>
+  <a class="back" href="./admin/admin.html">&larr; Back to Admin dashboard</a>
 </div>
 
 <script type="module">
@@ -91,16 +91,16 @@ import {
 const DEMO_TEACHERS = [
   { id: "DEMO-TCH-01", uid: "demo-teacher-uid-01", name: "Ali Rehman",
     title: "Diploma Instructor, Full-Stack Web Development",
-    bio: "Ali 6 saal se web apps bana rahe hain aur Full-Stack diploma batch ko end-to-end sikhate hain — frontend se lekar deployment tak." },
+    bio: "Ali has been building web apps for 6 years and teaches the Full-Stack diploma batch end-to-end — from frontend all the way to deployment." },
   { id: "DEMO-TCH-02", uid: "demo-teacher-uid-02", name: "Mehwish Iqbal",
     title: "Diploma Instructor, Digital Marketing",
-    bio: "Mehwish ne kai local brands ke liye campaigns chalaye hain. Students asli budget se practice karte hain, sirf theory nahi." },
+    bio: "Mehwish has run campaigns for several local brands. Students practice with real budgets, not just theory." },
   { id: "DEMO-TCH-03", uid: "demo-teacher-uid-03", name: "Danish Aziz",
     title: "Diploma Instructor, Python & Data Analysis",
-    bio: "Danish data analysis aur automation parhate hain, asli datasets ke sath — taake students job-ready bane." },
+    bio: "Danish teaches data analysis and automation with real datasets — so students come out job-ready." },
   { id: "DEMO-TCH-04", uid: "demo-teacher-uid-04", name: "Rabia Farooq",
     title: "Skill Course Instructor, UI/UX Design",
-    bio: "Rabia short skill courses mein UI/UX ke basics se leke ek chhota portfolio piece tak le jati hain." }
+    bio: "Rabia takes students from UI/UX basics to a small portfolio piece in her short skill courses." }
 ];
 
 /* ---------------------------------------------------------------------
@@ -112,24 +112,24 @@ const DEMO_TEACHERS = [
 const DEMO_COURSES = [
   { id: "DEMO-CRS-01", title: "Full-Stack Web Development", category: "Diploma Track",
     campus: "Main Campus", price: 15000, teacher: DEMO_TEACHERS[0],
-    description: "Frontend, backend aur deployment tak mukammal diploma track." },
+    description: "A complete diploma track covering frontend, backend, and deployment." },
   { id: "DEMO-CRS-02", title: "Graphic Design Fundamentals", category: "Skill Course",
     campus: "Main Campus", price: 0, teacher: DEMO_TEACHERS[3],
-    description: "Design basics — grid, type aur colour — ek chhoti free skill course." },
+    description: "Design basics — grid, type, and colour — a short free skill course." },
 
   { id: "DEMO-CRS-03", title: "Digital Marketing Bootcamp", category: "Diploma Track",
     campus: "North Campus", price: 12000, teacher: DEMO_TEACHERS[1],
-    description: "SEO, social aur paid ads — asli campaign chala kar sikhein." },
+    description: "SEO, social, and paid ads — learn by running a real campaign." },
   { id: "DEMO-CRS-04", title: "Freelancing on Upwork", category: "Skill Course",
     campus: "North Campus", price: 0, teacher: null,
-    description: "Proposal likhna, rate set karna aur client se baat karna — free short course." },
+    description: "Writing proposals, setting rates, and talking to clients — a free short course." },
 
   { id: "DEMO-CRS-05", title: "Python for Data Analysis", category: "Diploma Track",
     campus: "Online Campus", price: 18000, teacher: DEMO_TEACHERS[2],
-    description: "Python, pandas aur real datasets ke sath data analysis diploma." },
+    description: "A data analysis diploma with Python, pandas, and real datasets." },
   { id: "DEMO-CRS-06", title: "UI/UX Design Essentials", category: "Skill Course",
     campus: "Online Campus", price: 0, teacher: DEMO_TEACHERS[3],
-    description: "UI/UX ke fundamentals — ek chhota free skill course." }
+    description: "The fundamentals of UI/UX — a short free skill course." }
 ];
 
 const DIPLOMA_COURSES = DEMO_COURSES.filter(c => c.category === "Diploma Track");
@@ -209,22 +209,22 @@ const DEMO_STUDENTS = [
 const DEMO_SUCCESS_STORIES = [
   { id: "DEMO-STR-01", name: "Ahmed Raza", outcome: "Frontend Developer",
     course: "Full-Stack Web Development", highlight: "Hired within weeks",
-    story: "Diploma khatam hone ke kuch hafton baad hi ek software house mein frontend role mil gaya. Ab real client projects par kaam karta hoon." },
+    story: "Just a few weeks after finishing the diploma, I landed a frontend role at a software house. Now I work on real client projects." },
   { id: "DEMO-STR-02", name: "Mahnoor Sheikh", outcome: "Freelance Web Developer",
     course: "Full-Stack Web Development", highlight: "Freelance & thriving",
-    story: "Course ke doran hi apna pehla freelance project mila. Ab ghar baithe apne clients ke liye websites banati hoon." },
+    story: "I landed my first freelance project while still in the course. Now I build websites for my own clients from home." },
   { id: "DEMO-STR-03", name: "Farhan Qureshi", outcome: "Digital Marketing Executive",
     course: "Digital Marketing Bootcamp", highlight: "Now leads campaigns",
-    story: "Practical campaigns chalane ka tajurba kaam aaya — ab ek marketing agency mein campaigns handle karta hoon." },
+    story: "The experience of running real campaigns paid off — I now handle campaigns at a marketing agency." },
   { id: "DEMO-STR-04", name: "Noor Fatima", outcome: "Social Media Manager",
     course: "Digital Marketing Bootcamp", highlight: "Manages brand pages",
-    story: "Social media strategy seekh kar ab local brands ke pages khud manage karti hoon." },
+    story: "After learning social media strategy, I now manage local brands' pages myself." },
   { id: "DEMO-STR-05", name: "Kamran Ali", outcome: "Data Analyst",
     course: "Python for Data Analysis", highlight: "Fintech data role",
-    story: "Data analysis diploma ke baad ek fintech company mein data role mil gaya." },
+    story: "After the data analysis diploma, I landed a data role at a fintech company." },
   { id: "DEMO-STR-06", name: "Rida Naz", outcome: "Junior Data Analyst",
     course: "Python for Data Analysis", highlight: "Real-dataset experience",
-    story: "Python aur real datasets ka tajurba interview mein sabse zyada kaam aaya." }
+    story: "My experience with Python and real datasets is what helped most in the interview." }
 ];
 
 /* Blog posts for "Popular Blogs" — genuinely generic educational content
@@ -233,14 +233,14 @@ const DEMO_SUCCESS_STORIES = [
    from Admin → Blog Posts. */
 const DEMO_BLOGS = [
   { id: "DEMO-BLG-01", title: "5 Skills Every Web Developer Needs in 2026", category: "Web Development",
-    excerpt: "HTML aur CSS se aagey — 2026 mein employers web developers mein ye 5 cheezein dhoondte hain.",
-    body: "Web development har saal thoda badalta hai, lekin kuch skills hamesha kaam aati hain.\n\n1. Responsive design — mobile par bhi utna hi clean dikhna chahiye jitna desktop par.\n2. Git aur version control — team mein kaam karne ke liye zaroori hai.\n3. API integration — real apps external data par chalte hain.\n4. Basic performance sense — image size, load time, aur simple optimizations.\n5. Communication — code se zyada zaroori hota hai clearly explain karna ke aapne kya banaya aur kyun.\n\nInme se koi bhi raaton-raat nahi aata — practice aur real projects hi rasta hain." },
+    excerpt: "Beyond HTML and CSS — in 2026, employers look for these 5 things in web developers.",
+    body: "Web development shifts a little every year, but some skills always stay useful.\n\n1. Responsive design — it should look just as clean on mobile as it does on desktop.\n2. Git and version control — essential for working on a team.\n3. API integration — real apps run on external data.\n4. Basic performance sense — image size, load time, and simple optimizations.\n5. Communication — explaining clearly what you built and why matters more than the code itself.\n\nNone of these come overnight — practice and real projects are the only way there." },
   { id: "DEMO-BLG-02", title: "Freelancing 101: Getting Your First Client on Upwork", category: "Career",
-    excerpt: "Pehla client sabse mushkil hota hai. Yahan ek simple, practical shuruaat hai.",
-    body: "Upwork par pehla client milna aksar sabse bada rukawat lagta hai — lekin approach sahi ho to ye utna mushkil nahi.\n\nPehle apna profile ek chhoti si niche par focus karein — 'main sab kuch kar sakta hoon' se behtar hai 'main ye ek cheez achi tarah karta hoon'.\n\nShuru ke proposals mein rate kam rakhein, sirf pehli 2-3 reviews milne tak — uske baad rate barha sakte hain.\n\nHar proposal client ke job post ko dhyan se parh kar likhein, generic message copy-paste na karein — clients ye foran pehchan lete hain." },
+    excerpt: "The first client is always the hardest part. Here's a simple, practical way to start.",
+    body: "Getting your first client on Upwork often feels like the biggest hurdle — but with the right approach, it's not as hard as it looks.\n\nFirst, focus your profile on one small niche — 'I can do anything' is weaker than 'I do this one thing well'.\n\nKeep your rate low on early proposals, just until you get your first 2-3 reviews — you can raise it after that.\n\nWrite every proposal after actually reading the client's job post — don't copy-paste a generic message, clients spot that immediately." },
   { id: "DEMO-BLG-03", title: "Why Data Analysis Is One of Pakistan's Fastest-Growing Careers", category: "Data & AI",
-    excerpt: "Har company ke paas data hai, lekin bohot kam log usay samajh kar decisions le sakte hain.",
-    body: "Pakistan mein tech aur e-commerce companies badh rahi hain, aur inme se har ek ke paas users, sales aur operations ka data ikattha ho raha hai.\n\nData analyst ka kaam hota hai is data ko samajh kar simple, actionable insights nikalna — jaise 'kis din sabse zyada sales hoti hai' ya 'kaunsa marketing channel sabse zyada kaam kar raha hai'.\n\nShuru karne ke liye Excel se ho sakta hai, phir Python/pandas aur basic SQL — ye teeno mil kar zyada tar entry-level data roles ke liye kaafi hain.\n\nSabse zyada farq practice se padta hai — apne shehar ke kisi bhi public dataset par khud se sawal poochh kar analysis shuru karein." }
+    excerpt: "Every company has data, but very few people can understand it well enough to make decisions from it.",
+    body: "Tech and e-commerce companies are growing across Pakistan, and each one is accumulating data on its users, sales, and operations.\n\nA data analyst's job is to make sense of that data and turn it into simple, actionable insights — like 'which day has the most sales' or 'which marketing channel is performing best'.\n\nYou can start with Excel, then move on to Python/pandas and basic SQL — together, these three are enough for most entry-level data roles.\n\nPractice makes the biggest difference — pick any public dataset from your own city, ask your own questions, and start analyzing." }
 ];
 
 /* News & Events — grounded in facts already stated elsewhere on this
@@ -251,15 +251,15 @@ const DEMO_BLOGS = [
 const DEMO_NEWS = [
   { id: "DEMO-NEV-01", title: "New Web Development, Digital Marketing & AI Batches Now Open",
     date: "2026-09-10",
-    excerpt: "Admissions open hain — teeno tracks mein seats available hain, campus aur online dono options ke saath.",
+    excerpt: "Admissions are open — seats are available across all three tracks, with both campus and online options.",
     link: "./enrollment.html" },
-  { id: "DEMO-NEV-02", title: "Agla Intake: 1 October 2026 Se Shuru",
+  { id: "DEMO-NEV-02", title: "Next Intake Starts 1 October 2026",
     date: "2026-09-14",
-    excerpt: "Seats limited hain. Pehle eligibility quiz dein ya seedha apna course choose kar ke enroll karein.",
+    excerpt: "Seats are limited. Take the eligibility quiz first, or go straight ahead and enroll in your course.",
     link: "./enrollment.html" },
-  { id: "DEMO-NEV-03", title: "Free Eligibility Quiz Ab Live",
+  { id: "DEMO-NEV-03", title: "Free Eligibility Quiz Now Live",
     date: "2026-09-01",
-    excerpt: "3 minute ka quiz dein aur pata karein aapke liye kaunsa track sabse zyada munasib hai.",
+    excerpt: "Take the 3-minute quiz and find out which track suits you best.",
     link: "./quiz.html" }
 ];
 
@@ -332,7 +332,7 @@ function log(msg, cls) {
 
 function explain(error) {
   if (error && error.code === "permission-denied") {
-    return "Permission denied — doosre tab mein Admin se login kar ke is page ko refresh karein.";
+    return "Permission denied — log in as Admin in another tab, then refresh this page.";
   }
   return (error && error.message) ? error.message : String(error);
 }
@@ -343,7 +343,7 @@ seedBtn.addEventListener("click", async () => {
   let ok = true;
 
   try {
-    log("Teachers likh rahe hain…", "dim");
+    log("Writing teachers…", "dim");
     for (const t of DEMO_TEACHERS) {
       await setDoc(doc(db, "teachers", t.id), {
         name: t.name, title: t.title, bio: t.bio, photo: "",
@@ -352,7 +352,7 @@ seedBtn.addEventListener("click", async () => {
       log("  ✓ " + t.name, "ok");
     }
 
-    log("Courses likh rahe hain…", "dim");
+    log("Writing courses…", "dim");
     for (const c of DEMO_COURSES) {
       await setDoc(doc(db, "courses", c.id), {
         title: c.title, category: c.category, campus: c.campus, price: c.price,
@@ -364,13 +364,13 @@ seedBtn.addEventListener("click", async () => {
       log("  ✓ " + c.title + " (" + c.campus + ")", "ok");
     }
 
-    log("Students likh rahe hain…", "dim");
+    log("Writing students…", "dim");
     for (const s of DEMO_STUDENTS) {
       await setDoc(doc(db, "students", s.cnic), buildStudentDoc(s));
       log("  ✓ " + s.name + " — " + s.course.title + " (" + s.progress + "% progress)", "ok");
     }
 
-    log("Attendance likh rahe hain (pichle 5 din)…", "dim");
+    log("Writing attendance (last 5 days)…", "dim");
     const dates = last5Dates();
     for (const course of DIPLOMA_COURSES) {
       const roster = DEMO_STUDENTS.filter(s => s.course.id === course.id);
@@ -387,10 +387,10 @@ seedBtn.addEventListener("click", async () => {
           updatedAt: serverTimestamp()
         });
       }
-      log("  ✓ " + course.title + " — " + dates.length + " din", "ok");
+      log("  ✓ " + course.title + " — " + dates.length + " days", "ok");
     }
 
-    log("Success stories likh rahe hain…", "dim");
+    log("Writing success stories…", "dim");
     for (const s of DEMO_SUCCESS_STORIES) {
       await setDoc(doc(db, "successStories", s.id), {
         name: s.name, outcome: s.outcome, course: s.course,
@@ -400,7 +400,7 @@ seedBtn.addEventListener("click", async () => {
       log("  ✓ " + s.name, "ok");
     }
 
-    log("Blog posts likh rahe hain…", "dim");
+    log("Writing blog posts…", "dim");
     for (const b of DEMO_BLOGS) {
       await setDoc(doc(db, "blogs", b.id), {
         title: b.title, category: b.category, excerpt: b.excerpt,
@@ -409,7 +409,7 @@ seedBtn.addEventListener("click", async () => {
       log("  ✓ " + b.title, "ok");
     }
 
-    log("News & events likh rahe hain…", "dim");
+    log("Writing news &amp; events…", "dim");
     for (const n of DEMO_NEWS) {
       await setDoc(doc(db, "newsEvents", n.id), {
         title: n.title, date: n.date, excerpt: n.excerpt, link: n.link,
@@ -424,21 +424,21 @@ seedBtn.addEventListener("click", async () => {
   }
 
   if (ok) {
-    log("\nHo gaya. Admin/Teacher/Student dashboards khol kar graphs dekhein.", "ok");
+    log("\nDone. Open the Admin/Teacher/Student dashboards to see the graphs.", "ok");
     undoBtn.disabled = false;
   } else {
-    log("\nRuk gaya — upar wali error dekhein.", "err");
+    log("\nStopped — check the error above.", "err");
   }
   seedBtn.disabled = false;
 });
 
 undoBtn.addEventListener("click", async () => {
-  if (!confirm("Sara demo data (teachers, courses, students, attendance) delete kar dein?")) return;
+  if (!confirm("Delete all demo data (teachers, courses, students, attendance)?")) return;
   undoBtn.disabled = true;
   logEl.innerHTML = "";
 
   try {
-    log("Attendance dhoond kar delete kar rahe hain…", "dim");
+    log("Finding and deleting attendance…", "dim");
     const diplomaIds = DIPLOMA_COURSES.map(c => c.id);
     const attSnap = await getDocs(query(collection(db, "attendance"), where("courseId", "in", diplomaIds)));
     for (const d of attSnap.docs) {
@@ -446,43 +446,43 @@ undoBtn.addEventListener("click", async () => {
     }
     log("  ✓ " + attSnap.size + " attendance record(s) deleted", "ok");
 
-    log("Students delete kar rahe hain…", "dim");
+    log("Deleting students…", "dim");
     for (const s of DEMO_STUDENTS) {
       await deleteDoc(doc(db, "students", s.cnic));
       log("  ✓ " + s.name, "ok");
     }
 
-    log("Courses delete kar rahe hain…", "dim");
+    log("Deleting courses…", "dim");
     for (const c of DEMO_COURSES) {
       await deleteDoc(doc(db, "courses", c.id));
       log("  ✓ " + c.title, "ok");
     }
 
-    log("Teachers delete kar rahe hain…", "dim");
+    log("Deleting teachers…", "dim");
     for (const t of DEMO_TEACHERS) {
       await deleteDoc(doc(db, "teachers", t.id));
       log("  ✓ " + t.name, "ok");
     }
 
-    log("Success stories delete kar rahe hain…", "dim");
+    log("Deleting success stories…", "dim");
     for (const s of DEMO_SUCCESS_STORIES) {
       await deleteDoc(doc(db, "successStories", s.id));
       log("  ✓ " + s.name, "ok");
     }
 
-    log("Blog posts delete kar rahe hain…", "dim");
+    log("Deleting blog posts…", "dim");
     for (const b of DEMO_BLOGS) {
       await deleteDoc(doc(db, "blogs", b.id));
       log("  ✓ " + b.title, "ok");
     }
 
-    log("News & events delete kar rahe hain…", "dim");
+    log("Deleting news &amp; events…", "dim");
     for (const n of DEMO_NEWS) {
       await deleteDoc(doc(db, "newsEvents", n.id));
       log("  ✓ " + n.title, "ok");
     }
 
-    log("\nDone — sara demo data hat gaya.", "ok");
+    log("\nDone — all demo data has been removed.", "ok");
   } catch (error) {
     console.error(error);
     log("✗ " + explain(error), "err");

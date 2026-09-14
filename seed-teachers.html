@@ -35,35 +35,35 @@
 <div class="wrap">
   <h1>Seed teachers</h1>
   <p class="sub">
-    Ye page sirf ek dafa chalana hai. Ye aapke Firestore ke <code>teachers</code> collection mein
-    10 teacher profiles daal dega, taake homepage ka mosaic bhar jaye. Uske baad aap normally
-    Admin panel se teachers add / edit karte rahein.
+    This page only needs to be run once. It will add 10 teacher profiles to your Firestore
+    <code>teachers</code> collection, so the homepage mosaic has content. After that, keep
+    adding / editing teachers normally from the Admin panel.
   </p>
 
   <div class="card warn">
-    <strong>Chalane se pehle</strong>
+    <strong>Before running this</strong>
     <p>
-      Firestore rules aam taur par sirf logged-in Admin ko likhne deti hain. Agar neeche
-      "permission denied" aaye, to pehle doosre tab mein Admin account se login karein,
-      phir is page ko refresh kar ke dobara try karein.
+      Firestore rules usually only let a logged-in Admin write. If you see
+      "permission denied" below, log in with an Admin account in another tab first,
+      then refresh this page and try again.
     </p>
   </div>
 
   <div class="card">
     <div class="row">
       <button id="seedBtn"><i class="fa-solid fa-database"></i> Add 10 teachers</button>
-      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Seeded teachers hata dein</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Remove seeded teachers</button>
     </div>
     <ol>
-      <li>Har doc ki id <code>SEED-TCH-01</code> … <code>SEED-TCH-10</code> hogi</li>
-      <li>Dobara chalane par wohi docs overwrite honge — duplicate nahi banenge</li>
-      <li>Sab <code>status: "approved"</code> ke saath aayenge, is liye foran homepage par dikhenge</li>
-      <li>Photos khali hain — Admin panel se upload karein, tab tak initials dikhenge</li>
+      <li>Each doc's id will be <code>SEED-TCH-01</code> … <code>SEED-TCH-10</code></li>
+      <li>Running it again overwrites the same docs — no duplicates are created</li>
+      <li>All come with <code>status: "approved"</code>, so they'll show on the homepage right away</li>
+      <li>Photos are left blank — upload them from the Admin panel; initials show until then</li>
     </ol>
     <div id="log"></div>
   </div>
 
-  <a class="back" href="./index.html">&larr; Homepage par wapas</a>
+  <a class="back" href="./index.html">&larr; Back to homepage</a>
 </div>
 
 <script type="module">
@@ -75,25 +75,25 @@ import { doc, setDoc, deleteDoc, serverTimestamp }
    sync with admin.js → handleTeacherSubmit if you ever change the shape. */
 const TEACHERS = [
   { name: "Ayesha Siddiqui", title: "Lead Instructor, Web Development",
-    bio: "Ayesha ne 9 saal product companies mein React aur Node par kaam kiya hai. Unki class mein pehle din se code likhna shuru hota hai — har hafte ek deployable feature banta hai." },
+    bio: "Ayesha has spent 9 years working with React and Node at product companies. In her class, students start writing code from day one — a deployable feature gets built every week." },
   { name: "Bilal Ahmed", title: "Head of AI & Data Science",
-    bio: "Bilal machine learning models production mein deploy karte hain. Course mein wo asli datasets use karte hain, toy examples nahi — taake students ko adhoori aur gandi data se deal karna aa jaye." },
+    bio: "Bilal deploys machine learning models to production. In the course he uses real datasets, not toy examples — so students learn to handle messy, incomplete data." },
   { name: "Hina Raza", title: "Digital Marketing Strategist",
-    bio: "Hina ne local brands ke liye bara ad budget manage kiya hai. Har student asli paise se ek campaign chalata hai aur uske numbers class ke saamne defend karta hai." },
+    bio: "Hina has managed large ad budgets for local brands. Every student runs a campaign with real money and defends its numbers in front of the class." },
   { name: "Usman Tariq", title: "Graphic Design & UI/UX Lead",
-    bio: "Usman design ko craft ki tarah parhate hain — grid, type aur colour pehle, tools baad mein. Course khatam hone tak har student ke paas 4 case studies ka portfolio hota hai." },
+    bio: "Usman teaches design as a craft — grid, type, and colour first, tools second. By the end of the course, every student has a portfolio of 4 case studies." },
   { name: "Sana Khan", title: "Networking & Cybersecurity Trainer",
-    bio: "Sana Cisco-certified hain aur enterprise networks sambhal chuki hain. Lab sessions asli switches par hote hain, simulator par nahi — CCNA exam mein yahi farq karta hai." },
+    bio: "Sana is Cisco-certified and has managed enterprise networks. Lab sessions run on real switches, not simulators — that's what makes the difference in the CCNA exam." },
   { name: "Fahad Memon", title: "Mobile App Development Instructor",
-    bio: "Fahad ke students ki 30 se zyada apps Play Store par live hain. Wo publishing process bhi parhate hain — store listing, review policy aur updates sab." },
+    bio: "Over 30 of Fahad's students' apps are live on the Play Store. He also teaches the publishing process — store listings, review policies, and updates." },
   { name: "Zainab Qureshi", title: "Python & Automation Instructor",
-    bio: "Zainab scripting se shuru karwati hain aur teesre hafte tak students apne rozmarra ke kaam automate kar rahe hote hain. Unka focus parhne laayak code likhne par hai." },
+    bio: "Zainab starts with scripting, and by the third week students are automating their everyday tasks. Her focus is on writing readable code." },
   { name: "Imran Baig", title: "Cloud & DevOps Trainer",
-    bio: "Imran ne banking systems ko cloud par migrate kiya hai. Class mein CI/CD pipeline shuru se banti hai, aur students apna kaam khud deploy karte hain." },
+    bio: "Imran has migrated banking systems to the cloud. The class builds a CI/CD pipeline from day one, and students deploy their own work." },
   { name: "Maria Aslam", title: "Database & Backend Instructor",
-    bio: "Maria SQL ko sawaalon se parhati hain — pehle problem, phir query. Normalisation aur indexing par unki grip hai, aur wo slow queries theek karna sikhati hain." },
+    bio: "Maria teaches SQL through questions — problem first, query second. She has a strong grip on normalisation and indexing, and teaches how to fix slow queries." },
   { name: "Ahsan Sheikh", title: "Freelancing & Career Coach",
-    bio: "Ahsan ne Upwork par 300+ projects complete kiye hain. Wo proposal likhna, rate set karna aur client se baat karna sikhate hain — sirf skill nahi, kaam lena bhi." }
+    bio: "Ahsan has completed 300+ projects on Upwork. He teaches how to write proposals, set rates, and talk to clients — not just the skill, but how to win the work too." }
 ];
 
 const logEl  = document.getElementById("log");
@@ -115,7 +115,7 @@ function idFor(i) {
 
 function explain(error) {
   if (error && error.code === "permission-denied") {
-    return "Permission denied — Firestore rules ne likhne nahi diya. Doosre tab mein Admin se login kar ke refresh karein.";
+    return "Permission denied — Firestore rules didn't allow the write. Log in as Admin in another tab, then refresh.";
   }
   return (error && error.message) ? error.message : String(error);
 }
@@ -148,16 +148,16 @@ seedBtn.addEventListener("click", async () => {
   }
 
   if (done === TEACHERS.length) {
-    log("\nHo gaya. Ab homepage kholein — mosaic bhar chuka hoga.", "ok");
+    log("\nDone. Open the homepage now — the mosaic will be filled in.", "ok");
     undoBtn.disabled = false;
   } else {
-    log("\n" + done + "/" + TEACHERS.length + " likhe gaye. Upar wali error dekhein.", "err");
+    log("\n" + done + "/" + TEACHERS.length + " written. Check the error above.", "err");
   }
   seedBtn.disabled = false;
 });
 
 undoBtn.addEventListener("click", async () => {
-  if (!confirm("Seeded 10 teachers delete kar dein? Admin panel se add kiye gaye teachers par asar nahi hoga.")) return;
+  if (!confirm("Delete the 10 seeded teachers? Teachers added through the Admin panel won't be affected.")) return;
   undoBtn.disabled = true;
   logEl.innerHTML = "";
   log("Deleting seeded profiles…", "dim");

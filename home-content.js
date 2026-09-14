@@ -81,14 +81,14 @@ async function loadCoursesSection() {
         const snap = await getDocs(collection(db, "courses"));
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (list.length === 0) {
-            grid.innerHTML = '<p class="ec-empty-note">Courses jald add honge.</p>';
+            grid.innerHTML = '<p class="ec-empty-note">New courses coming soon.</p>';
             return;
         }
         grid.innerHTML = list.map(courseCardHTML).join("");
         document.dispatchEvent(new CustomEvent("courses:rendered", { detail: { count: list.length } }));
     } catch (error) {
         console.error(error);
-        grid.innerHTML = '<p class="ec-empty-note">Courses abhi load nahi ho sake.</p>';
+        grid.innerHTML = '<p class="ec-empty-note">Courses couldn\'t be loaded right now.</p>';
     }
 }
 
@@ -118,14 +118,14 @@ async function loadSuccessSection() {
         const snap = await getDocs(collection(db, "successStories"));
         const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (list.length === 0) {
-            grid.innerHTML = '<p class="ec-empty-note">Success stories jald add hongi.</p>';
+            grid.innerHTML = '<p class="ec-empty-note">Success stories coming soon.</p>';
             return;
         }
         grid.innerHTML = list.map(storyCardHTML).join("");
         document.dispatchEvent(new CustomEvent("success:rendered", { detail: { count: list.length } }));
     } catch (error) {
         console.error(error);
-        grid.innerHTML = '<p class="ec-empty-note">Success stories abhi load nahi ho sakin.</p>';
+        grid.innerHTML = '<p class="ec-empty-note">Success stories couldn\'t be loaded right now.</p>';
     }
 }
 
@@ -157,7 +157,7 @@ async function loadBlogsSection() {
         const snap = await getDocs(collection(db, "blogs"));
         blogsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (blogsData.length === 0) {
-            grid.innerHTML = '<p class="ec-empty-note">Blog posts jald add honge.</p>';
+            grid.innerHTML = '<p class="ec-empty-note">Blog posts coming soon.</p>';
             return;
         }
         grid.innerHTML = blogsData.map(blogCardHTML).join("");
@@ -167,7 +167,7 @@ async function loadBlogsSection() {
         document.dispatchEvent(new CustomEvent("blogs:rendered", { detail: { count: blogsData.length } }));
     } catch (error) {
         console.error(error);
-        grid.innerHTML = '<p class="ec-empty-note">Blog posts abhi load nahi ho sake.</p>';
+        grid.innerHTML = '<p class="ec-empty-note">Blog posts couldn\'t be loaded right now.</p>';
     }
 }
 
@@ -225,7 +225,7 @@ async function loadNewsSection() {
         newsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         newsData.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
         if (newsData.length === 0) {
-            grid.innerHTML = '<p class="ec-empty-note">News &amp; events jald add honge.</p>';
+            grid.innerHTML = '<p class="ec-empty-note">News &amp; events coming soon.</p>';
             return;
         }
         grid.innerHTML = newsData.map(newsCardHTML).join("");
@@ -235,7 +235,7 @@ async function loadNewsSection() {
         document.dispatchEvent(new CustomEvent("news:rendered", { detail: { count: newsData.length } }));
     } catch (error) {
         console.error(error);
-        grid.innerHTML = '<p class="ec-empty-note">News abhi load nahi ho saki.</p>';
+        grid.innerHTML = '<p class="ec-empty-note">News couldn\'t be loaded right now.</p>';
     }
 }
 
