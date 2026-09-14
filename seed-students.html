@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed students — EduCore (one-time setup)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Open Sans',system-ui,sans-serif; }
+  body { background:#f6f8fc; color:#334155; padding:40px 20px; }
+  .wrap { max-width:720px; margin:0 auto; }
+  h1 { font-size:26px; color:#0f172a; margin-bottom:8px; }
+  .sub { color:#64748b; font-size:15px; margin-bottom:26px; line-height:1.6; }
+  .card { background:#fff; border:1px solid #e6ecf5; border-radius:14px; padding:26px; margin-bottom:18px; }
+  .warn { background:#fff8e6; border-color:#f5d98a; }
+  .warn strong { color:#8a5a00; display:block; margin-bottom:6px; }
+  .warn p { font-size:14px; color:#7a5410; line-height:1.6; }
+  ol { margin:12px 0 0 20px; font-size:14px; line-height:1.9; color:#475569; }
+  code { background:#eef2f8; padding:2px 6px; border-radius:4px; font-family:ui-monospace,monospace; font-size:13px; }
+  button { background:#0b6bd3; color:#fff; border:none; padding:13px 24px; border-radius:9px;
+           font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  button:hover:not(:disabled) { background:#00458e; }
+  button:disabled { background:#94a3b8; cursor:not-allowed; }
+  button.danger { background:#b91c1c; }
+  button.danger:hover:not(:disabled) { background:#8f1414; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .input-box { margin-top:14px; }
+  .input-box label { display:block; font-size:13px; font-weight:600; color:#475569; margin-bottom:6px; }
+  .input-box input[type="number"] {
+    width:100%; max-width:160px; padding:10px 12px; border:1px solid #dbe3ec; border-radius:8px;
+    font-size:14px; font-family:inherit;
+  }
+  #log { margin-top:18px; font-size:13.5px; line-height:1.8; font-family:ui-monospace,monospace;
+         background:#0f172a; color:#cbd5e1; border-radius:10px; padding:16px; max-height:340px;
+         overflow:auto; display:none; white-space:pre-wrap; }
+  .ok { color:#4ade80; } .err { color:#fca5a5; } .dim { color:#94a3b8; }
+  a.back { display:inline-block; margin-top:20px; color:#0b6bd3; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Seed students</h1>
+  <p class="sub">
+    Creates a batch of realistic test students in one click — registered, entry test taken,
+    unique CNIC and Roll Number auto-generated — instead of filling the registration form
+    one by one. Courses are picked from whatever you've already created in
+    <strong>Admin → Courses</strong>, so create at least one course first.
+  </p>
+
+  <div class="card warn">
+    <strong>Before running this</strong>
+    <p>
+      Firestore rules usually only let a logged-in Admin write. If you see
+      "permission denied" below, log in with an Admin account in another tab first,
+      then refresh this page and try again. Also make sure at least one course exists
+      in Admin → Courses — students need a real course to register under.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="input-box">
+      <label>How many students?</label>
+      <input type="number" id="countInput" min="1" max="60" value="20">
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <button id="seedBtn"><i class="fa-solid fa-users"></i> Seed Students</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Remove seeded students</button>
+    </div>
+    <ol>
+      <li>Each student gets a synthetic CNIC starting with <code>99999</code> — easy to spot, never colliding with a real registration</li>
+      <li>Courses are split evenly across whatever real courses exist in Admin → Courses right now</li>
+      <li>Entry test results are simulated realistically: most students Pass and land in "Awaiting Approval" (ready for you to Accept/Reject in Admin), a few Fail, and a few haven't taken it yet ("Entry Test Pending")</li>
+      <li>Nobody is auto-Accepted — that stays your call from the Admin → Applications tab, same as with a real student</li>
+      <li>Running it again adds a fresh new batch rather than overwriting the last one (each run gets its own CNIC range)</li>
+    </ol>
+    <div id="log"></div>
+  </div>
+
+  <a class="back" href="./index.html">&larr; Back to homepage</a>
+</div>
+
+<script type="module">
+import { db } from "./firebaseConfig.js";
+import {
+  doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* Same field shape enrollment.js's handleRegistrationSubmit() writes, plus
+   the same entry-test fields quiz.js writes after a real attempt. Keeping
+   these in sync matters — this is what lets a seeded student behave
+   exactly like a real one everywhere else in the app (Admin's Applications
+   list, the ID card, "Check Result", Accept + teacher-matching, ...). */
+const FIRST_NAMES = [
+  { name: "Ahmed Hassan", gender: "Male" }, { name: "Bilal Shaikh", gender: "Male" },
+  { name: "Hamza Iqbal", gender: "Male" }, { name: "Usman Farooq", gender: "Male" },
+  { name: "Ali Raza", gender: "Male" }, { name: "Shahzaib Khan", gender: "Male" },
+  { name: "Danish Malik", gender: "Male" }, { name: "Faizan Abbas", gender: "Male" },
+  { name: "Hamid Ullah", gender: "Male" }, { name: "Waqas Anjum", gender: "Male" },
+  { name: "Ayesha Noor", gender: "Female" }, { name: "Sana Yousaf", gender: "Female" },
+  { name: "Hira Javed", gender: "Female" }, { name: "Mehak Riaz", gender: "Female" },
+  { name: "Sadia Parveen", gender: "Female" }, { name: "Iqra Nawaz", gender: "Female" },
+  { name: "Komal Siddiqui", gender: "Female" }, { name: "Fatima Zahra", gender: "Female" },
+  { name: "Laiba Arshad", gender: "Female" }, { name: "Rabia Shafique", gender: "Female" }
+];
+const FATHER_SURNAMES = ["Khan", "Ahmed", "Malik", "Sheikh", "Raza", "Iqbal", "Farooq", "Abbasi"];
+const CITIES = ["Karachi", "Lahore", "Islamabad"];
+const CAMPUSES = ["Main Campus", "North Campus", "Online Campus"];
+const PROFICIENCY = ["Beginner", "Intermediate", "Advanced"];
+const QUALIFICATIONS = ["Matric", "Intermediate", "Graduation"];
+const HEARD_FROM = ["Social Media", "Friend", "Website"];
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pad(n, len) { return String(n).padStart(len, "0"); }
+
+function gradeFor(percent) {
+  if (percent >= 90) return "A+";
+  if (percent >= 80) return "A";
+  if (percent >= 70) return "B+";
+  if (percent >= 60) return "B";
+  if (percent >= 50) return "C";
+  return "F";
+}
+
+function generateRollNumber(used) {
+  let roll;
+  do { roll = "EC-" + Math.floor(100000 + Math.random() * 900000); } while (used.has(roll));
+  used.add(roll);
+  return roll;
+}
+
+// CNIC range for THIS run only — timestamp-based offset so running the
+// tool more than once adds a new batch instead of overwriting the last
+// one's students. Always starts with 99999 so a seeded CNIC is never
+// mistaken for (or collides with) a real one.
+function cnicFor(baseOffset, i) {
+  return "99999" + pad(baseOffset + i, 8);
+}
+
+const logEl   = document.getElementById("log");
+const seedBtn = document.getElementById("seedBtn");
+const undoBtn = document.getElementById("undoBtn");
+const countInput = document.getElementById("countInput");
+
+let lastBatch = []; // [{cnic, rollNumber}] from the most recent successful run, for Undo
+
+function log(msg, cls) {
+  logEl.style.display = "block";
+  const span = document.createElement("span");
+  if (cls) span.className = cls;
+  span.textContent = msg + "\n";
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function explain(error) {
+  if (error && error.code === "permission-denied") {
+    return "Permission denied — Firestore rules didn't allow the write. Log in as Admin in another tab, then refresh.";
+  }
+  return (error && error.message) ? error.message : String(error);
+}
+
+seedBtn.addEventListener("click", async () => {
+  const count = Math.max(1, Math.min(60, Number(countInput.value) || 20));
+  seedBtn.disabled = true;
+  logEl.innerHTML = "";
+  log("Checking Admin → Courses for real courses to register students under…", "dim");
+
+  let courses;
+  try {
+    const snap = await getDocs(collection(db, "courses"));
+    courses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    log("  ✗ Couldn't read courses — " + explain(error), "err");
+    seedBtn.disabled = false;
+    return;
+  }
+
+  if (courses.length === 0) {
+    log("  ✗ No courses found. Go to Admin → Courses, add at least one course, then come back and try again.", "err");
+    seedBtn.disabled = false;
+    return;
+  }
+  log("  ✓ Found " + courses.length + " course(s) — students will be split across them.", "ok");
+
+  // Roughly: 15% haven't taken the entry test yet, 15% failed it, 70% passed
+  // and are sitting in "Awaiting Approval" — a realistic, review-worthy mix
+  // for the Admin → Applications tab. Nobody is set to "Accepted" here —
+  // that decision (and the teacher-matching it triggers) stays a real click
+  // in Admin, same as for a genuine student.
+  const pendingCount = count <= 2 ? 0 : Math.max(1, Math.round(count * 0.15));
+  const failedCount  = count <= 2 ? 0 : Math.max(1, Math.round(count * 0.15));
+  const passedCount  = count - pendingCount - failedCount;
+  const plan = [
+    ...Array(pendingCount).fill("pending"),
+    ...Array(failedCount).fill("failed"),
+    ...Array(passedCount).fill("passed")
+  ];
+  // Shuffle so the log doesn't read "all pendings, then all fails, then all passes"
+  for (let i = plan.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [plan[i], plan[j]] = [plan[j], plan[i]];
+  }
+
+  const baseOffset = Math.floor(Date.now() / 1000) % 90000000; // keeps this run's CNICs distinct from any earlier run's
+  const usedRolls = new Set();
+  const batch = [];
+
+  log("Writing " + count + " students…", "dim");
+
+  let done = 0;
+  for (let i = 0; i < count; i++) {
+    const person = FIRST_NAMES[i % FIRST_NAMES.length];
+    const seq = i + 1;
+    const cnic = cnicFor(baseOffset, seq);
+    const course = courses[i % courses.length];
+    const rollNumber = generateRollNumber(usedRolls);
+    const outcome = plan[i];
+
+    const [firstPart] = person.name.split(" ");
+    const email = (person.name.toLowerCase().replace(/\s+/g, ".") + seq + "@example.com");
+    const dobYear = 2026 - (18 + Math.floor(Math.random() * 7)); // 18–24 years old
+    const dob = dobYear + "-" + pad(1 + Math.floor(Math.random() * 12), 2) + "-" + pad(1 + Math.floor(Math.random() * 28), 2);
+    const phone = "03" + pad(Math.floor(Math.random() * 50), 2) + "-" + pad(Math.floor(Math.random() * 10000000), 7);
+    const fatherPhone = "03" + pad(Math.floor(Math.random() * 50), 2) + "-" + pad(Math.floor(Math.random() * 10000000), 7);
+    const city = pick(CITIES);
+
+    let entryTestStatus, marksObtained, resultGrade, quizAttemptedAt, applicationStatus;
+    if (outcome === "pending") {
+      entryTestStatus = "Pending"; marksObtained = null; resultGrade = null;
+      quizAttemptedAt = null; applicationStatus = "Entry Test Pending";
+    } else {
+      const correct = outcome === "passed"
+        ? 4 + Math.floor(Math.random() * 3)   // 4,5,6 out of 6 -> passes (>=60%)
+        : Math.floor(Math.random() * 4);      // 0,1,2,3 out of 6 -> fails
+      const percent = Math.round((correct / 6) * 100);
+      entryTestStatus = outcome === "passed" ? "Passed" : "Failed";
+      marksObtained = correct + " / 6";
+      resultGrade = gradeFor(percent);
+      quizAttemptedAt = serverTimestamp();
+      applicationStatus = outcome === "passed" ? "Awaiting Approval" : "Failed";
+    }
+
+    const studentData = {
+      name: person.name,
+      fatherName: pick(FIRST_NAMES).name.split(" ")[0] + " " + pick(FATHER_SURNAMES),
+      dob,
+      email,
+      phone,
+      fatherPhone,
+      cnic,
+      fatherCnic: "99998" + pad(baseOffset + seq, 8),
+      address: "House " + (10 + seq) + ", Street " + (1 + (seq % 20)) + ", " + city,
+      country: "Pakistan",
+      classPreference: Math.random() < 0.5 ? "Onsite" : "Online",
+      gender: person.gender,
+      city,
+      course: course.title,
+      campus: course.campus || pick(CAMPUSES),
+      computerProficiency: pick(PROFICIENCY),
+      lastQualification: pick(QUALIFICATIONS),
+      hearAboutUs: pick(HEARD_FROM),
+      hasLaptop: Math.random() < 0.7 ? "Yes" : "No",
+      photo: "",
+      rollNumber,
+      entryTestStatus,
+      marksObtained,
+      resultGrade,
+      quizAttemptedAt,
+      applicationStatus,
+      registrationDate: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    try {
+      await setDoc(doc(db, "students", cnic), studentData);
+      await setDoc(doc(db, "rollIndex", rollNumber), { cnic });
+      batch.push({ cnic, rollNumber });
+      done++;
+      log("  ✓ " + person.name + " — " + course.title + " (" + applicationStatus + ")", "ok");
+    } catch (error) {
+      log("  ✗ " + person.name + " — " + explain(error), "err");
+      break;
+    }
+  }
+
+  if (done === count) {
+    log("\nDone — " + done + " students added. Open Admin → Applications to review them.", "ok");
+    lastBatch = lastBatch.concat(batch);
+    undoBtn.disabled = false;
+  } else {
+    log("\n" + done + "/" + count + " written. Check the error above.", "err");
+    if (batch.length) { lastBatch = lastBatch.concat(batch); undoBtn.disabled = false; }
+  }
+  seedBtn.disabled = false;
+});
+
+undoBtn.addEventListener("click", async () => {
+  if (!confirm("Delete all students seeded by this tool (in this and earlier runs this page has done)? Real students you registered yourself are never touched.")) return;
+  undoBtn.disabled = true;
+  logEl.innerHTML = "";
+
+  // Reload-safe: even if lastBatch is empty (fresh page load), find every
+  // seeded student by the reserved 99999 CNIC prefix instead of relying on
+  // in-memory state from this run only.
+  log("Looking for seeded students…", "dim");
+  let targets = lastBatch;
+  try {
+    const snap = await getDocs(collection(db, "students"));
+    const found = snap.docs.filter(d => d.id.startsWith("99999")).map(d => ({ cnic: d.id, rollNumber: d.data().rollNumber }));
+    // Merge, de-duplicated by cnic
+    const seen = new Set(targets.map(t => t.cnic));
+    found.forEach(f => { if (!seen.has(f.cnic)) { targets.push(f); seen.add(f.cnic); } });
+  } catch (error) {
+    log("  ✗ Couldn't list students — " + explain(error), "err");
+    undoBtn.disabled = false;
+    return;
+  }
+
+  if (targets.length === 0) {
+    log("Nothing to remove — no seeded students found.", "dim");
+    undoBtn.disabled = false;
+    return;
+  }
+
+  log("Deleting " + targets.length + " seeded students…", "dim");
+  for (const { cnic, rollNumber } of targets) {
+    try {
+      if (rollNumber) await deleteDoc(doc(db, "rollIndex", rollNumber));
+      await deleteDoc(doc(db, "students", cnic));
+      log("  ✓ " + cnic + " removed", "ok");
+    } catch (error) {
+      log("  ✗ " + cnic + " — " + explain(error), "err");
+    }
+  }
+  log("\nDone.", "ok");
+  lastBatch = [];
+  undoBtn.disabled = false;
+});
+</script>
+</body>
+</html>
