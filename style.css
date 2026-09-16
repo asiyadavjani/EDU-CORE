@@ -343,6 +343,13 @@ body {
     line-height: 1;
 }
 
+/* Log In / Sign Up / Enroll Now copy shown inside the mobile hamburger
+   drawer (.center-nav). Hidden by default — only shown under 900px, see
+   below — so desktop keeps using the original .header-actions bar. */
+.mobile-nav-actions {
+    display: none;
+}
+
 .login-btn {
     border: 2px solid var(--primary-blue);
     color: var(--primary-blue);
@@ -957,6 +964,29 @@ width: 90px;
         margin-top: 14px;
     }
 
+    /* Login/Sign Up/Enroll Now live here now (duplicated from
+       .header-actions in common.html) so they're always reachable via
+       the hamburger, even on the smallest phones. */
+    .mobile-nav-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .mobile-nav-actions .login-btn,
+    .mobile-nav-actions .signup-btn,
+    .mobile-nav-actions .enroll-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        padding: 12px;
+        font-size: 14px;
+    }
+
     .slider-container {
         flex-direction: column;
         text-align: center;
@@ -1000,32 +1030,25 @@ width: 90px;
     .brand-logo { height: 62px; }
     .brand-name { font-size: 19px; }
 
-    .header-actions { gap: 8px; }
-
     .nav-toggle {
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    /* Sign Up login page par bhi mojood hai, is liye chhoti screen par
-       sirf Log In aur Enroll Now rakhe gaye hain */
-    .signup-btn { display: none; }
-
-    .login-btn,
-    .enroll-btn {
-        padding: 7px 12px;
-        font-size: 13px;
-        white-space: nowrap;
-    }
+    /* Bug fix: Log In / Sign Up were being display:none'd on small
+       screens with no way left to reach them (.center-nav's own hamburger
+       didn't exist when this rule was first written). Now that the
+       hamburger drawer has its own .mobile-nav-actions copy of these
+       buttons (see above), the slim header bar's .header-actions is
+       hidden entirely instead of shrinking button-by-button — logo +
+       hamburger only, everything else lives in the drawer. */
+    .header-actions { display: none; }
 }
 
 @media (max-width: 520px) {
     .brand-logo { height: 52px; }
     .brand-name { font-size: 17px; }
-
-    /* Sab se chhoti screens par primary action hi rehta hai */
-    .login-btn { display: none; }
 }
 
 @media (max-width: 360px) {
