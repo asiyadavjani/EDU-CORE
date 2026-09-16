@@ -350,6 +350,14 @@ body {
     display: none;
 }
 
+/* Dim backdrop for the mobile drawer — hidden by default, only ever
+   shown under 900px (see below) via a pure CSS sibling selector, so it
+   always stays in sync with .center-nav's .nav-open class with no extra
+   JS needed. */
+.nav-backdrop {
+    display: none;
+}
+
 .login-btn {
     border: 2px solid var(--primary-blue);
     color: var(--primary-blue);
@@ -919,6 +927,17 @@ width: 90px;
 
     .center-nav.nav-open {
         display: flex;
+    }
+
+    /* Dims the page behind the drawer while it's open. Sits below the
+       header (z-index 9999) and the drawer itself (9998) so both stay
+       fully visible/usable, but above ordinary page content. */
+    .center-nav.nav-open ~ #navBackdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 20, 45, 0.45);
+        z-index: 9990;
     }
 
     .nav-links {

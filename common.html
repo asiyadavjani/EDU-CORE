@@ -108,6 +108,12 @@
     <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
         <i class="fa-solid fa-bars"></i>
     </button>
+
+    <!-- Dim backdrop behind the mobile hamburger drawer (.center-nav) while
+         it's open — purely visual (CSS-only, driven by the .nav-open class
+         already toggled in app.js). Tapping it closes the menu, same as
+         tapping anywhere else outside .center-nav. -->
+    <div class="nav-backdrop" id="navBackdrop"></div>
 </header>
 
 
