@@ -873,4 +873,16 @@ body {
     .dash-stats-row {
         grid-template-columns: 1fr;
     }
+
+    /* Student name + Present/Absent buttons don't wrap by default, so a
+       longer name plus both buttons can get tight on a phone. */
+    .attendance-row {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+
+    .attendance-toggle button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 }

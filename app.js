@@ -82,3 +82,60 @@ function closeBar() {
 function openResultModal() {
   window.location.href = "enrollment.html?portal=result";
 }
+
+/*===================================================
+  MOBILE NAV (hamburger menu + tap-to-open dropdowns)
+===================================================
+  Below 900px, style.css hides .center-nav until it gets a .nav-open
+  class, and #navToggle (added in common.html's header) is what toggles
+  that class. Both live inside common.html, which is only fetched and
+  innerHTML'd into the page above — its own <script> tags (if any)
+  wouldn't run, and #navToggle doesn't exist yet at the moment this file
+  first executes. So this listens on `document` (event delegation)
+  instead of binding to #navToggle directly: it works no matter when the
+  header actually lands in the DOM, and needs no changes if the header
+  markup changes later. */
+document.addEventListener("click", (e) => {
+  const toggleBtn = e.target.closest("#navToggle");
+  const nav = document.querySelector(".center-nav");
+
+  if (toggleBtn) {
+    if (!nav) return;
+    const isOpen = nav.classList.toggle("nav-open");
+    toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    toggleBtn.innerHTML = isOpen
+      ? '<i class="fa-solid fa-xmark"></i>'
+      : '<i class="fa-solid fa-bars"></i>';
+    return;
+  }
+
+  // Everything below only matters while the mobile menu exists and is in
+  // play (i.e. under the 900px breakpoint) — above that .center-nav is
+  // shown by CSS directly and desktop :hover handles the dropdowns.
+  if (!nav || window.innerWidth > 900) return;
+
+  // About / Courses open on tap instead of :hover (touchscreens have no
+  // real hover state). .dropdown > .drop-btn matches both of them.
+  const dropBtn = e.target.closest(".dropdown > .drop-btn");
+  if (dropBtn) {
+    const dropdown = dropBtn.closest(".dropdown");
+    const wasOpen = dropdown.classList.contains("open");
+    document.querySelectorAll(".dropdown.open").forEach((d) => d.classList.remove("open"));
+    if (!wasOpen) dropdown.classList.add("open");
+    return;
+  }
+
+  // Tapping an actual nav link/button (Home, Check Result, ...) or
+  // tapping anywhere outside the open panel closes the mobile menu again.
+  const tappedNavLink = e.target.closest(".center-nav a, .center-nav .nav-btn-link");
+  const tappedInsideNav = e.target.closest(".center-nav") || e.target.closest("#navToggle");
+  if (tappedNavLink || !tappedInsideNav) {
+    nav.classList.remove("nav-open");
+    document.querySelectorAll(".dropdown.open").forEach((d) => d.classList.remove("open"));
+    const btn = document.getElementById("navToggle");
+    if (btn) {
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+    }
+  }
+});

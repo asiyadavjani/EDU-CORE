@@ -771,3 +771,52 @@ button.submit-btn:hover,
         gap: 16px;
     }
 }
+
+/*===================================================
+  HERO — MOBILE FIT  (added)
+
+  .slider-content was fixed at width:55% + padding-left:70px, sized for
+  the wide desktop hero. Inside .hero-slider's 35px margin that left
+  under 100px of real width for the "Become An EduCore Student" heading
+  on a phone, so every word wrapped on its own line. .slider-design's
+  decorative circles are position:absolute and were tuned for that same
+  wide layout, so they're hidden here rather than left to land wherever
+  they fall in a much narrower box.
+====================================================*/
+@media (max-width: 768px) {
+    .hero-slider {
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 16px;
+        padding: 34px 22px;
+        min-height: auto;
+    }
+
+    .slider-content {
+        width: 100%;
+        padding-left: 0;
+    }
+
+    .slider-content h1 {
+        font-size: 28px;
+    }
+
+    .slider-content p {
+        font-size: 15px;
+    }
+
+    .slider-buttons {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+
+    .slider-design {
+        display: none;
+    }
+}

@@ -696,3 +696,58 @@ body {
     display: inline-flex;
     align-items: center;
 }
+
+/*====================================
+        ADMIN DASHBOARD — MOBILE FIT  (added)
+
+        .admin-topbar is a space-between row (brand — bell / Home /
+        Logout) with no wrap and 35px side padding. Everything below it
+        (.admin-stats-row, .admin-charts-row, .admin-list-grid) already
+        uses auto-fit/auto-fill grids so those reflow on their own — this
+        block only tightens the topbar and form/list spacing that didn't.
+====================================*/
+@media (max-width: 640px) {
+    .admin-topbar {
+        padding: 14px 16px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .admin-brand {
+        font-size: 16px;
+        gap: 6px;
+    }
+
+    .admin-brand span {
+        display: none;
+    }
+
+    .admin-topbar-actions {
+        gap: 8px;
+    }
+
+    .admin-notif-bell {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
+    }
+
+    .admin-home-btn,
+    .admin-logout-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .admin-wrap {
+        padding: 20px 14px 60px;
+    }
+
+    .admin-tab-btn {
+        padding: 9px 15px;
+        font-size: 12.5px;
+    }
+
+    .admin-row-card {
+        padding: 14px 16px;
+    }
+}

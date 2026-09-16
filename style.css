@@ -329,29 +329,18 @@ body {
     gap: 14px;
 }
 
-.cart-btn {
-    position: relative;
+/* Mobile menu toggle button (hamburger) — hidden on desktop, .main-header
+   shows it only under 900px, where .center-nav is otherwise unreachable.
+   See section 6 below for the mobile nav panel it opens. */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 21px;
     color: var(--text-dark);
-    font-size: 18px;
-    text-decoration: none;
-    margin-right: 15px;
-    margin-top: 15px;
-}
-
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    background: var(--primary-blue);
-    color: white;
-    font-size: 11px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+    padding: 8px;
+    line-height: 1;
 }
 
 .login-btn {
@@ -897,9 +886,77 @@ width: 90px;
     .main-header {
         padding: 0 20px;
     }
+    /* .center-nav (Home / About / Courses / Check Result / Search) has no
+       room in the header below 900px, so it moves into a toggleable panel
+       that drops down under the header instead — opened by #navToggle
+       (see .nav-toggle above and app.js for the click handling). Without
+       .nav-open it stays display:none, i.e. exactly the old behaviour. */
     .center-nav {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: #ffffff;
+        border-top: 1px solid var(--border-light);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.14);
+        padding: 10px 20px 20px;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        z-index: 9998;
     }
+
+    .center-nav.nav-open {
+        display: flex;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        width: 100%;
+    }
+
+    .drop-btn, .nav-btn-link, .home-btn {
+        width: 100%;
+        justify-content: space-between;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    /* Dropdowns (About / Courses) open on tap — app.js toggles .open on
+       .dropdown — instead of :hover, since touchscreens have no real
+       hover state. Scoped to this breakpoint only; desktop hover above
+       is untouched. */
+    .dropdown-menu, .about-content-box {
+        position: static;
+        display: none;
+        width: 100% !important;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        padding: 4px 0 10px 14px;
+    }
+
+    .dropdown.open .dropdown-menu {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .dropdown.open .about-content-box {
+        display: block;
+    }
+
+    .search-container {
+        width: 100%;
+        margin-top: 14px;
+    }
+
     .slider-container {
         flex-direction: column;
         text-align: center;
@@ -945,10 +1002,10 @@ width: 90px;
 
     .header-actions { gap: 8px; }
 
-    .cart-btn {
-        margin-right: 2px;
-        margin-top: 10px;
-        font-size: 16px;
+    .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Sign Up login page par bhi mojood hai, is liye chhoti screen par
@@ -1018,7 +1075,6 @@ width: 90px;
     .search-container { display: none; }
 
     .header-actions { gap: 10px; }
-    .cart-btn { margin-right: 4px; }
 
     .login-btn,
     .signup-btn,
@@ -1042,4 +1098,32 @@ width: 90px;
 .faq-answer a,
 .faq-note {
     overflow-wrap: anywhere;
+}
+
+/*===================================================
+  10. FLOATING WIDGETS — MOBILE  (added)
+
+  .side-floating-bar (phone / email / FAQ quick-links, index.html only)
+  is position:fixed at a spot that sits right on top of page content
+  once you scroll — on a full-height phone screen there's no scroll
+  distance left to get it out of the way. Its 2 links are already in
+  the footer (phone + email under "Connect", FAQ under "Quick Links"),
+  so it's hidden below 768px instead of redesigned.
+
+  #backToTopBtn is a normal floating button and stays, just a touch
+  smaller/closer to the corner on small phones so it covers less.
+====================================================*/
+@media (max-width: 768px) {
+    .side-floating-bar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    #backToTopBtn, .scroll-btn {
+        width: 38px;
+        height: 38px;
+        bottom: 16px;
+        right: 16px;
+    }
 }
