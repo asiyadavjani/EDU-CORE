@@ -16,7 +16,12 @@ import {
     doc,
     setDoc,
     getDoc,
-    serverTimestamp
+    serverTimestamp,
+     collection,
+    getDocs,
+    addDoc,
+updateDoc,
+deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -85,5 +90,10 @@ export {
     getDoc,
     serverTimestamp,
     sendEmailVerification,
-    getAuthErrorMessage
+    getAuthErrorMessage,
+     collection,
+    getDocs,
+    addDoc,
+updateDoc,
+deleteDoc,
 };

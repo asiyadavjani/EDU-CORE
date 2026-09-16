@@ -1,6 +1,5 @@
 /*=========================================
         FIREBASE IMPORTS
-=========================================*/
 import { db, auth } from "../firebaseConfig.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
@@ -19,7 +18,6 @@ import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
 
 /*=========================================
         STATE
-=========================================*/
 let myUid = null;
 let myProfile = null;      // the teachers/{id} doc that belongs to this login
 let myCourses = [];
@@ -37,7 +35,6 @@ let authRunId = 0;
 
 /*=========================================
         HELPERS
-=========================================*/
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
@@ -83,7 +80,6 @@ function initials(name) {
 /*=========================================
         BOOTSTRAP — figure out who's logged in,
         then check their teacher application status
-=========================================*/
 onAuthStateChanged(auth, async (user) => {
     if (!user) return; // authGuard.js already handles the redirect for this
 
@@ -159,7 +155,6 @@ async function refreshMyProfile(runId) {
 /*=========================================
         APPLICATION STATUS SCREEN
         (replaces the old CLAIM PROFILE FLOW)
-=========================================*/
 const APPLICATION_STATUS_CONTENT = {
     pending: {
         icon: "fa-hourglass-half",
@@ -203,7 +198,6 @@ function showDashboard() {
 
 /*=========================================
         MY COURSES
-=========================================*/
 async function loadMyCourses() {
     const container = document.getElementById("myCoursesList");
     try {
@@ -234,7 +228,6 @@ function renderMyCourses() {
 
 /*=========================================
         MY STUDENTS
-=========================================*/
 async function loadMyStudents() {
     const container = document.getElementById("myStudentsList");
     try {
@@ -307,7 +300,6 @@ async function saveStudentProgress(cnic, percent, remark, row) {
 
 /*=========================================
         ANALYTICS CHARTS
-=========================================*/
 function renderStudentProgressChart() {
     if (typeof Chart === "undefined") return;
     if (myStudents.length === 0) {
@@ -420,7 +412,6 @@ function renderRankingChart(allAcceptedStudents) {
         at all is also what "this teacher was active" means for the
         Attendance Activity chart below — there's no separate schedule
         system to check them into.
-=========================================*/
 function populateAttendanceCourseSelect() {
     const select = document.getElementById("attendanceCourseSelect");
     if (!select) return;
@@ -573,7 +564,6 @@ function renderMyAttendanceChart() {
 
 /*=========================================
         OVERVIEW TAB
-=========================================*/
 function renderOverview() {
     document.getElementById("statMyStudents").setAttribute("data-target", myStudents.length);
 
@@ -603,7 +593,6 @@ function renderOverview() {
 
 /*=========================================
         MY PROFILE
-=========================================*/
 let pendingProfilePhoto = null; // Cloudinary URL once uploaded
 let profilePhotoUploading = false; // blocks Save while an upload is in flight
 
@@ -659,7 +648,6 @@ async function handleProfileSubmit(e) {
 
 /*=========================================
         WIRING
-=========================================*/
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".dash-nav-item").forEach(item => {
         item.addEventListener("click", () => showTab(item.dataset.tab));

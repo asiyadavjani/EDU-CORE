@@ -1,6 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard | EduCore</title>
@@ -11,9 +14,1370 @@
     <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
     <script type="module">
         import { protectPage } from "../authGuard.js";
-        // Sirf Teacher access kar sakta hai
-        protectPage(["Teacher"], { loadingEl: "authLoading", contentEl: "pageContent" });
+
+        protectPage(
+            ["Teacher"],
+            {
+                loadingEl: "authLoading",
+                contentEl: "pageContent"
+            }
+        );
+
     </script>
+
+<div id="authLoading">
+
+    <div class="auth-spinner"></div>
+
+    <p class="auth-loading-text">
+        Checking access...
+    </p>
+
+</div>
+
+
+
+<!-- =========================================================
+     PAGE CONTENT
+
+<div id="pageContent">
+
+
+    <!-- =====================================================
+         APPLICATION STATUS
+    ====================================================== -->
+
+    <div
+        id="appStatusScreen"
+        class="appstatus-wrap"
+        style="display: none;"
+    >
+
+        <div class="appstatus-card">
+
+            <i
+                class="fa-solid fa-hourglass-half appstatus-icon"
+                id="appStatusIcon"
+            ></i>
+
+
+            <h2 id="appStatusTitle">
+                Application Under Review
+            </h2>
+
+
+            <p id="appStatusMessage">
+                Thanks for applying! Your teacher application is pending review.
+            </p>
+
+
+            <div class="appstatus-actions">
+
+            
+
+                <button
+                    type="button"
+                    id="appStatusLogoutBtn"
+                    class="appstatus-logout-btn"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TEACHER DASHBOARD
+    ====================================================== -->
+
+    <div
+        class="dash-shell"
+        id="dashShell"
+    >
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="dash-sidebar">
+
+
+            <!-- BRAND -->
+
+            <div class="dash-sidebar-brand">
+
+                <i class="fa-solid fa-graduation-cap"></i>
+
+                <span>
+                    EduCore
+                </span>
+
+                <small>
+                    Teacher
+                </small>
+
+            </div>
+
+
+
+            <!-- NAVIGATION -->
+
+            <nav
+                class="dash-nav"
+                id="dashNav"
+            >
+
+                <div
+                    class="dash-nav-item active"
+                    data-tab="overview"
+                >
+                    <i class="fa-solid fa-gauge-high"></i>
+
+                    <span>
+                        Overview
+                    </span>
+                </div>
+
+
+                <div
+                    class="dash-nav-item"
+                    data-tab="courses"
+                >
+                    <i class="fa-solid fa-book-open"></i>
+
+                    <span>
+                        My Courses
+                    </span>
+                </div>
+
+
+                <div
+                    class="dash-nav-item"
+                    data-tab="students"
+                >
+                    <i class="fa-solid fa-user-graduate"></i>
+
+                    <span>
+                        My Students
+                    </span>
+                </div>
+
+
+                <div
+                    class="dash-nav-item"
+                    data-tab="attendance"
+                >
+                    <i class="fa-solid fa-calendar-check"></i>
+
+                    <span>
+                        Attendance
+                    </span>
+                </div>
+
+
+                <div
+                    class="dash-nav-item"
+                    data-tab="profile"
+                >
+                    <i class="fa-solid fa-id-card"></i>
+
+                    <span>
+                        My Profile
+                    </span>
+                </div>
+
+            </nav>
+
+
+
+            <!-- SIDEBAR FOOTER -->
+
+            <div class="dash-sidebar-footer">
+
+                <a
+                    href="../index.html"
+                    class="dash-home-btn"
+                >
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>
+                        Home
+                    </span>
+                </a>
+
+
+                <button
+                    type="button"
+                    id="logoutBtn"
+                    class="dash-logout-btn"
+                >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+                </button>
+
+            </div>
+
+        </aside>
+
+<button id="teacherMenuToggle" class="teacher-menu-toggle">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="dash-main">
+
+
+            <!-- =================================================
+                 TOPBAR
+            ================================================== -->
+
+            <header class="dash-topbar">
+
+                <div class="dash-topbar-title">
+
+                    <h1 id="dashGreeting">
+                        Welcome back
+                    </h1>
+
+                    <p id="dashSubGreeting">
+                        Here's what's happening with your classes.
+                    </p>
+
+                </div>
+
+
+                <!-- USER -->
+
+                <div class="dash-topbar-user">
+
+                    <div
+                        class="dash-user-avatar"
+                        id="dashUserAvatar"
+                    >
+                        T
+                    </div>
+
+
+                    <div>
+
+                        <span
+                            class="dash-user-name"
+                            id="teacherNameLabel"
+                        >
+                            Teacher
+                        </span>
+
+                        <span class="dash-user-role">
+                            Teacher Account
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 DASHBOARD CONTENT
+            ================================================== -->
+
+            <div class="dash-content container-fluid">
+
+
+                <!-- =================================================
+                     OVERVIEW
+                ================================================== -->
+
+                <section
+                    class="dash-tab-panel active"
+                    id="tab-overview"
+                >
+
+
+                    <!-- =================================================
+                         STATS
+                    ================================================== -->
+
+                    <div class="dash-stats-row row g-3 g-xl-4">
+
+
+                        <!-- COURSES -->
+
+                        <div class="col-12 col-sm-6 col-xl-3">
+
+                            <div class="dash-stat-card h-100">
+
+                                <div class="dash-stat-icon icon-blue">
+
+                                    <i class="fa-solid fa-book"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="dash-stat-value counter"
+                                        id="statMyCourses"
+                                        data-target="0"
+                                    >
+                                        0
+                                    </span>
+
+                                    <span class="dash-stat-label">
+                                        My Courses
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- STUDENTS -->
+
+                        <div class="col-12 col-sm-6 col-xl-3">
+
+                            <div class="dash-stat-card h-100">
+
+                                <div class="dash-stat-icon icon-teal">
+
+                                    <i class="fa-solid fa-user-graduate"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="dash-stat-value counter"
+                                        id="statMyStudents"
+                                        data-target="0"
+                                    >
+                                        0
+                                    </span>
+
+                                    <span class="dash-stat-label">
+                                        My Students
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- PROGRESS -->
+
+                        <div class="col-12 col-sm-6 col-xl-3">
+
+                            <div class="dash-stat-card h-100">
+
+                                <div class="dash-stat-icon icon-orange">
+
+                                    <i class="fa-solid fa-chart-line"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="dash-stat-value"
+                                        id="statAvgProgress"
+                                    >
+                                        0%
+                                    </span>
+
+                                    <span class="dash-stat-label">
+                                        Average Progress
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- ENTRY TEST -->
+
+                        <div class="col-12 col-sm-6 col-xl-3">
+
+                            <div class="dash-stat-card h-100">
+
+                                <div class="dash-stat-icon icon-dark">
+
+                                    <i class="fa-solid fa-star"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="dash-stat-value counter"
+                                        id="statTopScorers"
+                                        data-target="0"
+                                    >
+                                        0
+                                    </span>
+
+                                    <span class="dash-stat-label">
+                                        Passed Entry Test
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         CHARTS + BLOG
+                    ================================================== -->
+
+                    <div class="dash-charts-row row g-3 g-xl-4 mt-1">
+
+
+                        <!-- =================================================
+                             STUDENT PROGRESS
+                        ================================================== -->
+
+                        <div class="col-12 col-xl-6">
+
+                            <div class="dash-chart-card h-100">
+
+                                <h3>
+
+                                    <i class="fa-solid fa-chart-column"></i>
+
+                                    Student Progress
+
+                                </h3>
+
+
+                                <div class="dash-chart-box">
+
+                                    <canvas
+                                        id="chartStudentProgress"
+                                    ></canvas>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             COURSE BREAKDOWN
+                        ================================================== -->
+
+                        <div class="col-12 col-xl-6">
+
+                            <div class="dash-chart-card h-100">
+
+                                <h3>
+
+                                    <i class="fa-solid fa-book-open"></i>
+
+                                    My Courses Breakdown
+
+                                </h3>
+
+
+                                <div class="dash-chart-box">
+
+                                    <canvas
+                                        id="chartCourseBreakdown"
+                                    ></canvas>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             TEACHER RANKING
+                        ================================================== -->
+
+                        <div class="col-12 col-xl-6">
+
+                            <div class="dash-chart-card h-100">
+
+                                <h3>
+
+                                    <i class="fa-solid fa-ranking-star"></i>
+
+                                    Teacher Ranking
+
+                                </h3>
+
+
+                                <div class="dash-chart-box">
+
+                                    <canvas
+                                        id="chartRanking"
+                                    ></canvas>
+
+                                </div>
+
+
+                                <p
+                                    class="dash-chart-note"
+                                    id="rankingNote"
+                                ></p>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             ATTENDANCE ACTIVITY
+                        ================================================== -->
+
+                        <div class="col-12 col-xl-6">
+
+                            <div class="dash-chart-card h-100">
+
+                                <h3>
+
+                                    <i class="fa-solid fa-calendar-check"></i>
+
+                                    My Attendance Activity
+
+                                </h3>
+
+
+                                <div class="dash-chart-box">
+
+                                    <canvas
+                                        id="chartMyAttendance"
+                                    ></canvas>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- =================================================
+                             MY BLOG POSTS
+                        ================================================== -->
+
+                        <div class="col-12 col-xl-6">
+
+                            <div class="dash-chart-card h-100">
+
+                                <div
+                                    class="d-flex justify-content-between align-items-center mb-3"
+                                >
+
+                                    <h3 class="mb-0">
+
+                                        <i class="fa-solid fa-pen-to-square"></i>
+
+                                        My Blog Posts
+
+                                    </h3>
+
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary btn-sm"
+                                        id="createBlogBtn"
+                                    >
+
+                                        <i class="fa-solid fa-plus"></i>
+
+                                        New Post
+
+                                    </button>
+
+                                </div>
+
+
+                                <div id="teacherBlogsList">
+
+                                    <div
+                                        class="text-center py-4 text-muted"
+                                    >
+
+                                        <i
+                                            class="fa-solid fa-file-pen fs-3 mb-2"
+                                        ></i>
+
+
+                                        <p class="mb-0">
+
+                                            You haven't created any blog
+                                            posts yet.
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         RECENT STUDENTS
+                    ================================================== -->
+
+                    <div class="dash-panel mt-4">
+
+                        <div class="dash-panel-head">
+
+                            <h2>
+
+                                <i class="fa-solid fa-users"></i>
+
+                                Recent Students
+
+                            </h2>
+
+                        </div>
+
+
+                        <div
+                            id="overviewStudentsList"
+                            class="dash-list"
+                        ></div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     MY COURSES
+                ================================================== -->
+
+                <section
+                    class="dash-tab-panel"
+                    id="tab-courses"
+                >
+
+                    <div class="dash-panel-head">
+
+                        <div>
+
+                            <h2>
+
+                                <i class="fa-solid fa-book-open"></i>
+
+                                My Courses
+
+                            </h2>
+
+
+                            <p>
+                                Courses currently assigned to you.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="myCoursesList"
+                        class="dash-list-grid row g-3 g-xl-4"
+                    ></div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     MY STUDENTS
+                ================================================== -->
+
+                <section
+                    class="dash-tab-panel"
+                    id="tab-students"
+                >
+
+                    <div class="dash-panel-head">
+
+                        <div>
+
+                            <h2>
+
+                                <i class="fa-solid fa-user-graduate"></i>
+
+                                My Students
+
+                            </h2>
+
+
+                            <p>
+                                Students assigned to your courses.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="myStudentsList"
+                        class="dash-list"
+                    ></div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     ATTENDANCE
+                ================================================== -->
+
+                <section
+                    class="dash-tab-panel"
+                    id="tab-attendance"
+                >
+
+                    <div class="dash-panel-head">
+
+                        <div>
+
+                            <h2>
+
+                                <i class="fa-solid fa-calendar-check"></i>
+
+                                Mark Attendance
+
+                            </h2>
+
+
+                            <p>
+                                Select a course and date to manage attendance.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="dash-panel">
+
+
+                        <div class="dash-form-grid row g-3">
+
+
+                            <!-- COURSE -->
+
+                            <div class="input-box col-12 col-md-6">
+
+                                <label for="attendanceCourseSelect">
+                                    Course
+                                </label>
+
+
+                                <select
+                                    id="attendanceCourseSelect"
+                                    class="form-select"
+                                >
+
+                                    <option value="">
+                                        -- Select Course --
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+
+                            <!-- DATE -->
+
+                            <div class="input-box col-12 col-md-6">
+
+                                <label for="attendanceDate">
+                                    Date
+                                </label>
+
+
+                                <input
+                                    type="date"
+                                    id="attendanceDate"
+                                    class="form-control"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- STUDENTS -->
+
+                        <div
+                            id="attendanceStudentsList"
+                            class="dash-list"
+                        ></div>
+
+
+
+                        <!-- SAVE -->
+
+                        <button
+                            type="button"
+                            class="dash-btn-primary mt-3"
+                            id="attendanceSaveBtn"
+                            disabled
+                        >
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Attendance
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =================================================
+                     PROFILE
+                ================================================== -->
+
+                <section
+                    class="dash-tab-panel"
+                    id="tab-profile"
+                >
+
+                    <div class="dash-panel-head">
+
+                        <div>
+
+                            <h2>
+
+                                <i class="fa-solid fa-id-card"></i>
+
+                                My Profile
+
+                            </h2>
+
+
+                            <p>
+                                Keep your teacher information updated.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- PROFILE FORM -->
+
+                    <form
+                        id="profileForm"
+                        class="dash-form"
+                    >
+
+
+                        <div class="dash-form-grid row g-3">
+
+
+                            <!-- NAME -->
+
+                            <div class="input-box col-12 col-md-6">
+
+                                <label for="profileName">
+                                    Full Name*
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="profileName"
+                                    class="form-control"
+                                    required
+                                >
+
+                            </div>
+
+
+
+                            <!-- TITLE -->
+
+                            <div class="input-box col-12 col-md-6">
+
+                                <label for="profileTitle">
+                                    Title / Specialty*
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="profileTitle"
+                                    class="form-control"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- BIO -->
+
+                        <div class="input-box full-width mt-3">
+
+                            <label for="profileBio">
+                                Bio
+                            </label>
+
+
+                            <textarea
+                                id="profileBio"
+                                class="form-control"
+                                rows="4"
+                            ></textarea>
+
+                        </div>
+
+
+
+                        <!-- PHOTO -->
+
+                        <div class="input-box full-width mt-3">
+
+                            <label for="profilePhotoInput">
+                                Profile Photo
+                            </label>
+
+
+                            <input
+                                type="file"
+                                id="profilePhotoInput"
+                                class="form-control"
+                                accept="image/*"
+                            >
+
+
+                            <img
+                                id="profilePhotoPreview"
+                                class="dash-photo-preview mt-3"
+                                style="display: none;"
+                                alt="Profile Preview"
+                            >
+
+                        </div>
+
+
+
+                        <!-- SAVE -->
+
+                        <button
+                            type="submit"
+                            class="dash-btn-primary mt-3"
+                            id="profileSubmitBtn"
+                        >
+
+                            <i class="fa-solid fa-floppy-disk"></i>
+
+                            Save Profile
+
+                        </button>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     TEACHER BLOG POST MODAL
+     
+     Modal ko dashboard sections se bahar rakha gaya hai.
+
+<div
+    class="modal fade"
+    id="teacherBlogModal"
+    tabindex="-1"
+    aria-labelledby="teacherBlogModalLabel"
+    aria-hidden="true"
+>
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <!-- MODAL HEADER -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h5
+                        class="modal-title fw-semibold"
+                        id="teacherBlogModalLabel"
+                    >
+
+                        <i class="fa-solid fa-pen-to-square me-2"></i>
+
+                        Create Blog Post
+
+                    </h5>
+
+
+                    <small class="text-muted">
+
+                        Your post will be sent to admin for approval.
+
+                    </small>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+
+            </div>
+
+
+
+            <!-- MODAL BODY -->
+
+            <div class="modal-body">
+
+                <form id="teacherBlogForm">
+
+
+                    <!-- BLOG TITLE -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="blogTitle"
+                            class="form-label fw-semibold"
+                        >
+                            Blog Title
+                        </label>
+
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="blogTitle"
+                            placeholder="Enter your blog title"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <!-- CATEGORY -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="blogCategory"
+                            class="form-label fw-semibold"
+                        >
+                            Category
+                        </label>
+
+
+                        <select
+                            class="form-select"
+                            id="blogCategory"
+                            required
+                        >
+
+                            <option value="">
+                                Select category
+                            </option>
+
+                            <option value="Technology">
+                                Technology
+                            </option>
+
+                            <option value="Education">
+                                Education
+                            </option>
+
+                            <option value="Programming">
+                                Programming
+                            </option>
+
+                            <option value="Web Development">
+                                Web Development
+                            </option>
+
+                            <option value="General">
+                                General
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- EXCERPT -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="blogExcerpt"
+                            class="form-label fw-semibold"
+                        >
+                            Short Description
+                        </label>
+
+
+                        <textarea
+                            class="form-control"
+                            id="blogExcerpt"
+                            rows="3"
+                            placeholder="Write a short description of your blog..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+
+                    <!-- BLOG BODY -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="blogBody"
+                            class="form-label fw-semibold"
+                        >
+                            Blog Content
+                        </label>
+
+
+                        <textarea
+                            class="form-control"
+                            id="blogBody"
+                            rows="8"
+                            placeholder="Write your complete blog here..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+
+                    <!-- BLOG IMAGE -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="blogImage"
+                            class="form-label fw-semibold"
+                        >
+                            Blog Image
+                        </label>
+
+
+                        <input
+                            type="file"
+                            class="form-control"
+                            id="blogImage"
+                            accept="image/*"
+                        >
+
+
+                        <small class="text-muted">
+
+                            Optional. JPG, PNG or WEBP image.
+
+                        </small>
+
+                    </div>
+
+
+
+                    <!-- IMAGE PREVIEW -->
+
+                    <div
+                        id="blogImagePreview"
+                        class="mb-3 text-center d-none"
+                    >
+
+                        <img
+                            id="blogPreviewImg"
+                            src=""
+                            alt="Blog preview"
+                            class="img-fluid rounded"
+                            style="max-height: 220px;"
+                        >
+
+                    </div>
+
+
+
+                    <!-- APPROVAL NOTICE -->
+
+                    <div
+                        class="alert alert-info d-flex align-items-start"
+                    >
+
+                        <i
+                            class="fa-solid fa-circle-info me-2 mt-1"
+                        ></i>
+
+
+                        <div>
+
+                            <strong>
+                                Admin Approval Required
+                            </strong>
+
+
+                            <div class="small mt-1">
+
+                                After submitting, your blog will remain
+                                pending until an admin approves it.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- BUTTONS -->
+
+                    <div
+                        class="d-flex justify-content-end gap-2"
+                    >
+
+                        <button
+                            type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="submitTeacherBlogBtn"
+                        >
+
+                            <i class="fa-solid fa-paper-plane me-1"></i>
+
+                            Submit for Approval
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     BOOTSTRAP JS
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
+
+<!-- =========================================================
+     CHART.JS
+     Only ONE copy
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"
+></script>
+
+
+
+<!-- =========================================================
+     TEACHER JS
+
+<script
+    type="module"
+    src="./teacher.js"
+></script>
+
+
+</body>
+
+</html>
+
 </head>
 <body>
     <!-- Shown immediately; swapped out once the role check below passes. -->

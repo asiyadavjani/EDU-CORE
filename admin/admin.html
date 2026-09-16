@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +17,2320 @@
         protectPage(["Admin"], { loadingEl: "authLoading", contentEl: "pageContent" });
     </script>
 </head>
+
 <body>
+
+<aside id="sidebar" class="sidebar">
+
+
+    <!-- Brand -->
+
+    <div class="sidebar-brand">
+
+        <div class="brand-icon">
+
+            <i class="fa-solid fa-graduation-cap"></i>
+
+        </div>
+
+        <div>
+
+            <h4>EduCore</h4>
+
+            <span>Learning Management</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Menu -->
+
+    <div class="sidebar-menu">
+
+
+        <div class="menu-title">
+            MAIN MENU
+        </div>
+
+
+        <a
+            href="#dashboard"
+            class="nav-link active"
+            data-target="dashboard">
+
+            <i class="fa-solid fa-house"></i>
+
+            <span>Dashboard</span>
+
+        </a>
+
+
+        <a
+            href="#courses"
+            class="nav-link"
+            data-target="courses">
+
+            <i class="fa-solid fa-book-open"></i>
+
+            <span>Courses</span>
+
+        </a>
+
+
+        <a
+            href="#students"
+            class="nav-link"
+            data-target="students">
+
+            <i class="fa-solid fa-user-graduate"></i>
+
+            <span>Students</span>
+
+        </a>
+
+
+        <a
+            href="#teachers"
+            class="nav-link"
+            data-target="teachers">
+
+            <i class="fa-solid fa-chalkboard-user"></i>
+
+            <span>Teachers</span>
+
+        </a>
+
+
+        <a
+            href="#articles"
+            class="nav-link"
+            data-target="articles">
+
+            <i class="fa-solid fa-newspaper"></i>
+
+            <span>Articles</span>
+
+            <span class="menu-badge">4</span>
+
+        </a>
+
+
+        <a
+            href="#reports"
+            class="nav-link"
+            data-target="reports">
+
+            <i class="fa-solid fa-chart-line"></i>
+
+            <span>Reports</span>
+
+        </a>
+
+
+        <div class="menu-title settings-title">
+            SYSTEM
+        </div>
+
+
+        <a
+            href="#announcements"
+            class="nav-link"
+            data-target="announcements">
+
+            <i class="fa-solid fa-bullhorn"></i>
+
+            <span>Announcements</span>
+
+        </a>
+
+
+        <a
+            href="#settings"
+            class="nav-link"
+            data-target="settings">
+
+            <i class="fa-solid fa-gear"></i>
+
+            <span>Settings</span>
+
+        </a>
+
+
+        <a
+            href="#"
+            class="nav-link logout"
+            id="logoutBtn">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            <span>Logout</span>
+
+        </a>
+
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =========================================================
+     MAIN CONTENT
+
+<div class="main-content">
+
+
+    <!-- =====================================================
+         TOPBAR
+    ===================================================== -->
+
+    <header class="topbar">
+
+
+        <button
+            id="menuToggle"
+            class="menu-toggle">
+
+            <i class="fa-solid fa-bars"></i>
+
+        </button>
+
+
+        <div class="topbar-search">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                type="text"
+                id="globalSearch"
+                placeholder="Search dashboard...">
+
+        </div>
+
+
+        <div class="topbar-actions">
+
+
+            <!-- Notifications -->
+
+            <div class="notification-wrapper">
+
+                <button
+                    id="notificationBtn"
+                    class="notification-btn">
+
+                    <i class="fa-regular fa-bell"></i>
+
+                    <span class="notification-count">
+                        3
+                    </span>
+
+                </button>
+
+
+                <div
+                    id="notificationDropdown"
+                    class="notification-dropdown">
+
+
+                    <div class="notification-header">
+
+                        <div>
+
+                            <h6>Notifications</h6>
+
+                            <span>
+                                Recent activity
+                            </span>
+
+                        </div>
+
+
+                        <button id="markAllRead">
+                            Mark all as read
+                        </button>
+
+                    </div>
+
+
+                    <div class="notification-list">
+
+
+                        <div class="notification-item unread">
+
+                            <div class="notification-icon blue">
+
+                                <i class="fa-solid fa-user-plus"></i>
+
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    New student registered
+                                </strong>
+
+                                <p>
+                                    Ali Ahmed has registered.
+                                </p>
+
+                                <small>
+                                    Just now
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="notification-item unread">
+
+                            <div class="notification-icon green">
+
+                                <i class="fa-solid fa-book"></i>
+
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    New enrollment
+                                </strong>
+
+                                <p>
+                                    A new course enrollment was received.
+                                </p>
+
+                                <small>
+                                    10 minutes ago
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="notification-item unread">
+
+                            <div class="notification-icon purple">
+
+                                <i class="fa-solid fa-newspaper"></i>
+
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Article waiting for approval
+                                </strong>
+
+                                <p>
+                                    A new article requires your review.
+                                </p>
+
+                                <small>
+                                    20 minutes ago
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="notification-footer">
+
+                        <button
+                            id="viewAllNotifications">
+
+                            View all notifications
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Admin Profile -->
+
+            <div class="admin-profile">
+
+
+                <div class="profile-avatar">
+                    A
+                </div>
+
+
+                <div class="profile-info">
+
+                    <strong>
+                        Admin
+                    </strong>
+
+                    <span>
+                        Administrator
+                    </span>
+
+                </div>
+
+
+                <i class="fa-solid fa-chevron-down profile-arrow"></i>
+
+
+            </div>
+
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =====================================================
+         PAGE CONTAINER
+    ===================================================== -->
+
+    <main class="page-container">
+
+
+        <!-- =================================================
+             DASHBOARD
+        ================================================= -->
+
+        <section
+            id="dashboard"
+            class="page-section active-section">
+
+
+            <div class="page-heading">
+
+                <div>
+
+                    <h2>Dashboard</h2>
+
+                    <p>
+                        Welcome back, Admin. Here's what's happening
+                        on your platform.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Statistics -->
+
+            <div class="row g-4 mb-4">
+
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon purple">
+
+                            <i class="fa-solid fa-book-open"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>Total Courses</span>
+
+                            <h3 id="courseCount">
+                                24
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon blue">
+
+                            <i class="fa-solid fa-user-graduate"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>Total Students</span>
+
+                            <h3 id="studentCount">
+                                1,250
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon green">
+
+                            <i class="fa-solid fa-chalkboard-user"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>Total Teachers</span>
+
+                            <h3 id="teacherCount">
+                                48
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-xl-3 col-md-6">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon orange">
+
+                            <i class="fa-solid fa-users"></i>
+
+                        </div>
+
+                        <div>
+
+                            <span>Total Enrollments</span>
+
+                            <h3 id="enrollmentCount">
+                                3,420
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Charts -->
+
+            <div class="row g-4 mb-4">
+
+
+                <div class="col-lg-8">
+
+                    <div class="dashboard-card">
+
+
+                        <div class="card-heading">
+
+                            <div>
+
+                                <h5>
+                                    Enrollment Overview
+                                </h5>
+
+                                <p>
+                                    Monthly enrollment performance
+                                </p>
+
+                            </div>
+
+
+                           
+
+                        </div>
+
+
+                        <div class="chart-container">
+
+                            <canvas id="enrollmentChart"></canvas>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="col-lg-4">
+
+                    <div class="dashboard-card">
+
+
+                        <div class="card-heading">
+
+                            <div>
+
+                                <h5>
+                                    Course Categories
+                                </h5>
+
+                                <p>
+                                    Course distribution
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="chart-container pie-chart">
+
+                            <canvas id="categoryChart"></canvas>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Recent Enrollments -->
+
+            <div class="dashboard-card">
+
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <h5>
+                            Recent Enrollments
+                        </h5>
+
+                        <p>
+                            Latest students enrolled in courses
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+
+                    <table class="custom-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Student</th>
+
+                                <th>Course</th>
+
+                                <th>Date</th>
+
+                                <th>Status</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-cell">
+
+                                        <div class="user-avatar">
+                                            AA
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Ali Ahmed
+                                            </strong>
+
+                                            <small>
+                                                ali@example.com
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    Modern Web Development
+                                </td>
+
+
+                                <td>
+                                    Sep 14, 2026
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-cell">
+
+                                        <div class="user-avatar">
+                                            SM
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Sara Malik
+                                            </strong>
+
+                                            <small>
+                                                sara@example.com
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    Graphic Design Masterclass
+                                </td>
+
+
+                                <td>
+                                    Sep 13, 2026
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-cell">
+
+                                        <div class="user-avatar">
+                                            HA
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Hamza Ali
+                                            </strong>
+
+                                            <small>
+                                                hamza@example.com
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    Artificial Intelligence Basics
+                                </td>
+
+
+                                <td>
+                                    Sep 12, 2026
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             COURSES
+        ================================================= -->
+
+        <section
+            id="courses"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Course Management</h2>
+
+                    <p>
+                        Create, edit and manage platform courses.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="addCourseBtn"
+                    class="primary-btn">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Course
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- Course Filters -->
+
+            <div class="filter-bar">
+
+
+                <div class="search-field">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        id="courseSearch"
+                        placeholder="Search courses...">
+
+                </div>
+
+
+                <select id="courseCategory">
+
+                    <option value="all">
+                        All Categories
+                    </option>
+
+                    <option value="web">
+                        Web Development
+                    </option>
+
+                    <option value="design">
+                        Graphic Design
+                    </option>
+
+                    <option value="marketing">
+                        Digital Marketing
+                    </option>
+
+                    <option value="ai">
+                        AI & Data
+                    </option>
+
+                </select>
+
+
+            </div>
+
+
+
+            <!-- Course Table -->
+
+            <div class="dashboard-card">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="coursesTable"
+                        class="custom-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Course</th>
+
+                                <th>Category</th>
+
+                                <th>Teacher</th>
+
+                                <th>Students</th>
+
+                                <th>Price</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="coursesTableBody">
+
+                            <!-- Courses will be rendered by admin.js -->
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+                <!-- Courses Pagination -->
+
+                <div
+                    id="coursesPagination"
+                    class="pagination-container">
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Course Modal -->
+
+            <div
+                id="courseModal"
+                class="custom-modal">
+
+
+                <div class="modal-overlay"></div>
+
+
+                <div class="article-modal-box">
+
+
+                    <button
+                        id="closeCourseModal"
+                        class="modal-close">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+
+                    <div class="modal-icon">
+
+                        <i class="fa-solid fa-book-open"></i>
+
+                    </div>
+
+
+                    <span class="modal-label">
+                        COURSE MANAGEMENT
+                    </span>
+
+
+                    <h3 id="courseModalTitle">
+                        Add Course
+                    </h3>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Course Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="courseName"
+                            class="form-control-custom"
+                            placeholder="Enter course name">
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Category
+                        </label>
+
+                        <select
+                            id="courseCategoryInput"
+                            class="form-control-custom">
+
+                            <option value="web">
+                                Web Development
+                            </option>
+
+                            <option value="design">
+                                Graphic Design
+                            </option>
+
+                            <option value="marketing">
+                                Digital Marketing
+                            </option>
+
+                            <option value="ai">
+                                AI & Data
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Price
+                        </label>
+
+                        <input
+                            type="number"
+                            id="coursePrice"
+                            class="form-control-custom"
+                            placeholder="Enter price">
+
+                    </div>
+
+
+                    <div class="modal-actions">
+
+                        <button
+                            id="cancelCourseBtn"
+                            class="outline-btn">
+
+                            Cancel
+
+                        </button>
+
+
+                        <button
+                            id="saveCourseBtn"
+                            class="approve-btn">
+
+                            Save Course
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             STUDENTS
+        ================================================= -->
+
+        <section
+            id="students"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Student Management</h2>
+
+                    <p>
+                        Manage student registrations,
+                        approvals and account status.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Student Filters -->
+
+            <div class="filter-bar">
+
+
+                <div class="search-field">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        id="studentSearch"
+                        placeholder="Search students...">
+
+                </div>
+
+
+                <select id="studentStatus">
+
+                    <option value="all">
+                        All Status
+                    </option>
+
+                    <option value="pending">
+                        Pending
+                    </option>
+
+                    <option value="active">
+                        Active
+                    </option>
+
+                    <option value="blocked">
+                        Blocked
+                    </option>
+
+                    <option value="rejected">
+                        Rejected
+                    </option>
+
+                </select>
+
+
+            </div>
+
+
+
+            <div class="dashboard-card">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="students"
+                        class="custom-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Student</th>
+
+                                <th>Email</th>
+
+                                <th>Course</th>
+
+                                <th>Status</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="studentsTableBody">
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+                <!-- Students Pagination -->
+
+                <div
+                    id="studentsPagination"
+                    class="pagination-container">
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             TEACHERS
+        ================================================= -->
+
+        <section
+            id="teachers"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Teacher Management</h2>
+
+                    <p>
+                        Review teacher registrations and manage
+                        teacher accounts.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Teacher Filters -->
+
+            <div class="filter-bar">
+
+
+                <div class="search-field">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        id="teacherSearch"
+                        placeholder="Search teachers...">
+
+                </div>
+
+
+                <select id="teacherStatus">
+
+                    <option value="all">
+                        All Status
+                    </option>
+
+                    <option value="pending">
+                        Pending
+                    </option>
+
+                    <option value="active">
+                        Active
+                    </option>
+
+                    <option value="blocked">
+                        Blocked
+                    </option>
+
+                    <option value="rejected">
+                        Rejected
+                    </option>
+
+                </select>
+
+
+            </div>
+
+
+
+            <div class="dashboard-card">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="teachers"
+                        class="custom-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Teacher</th>
+
+                                <th>Email</th>
+
+                                <th>Specialization</th>
+
+                                <th>Status</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="teachersTableBody">
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+                <!-- Teachers Pagination -->
+
+                <div
+                    id="teachersPagination"
+                    class="pagination-container">
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             ARTICLES
+        ================================================= -->
+
+        <section
+            id="articles"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Article Approval</h2>
+
+                    <p>
+                        Review articles submitted by students
+                        and teachers.
+                    </p>
+
+                </div>
+
+
+                <div class="pending-count">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    4 Pending
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="filter-bar">
+
+
+                <div class="search-field">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                        type="text"
+                        id="articleSearch"
+                        placeholder="Search articles...">
+
+                </div>
+
+
+                <select id="articleStatus">
+
+                    <option value="all">
+                        All Status
+                    </option>
+
+                    <option value="pending">
+                        Pending
+                    </option>
+
+                    <option value="approved">
+                        Approved
+                    </option>
+
+                    <option value="rejected">
+                        Rejected
+                    </option>
+
+                </select>
+
+
+            </div>
+
+
+
+            <div class="dashboard-card">
+
+
+                <div class="table-responsive">
+
+
+                    <table
+                        id="articlesTable"
+                        class="custom-table">
+
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Article</th>
+
+                                <th>Author</th>
+
+                                <th>Role</th>
+
+                                <th>Status</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="articlesTableBody">
+
+
+                            <tr data-status="pending">
+
+
+                                <td>
+
+                                    <div class="article-cell">
+
+                                        <div class="article-icon">
+
+                                            <i class="fa-solid fa-newspaper"></i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                JavaScript Basics
+                                            </strong>
+
+                                            <small>
+                                                Programming
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    Ali Ahmed
+                                </td>
+
+
+                                <td>
+
+                                    <span class="role-badge student">
+                                        Student
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge pending">
+                                        Pending
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <button
+                                        class="review-btn"
+                                        data-title="JavaScript Basics"
+                                        data-author="Ali Ahmed"
+                                        data-role="Student">
+
+                                        Review
+
+                                    </button>
+
+                                </td>
+
+
+                            </tr>
+
+
+
+                            <tr data-status="pending">
+
+
+                                <td>
+
+                                    <div class="article-cell">
+
+                                        <div class="article-icon">
+
+                                            <i class="fa-brands fa-react"></i>
+
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Introduction to React
+                                            </strong>
+
+                                            <small>
+                                                Web Development
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    Fatima Ahmed
+                                </td>
+
+
+                                <td>
+
+                                    <span class="role-badge teacher">
+                                        Teacher
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="status-badge pending">
+                                        Pending
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <button
+                                        class="review-btn"
+                                        data-title="Introduction to React"
+                                        data-author="Fatima Ahmed"
+                                        data-role="Teacher">
+
+                                        Review
+
+                                    </button>
+
+                                </td>
+
+
+                            </tr>
+
+
+                        </tbody>
+
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Article Modal -->
+
+            <div
+                id="articleModal"
+                class="custom-modal">
+
+
+                <div class="modal-overlay"></div>
+
+
+                <div class="article-modal-box">
+
+
+                    <button
+                        id="closeArticleModal"
+                        class="modal-close">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+
+                    <div class="modal-icon">
+
+                        <i class="fa-solid fa-newspaper"></i>
+
+                    </div>
+
+
+                    <span class="modal-label">
+                        ARTICLE REVIEW
+                    </span>
+
+
+                    <h3 id="modalArticleTitle">
+                        Article
+                    </h3>
+
+
+                    <div class="article-author">
+
+                        <span>
+                            By
+                        </span>
+
+                        <strong id="modalArticleAuthor">
+                            -
+                        </strong>
+
+                        <span class="divider">
+                            |
+                        </span>
+
+                        <span id="modalArticleRole">
+                            -
+                        </span>
+
+                    </div>
+
+
+                    <div class="article-preview">
+
+
+                        <h5>
+                            Article Preview
+                        </h5>
+
+
+                        <p>
+                            This is the article preview area.
+                            The administrator can review the
+                            submitted article before approving
+                            or rejecting it.
+                        </p>
+
+
+                    </div>
+
+
+                    <div class="modal-actions">
+
+
+                        <button
+                            id="rejectArticleBtn"
+                            class="reject-btn">
+
+                            <i class="fa-solid fa-xmark"></i>
+
+                            Reject
+
+                        </button>
+
+
+                        <button
+                            id="approveArticleBtn"
+                            class="approve-btn">
+
+                            <i class="fa-solid fa-check"></i>
+
+                            Approve
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             REPORTS
+        ================================================= -->
+
+        <section
+            id="reports"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Reports</h2>
+
+                    <p>
+                        Monitor platform performance and activity.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="row g-4 mb-4">
+
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="report-card">
+
+                        <span>
+                            Total Revenue
+                        </span>
+
+                        <h3>
+                            $12,840
+                        </h3>
+
+                        <span class="positive">
+                            +12.5% this month
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="report-card">
+
+                        <span>
+                            Completion Rate
+                        </span>
+
+                        <h3>
+                            78%
+                        </h3>
+
+                        <span class="positive">
+                            +5.2% this month
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-lg-4 col-md-6">
+
+                    <div class="report-card">
+
+                        <span>
+                            Active Users
+                        </span>
+
+                        <h3>
+                            986
+                        </h3>
+
+                        <span class="positive">
+                            +8.7% this month
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="dashboard-card">
+
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <h5>
+                            Platform Performance
+                        </h5>
+
+                        <p>
+                            Monthly performance overview
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="chart-container">
+
+                    <canvas id="performanceChart"></canvas>
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             ANNOUNCEMENTS
+        ================================================= -->
+
+        <section
+            id="announcements"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Announcements</h2>
+
+                    <p>
+                        Publish important announcements
+                        for platform users.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="addAnnouncementBtn"
+                    class="primary-btn">
+
+                    <i class="fa-solid fa-plus"></i>
+
+                    Add Announcement
+
+                </button>
+
+
+            </div>
+
+
+
+            <div
+                id="announcementList"
+                class="announcement-grid">
+
+
+                <div class="announcement-card">
+
+
+                    <div class="announcement-top">
+
+
+                        <div class="announcement-icon">
+
+                            <i class="fa-solid fa-bullhorn"></i>
+
+                        </div>
+
+
+                        <span>
+                            Published
+                        </span>
+
+
+                    </div>
+
+
+                    <h4>
+                        New Web Development Course
+                    </h4>
+
+
+                    <p>
+                        A new Modern Web Development course
+                        is now available for students.
+                    </p>
+
+
+                    <div class="announcement-footer">
+
+                        <small>
+                            Sep 14, 2026
+                        </small>
+
+
+                        <button class="delete-btn">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="announcement-card">
+
+
+                    <div class="announcement-top">
+
+
+                        <div class="announcement-icon">
+
+                            <i class="fa-solid fa-calendar-days"></i>
+
+                        </div>
+
+
+                        <span>
+                            Published
+                        </span>
+
+
+                    </div>
+
+
+                    <h4>
+                        Monthly Assessment
+                    </h4>
+
+
+                    <p>
+                        Monthly student assessments will
+                        begin from September 20.
+                    </p>
+
+
+                    <div class="announcement-footer">
+
+                        <small>
+                            Sep 12, 2026
+                        </small>
+
+
+                        <button class="delete-btn">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- Announcement Modal -->
+
+            <div
+                id="announcementModal"
+                class="custom-modal">
+
+
+                <div class="modal-overlay"></div>
+
+
+                <div class="article-modal-box">
+
+
+                    <button
+                        id="closeAnnouncementModal"
+                        class="modal-close">
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                    </button>
+
+
+                    <div class="modal-icon">
+
+                        <i class="fa-solid fa-bullhorn"></i>
+
+                    </div>
+
+
+                    <span class="modal-label">
+                        ANNOUNCEMENT
+                    </span>
+
+
+                    <h3>
+                        Add Announcement
+                    </h3>
+
+
+                    <div class="mb-3">
+
+                        <label>
+                            Title
+                        </label>
+
+                        <input
+                            type="text"
+                            id="announcementTitle"
+                            class="form-control-custom"
+                            placeholder="Enter announcement title">
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label>
+                            Message
+                        </label>
+
+                        <textarea
+                            id="announcementMessage"
+                            class="form-control-custom"
+                            rows="4"
+                            placeholder="Write announcement..."></textarea>
+
+                    </div>
+
+
+                    <div class="modal-actions">
+
+
+                        <button
+                            id="cancelAnnouncementBtn"
+                            class="outline-btn">
+
+                            Cancel
+
+                        </button>
+
+
+                        <button
+                            id="saveAnnouncementBtn"
+                            class="approve-btn">
+
+                            <i class="fa-solid fa-plus"></i>
+
+                            Add Announcement
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- =================================================
+             SETTINGS
+        ================================================= -->
+
+        <section
+            id="settings"
+            class="page-section">
+
+
+            <div class="page-heading">
+
+
+                <div>
+
+                    <h2>Settings</h2>
+
+                    <p>
+                        Manage administrator and platform settings.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="settings-card">
+
+
+                <div class="dashboard-card">
+
+
+                    <!-- Admin Profile -->
+
+                    <div class="settings-section">
+
+
+                        <h5>
+                            Admin Profile
+                        </h5>
+
+
+                        <div class="row g-3">
+
+
+                            <div class="col-md-6">
+
+                                <label>
+                                    Full Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control-custom"
+                                    value="Admin">
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label>
+                                    Email Address
+                                </label>
+
+                                <input
+                                    type="email"
+                                    class="form-control-custom"
+                                    value="admin@educore.com">
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- Platform Settings -->
+
+                    <div class="settings-section">
+
+
+                        <h5>
+                            Platform Settings
+                        </h5>
+
+
+                        <div class="row g-3">
+
+
+                            <div class="col-md-6">
+
+                                <label>
+                                    Platform Name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control-custom"
+                                    value="EduCore">
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label>
+                                    Admin Role
+                                </label>
+
+                                <input
+                                    type="text"
+                                    class="form-control-custom"
+                                    value="Administrator"
+                                    readonly>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <button
+                        id="saveSettingsBtn"
+                        class="primary-btn">
+
+                        <i class="fa-solid fa-check"></i>
+
+                        Save Changes
+
+                    </button>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     BOOTSTRAP
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+
+<!-- =========================================================
+     CHART.JS
+
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
+</script>
+
+
+<!-- =========================================================
+     EXISTING JS
+
+<!--
+<script type="module">
+
+    import { protectPage } from "../authGuard.js";
+
+    protectPage(
+        ["Admin"],
+        {
+            loadingEl: "authLoading",
+            contentEl: "pageContent"
+        }
+    );
+
+</script>
+-->
+
+
+<script
+    type="module"
+    src="./admin.js">
+</script>
+
+
+</body>
+
     <!-- Shown immediately; swapped out once the role check below passes. -->
     <div id="authLoading">Checking access…</div>
 

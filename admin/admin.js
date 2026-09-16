@@ -1,6 +1,348 @@
+
+const globalSearch = $("globalSearch");
+
+globalSearch?.addEventListener("input", () => {
+
+    const search =
+        globalSearch.value
+            .toLowerCase()
+            .trim();
+
+    if (!search) {
+        return;
+    }
+
+
+    const sectionMap = {
+
+        dashboard: "dashboard",
+
+        course: "courses",
+        courses: "courses",
+
+        student: "students",
+        students: "students",
+
+        teacher: "teachers",
+        teachers: "teachers",
+
+        article: "articles",
+        articles: "articles",
+
+        report: "reports",
+        reports: "reports",
+
+        announcement: "announcements",
+        announcements: "announcements",
+
+        setting: "settings",
+        settings: "settings"
+
+    };
+
+
+    const target =
+        sectionMap[search];
+
+
+    if (!target) {
+        return;
+    }
+
+
+    activateSection(target);
+
+
+    const section =
+        $(target);
+
+
+    if (section) {
+
+        section.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
+
+});
+
+    sidebarLinks.forEach(link => {
+        link.addEventListener("click", event => {
+            const target = link.dataset.target;
+            if (!target) return;
+
+            const section = $(target);
+            if (!section) return;
+
+            event.preventDefault();
+
+            activateSection(target);
+
+            section.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            $("sidebar")?.classList.remove("active");
+        });
+    });
+
+
+    /* =========================================================
+       MOBILE SIDEBAR
+    ========================================================= */
+
+    $("menuToggle")?.addEventListener(
+        "click",
+        () => {
+            $("sidebar")?.classList.toggle("active");
+        }
+    );
+
+
+ 
+// /* =========================================================
+//    ADMIN LOGOUT
+// ========================================================= */
+
+// const logoutBtn = $("logoutBtn");
+
+// logoutBtn?.addEventListener("click", async (event) => {
+
+//     event.preventDefault();
+//     event.stopPropagation();
+
+//     try {
+//         sessionStorage.setItem("educoreLogout", "true");
+
+//         await signOut(auth);
+
+//         window.location.replace("../index.html");
+
+//     } catch (error) {
+
+//         console.error(
+//             "Admin logout error:",
+//             error
+//         );
+
+//         alert(
+//             "Logout failed. Please try again."
+//         );
+//     }
+
+// });
+
+
+/* =========================================================
+   ADMIN LOGOUT
+
+const logoutBtn = $("logoutBtn");
+
+logoutBtn?.addEventListener(
+    "click",
+    async (event) => {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        try {
+
+            sessionStorage.setItem(
+                "educoreLogout",
+                "true"
+            );
+
+            await signOut(auth);
+
+            window.location.replace(
+                "../index.html"
+            );
+
+        } catch (error) {
+
+            sessionStorage.removeItem(
+                "educoreLogout"
+            );
+
+            console.error(
+                "Admin logout error:",
+                error
+            );
+
+            alert(
+                "Logout failed. Please try again."
+            );
+        }
+    }
+);
+
+
+    /* =========================================================
+       NOTIFICATIONS
+    ========================================================= */
+
+    const notificationBtn = $("notificationBtn");
+    const notificationDropdown = $("notificationDropdown");
+    const markAllReadBtn = $("markAllRead");
+
+
+    function renderNotifications() {
+        const list = document.querySelector(
+            ".notification-list"
+        );
+
+        const badge = document.querySelector(
+            ".notification-count"
+        );
+
+        if (!list || !badge) return;
+
+        const pendingStudents = allStudents.filter(
+            student =>
+                String(student.applicationStatus || "")
+                    .toLowerCase() === "awaiting approval"
+        );
+
+        const pendingTeachers = allTeachers.filter(
+            teacher =>
+                getTeacherStatus(teacher) === "pending"
+        );
+
+        const pendingArticles = allArticles.filter(
+            article =>
+                getArticleStatus(article) === "pending"
+        );
+
+        const items = [
+            ...pendingStudents.map(student => ({
+                icon: "fa-user-plus",
+                title: "New student application",
+                text: getStudentName(student)
+            })),
+            ...pendingTeachers.map(teacher => ({
+                icon: "fa-chalkboard-user",
+                title: "Teacher waiting for approval",
+                text: teacher.name || "Teacher"
+            })),
+            ...pendingArticles.map(article => ({
+                icon: "fa-newspaper",
+                title: "Article waiting for approval",
+                text: article.title || "Article"
+            }))
+        ];
+
+        badge.textContent =
+            items.length > 9
+                ? "9+"
+                : String(items.length);
+
+        badge.style.display =
+            items.length ? "inline-flex" : "none";
+
+        if (!items.length) {
+            list.innerHTML = `
+                <div class="notification-item">
+                    <div>
+                        <strong>No new notifications</strong>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = items
+            .slice(0, 6)
+            .map(item => `
+                <div class="notification-item unread">
+                    <div class="notification-icon purple">
+                        <i class="fa-solid ${escapeHTML(item.icon)}"></i>
+                    </div>
+                    <div>
+                        <strong>${escapeHTML(item.title)}</strong>
+                        <p>${escapeHTML(item.text)}</p>
+                    </div>
+                </div>
+            `)
+            .join("");
+    }
+
+
+    notificationBtn?.addEventListener(
+        "click",
+        event => {
+            event.stopPropagation();
+            notificationDropdown?.classList.toggle("show");
+        }
+    );
+
+
+    markAllReadBtn?.addEventListener(
+        "click",
+        () => {
+            document
+                .querySelectorAll(".notification-item")
+                .forEach(item => item.classList.remove("unread"));
+        }
+    );
+
+
+    document.addEventListener(
+        "click",
+        event => {
+            if (
+                notificationDropdown &&
+                !notificationDropdown.contains(event.target) &&
+                !notificationBtn?.contains(event.target)
+            ) {
+                notificationDropdown.classList.remove("show");
+            }
+        }
+    );
+
+
+    /* =========================================================
+       INITIAL LOAD
+    ========================================================= */
+
+    (async function initializeAdminDashboard() {
+        try {
+            await Promise.all([
+                loadOrders(),
+                loadAttendance(),
+                loadStudents(),
+                loadTeachers(),
+                loadCourses(),
+                loadArticles(),
+                loadAnnouncements()
+            ]);
+
+           await loadDashboardStats();
+
+setTimeout(() => {
+    renderDashboardCharts();
+    renderReports();
+    renderNotifications();
+}, 200);
+
+            console.log(
+                "EduCore Admin Dashboard connected with Firebase."
+            );
+        } catch (error) {
+            console.error(
+                "EduCore Admin Dashboard initialization error:",
+                error
+            );
+        }
+    })();
+
+});
+
+
 /*=========================================
         FIREBASE IMPORTS
-=========================================*/
 import { db, auth } from "../firebaseConfig.js";
 import {
     doc,
@@ -19,7 +361,6 @@ import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
 /*=========================================
         STATE (simple in-memory cache,
         re-fetched after every write)
-=========================================*/
 let applications = [];
 let courses = [];
 let teachers = [];
@@ -31,7 +372,6 @@ let newsEvents = [];
 
 /*=========================================
         HELPERS
-=========================================*/
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
@@ -51,7 +391,6 @@ function val(id) {
 
 /*=========================================
         TAB SWITCHING
-=========================================*/
 function showTab(tabName) {
     document.querySelectorAll(".admin-tab-panel").forEach(p => p.classList.remove("active"));
     document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
@@ -61,7 +400,6 @@ function showTab(tabName) {
 
 /*=========================================
         STATS
-=========================================*/
 function refreshStats() {
     document.getElementById("statAwaiting").innerText = applications.filter(a => a.applicationStatus === "Awaiting Approval").length;
     document.getElementById("statAccepted").innerText = applications.filter(a => a.applicationStatus === "Accepted").length;
@@ -82,7 +420,6 @@ function refreshStats() {
         Derived from the same arrays the tabs below already loaded — no
         extra Firestore reads. Runs from refreshStats() so it always
         reflects whatever just changed (a new signup, a new order, ...).
-=========================================*/
 function refreshNotifications() {
     const badge = document.getElementById("notifBadge");
     const list = document.getElementById("notifList");
@@ -121,7 +458,6 @@ function refreshNotifications() {
 
 /*=========================================
         ANALYTICS CHARTS
-=========================================*/
 function renderCountsChart() {
     if (typeof Chart === "undefined") return;
     if (teachers.length === 0 && applications.length === 0) {
@@ -280,7 +616,6 @@ function renderAttendanceChart() {
 /*=========================================
         ATTENDANCE (aggregate view only — marking
         happens on the Teacher dashboard)
-=========================================*/
 async function loadAttendance() {
     try {
         const snap = await getDocs(collection(db, "attendance"));
@@ -293,7 +628,6 @@ async function loadAttendance() {
 
 /*=========================================
         APPLICATIONS TAB
-=========================================*/
 async function loadApplications() {
     const container = document.getElementById("applicationsList");
     container.innerHTML = '<p class="admin-empty-note">Loading...</p>';
@@ -436,7 +770,6 @@ async function reassignTeacher(cnic) {
 
 /*=========================================
         COURSES TAB
-=========================================*/
 async function loadCourses() {
     const container = document.getElementById("coursesList");
     try {
@@ -561,7 +894,6 @@ async function deleteCourse(id) {
 
 /*=========================================
         TEACHERS TAB
-=========================================*/
 async function loadTeachers() {
     const container = document.getElementById("teachersList");
     try {
@@ -647,7 +979,6 @@ function renderTeachers() {
         TEACHER APPLICATIONS TAB
         (same teachers[] array as above, just filtered/rendered
         differently — accept/reject only ever touch the `status` field)
-=========================================*/
 function badgeForTeacherStatus(status) {
     const map = { pending: "badge-awaiting", approved: "badge-accepted", rejected: "badge-rejected" };
     return map[status] || "badge-pending";
@@ -782,7 +1113,6 @@ async function deleteTeacher(id) {
 
 /*=========================================
         ORDERS TAB
-=========================================*/
 async function loadOrders() {
     const container = document.getElementById("ordersList");
     try {
@@ -839,7 +1169,6 @@ async function markOrderPaid(id) {
         exactly this. The Teacher Photo wiring itself is left as-is
         rather than switched over to this helper, since it already works
         and there's no reason to touch it.
-=========================================*/
 function wireImageUpload(inputId, previewId, imageState) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -884,7 +1213,6 @@ const newsImageState  = { url: null, uploading: false };
         SUCCESS STORIES TAB
         Public, Admin-managed — renders on the homepage's "Success
         Stories" section. Plain CRUD like Courses, no approval workflow.
-=========================================*/
 async function loadStories() {
     const container = document.getElementById("storiesList");
     try {
@@ -994,7 +1322,6 @@ async function deleteStory(id) {
         Public, Admin-managed — renders on the homepage's "Popular
         Blogs" section. `body` is the full post text shown in the
         "Read More" modal; `excerpt` is just what the card teases.
-=========================================*/
 async function loadBlogs() {
     const container = document.getElementById("blogsList");
     try {
@@ -1103,7 +1430,6 @@ async function deleteBlog(id) {
         NEWS & EVENTS TAB
         Public, Admin-managed — renders on the homepage's "News &
         Events" section, newest `date` first.
-=========================================*/
 async function loadNewsEvents() {
     const container = document.getElementById("newsList");
     try {
@@ -1211,7 +1537,6 @@ async function deleteNews(id) {
 
 /*=========================================
         WIRING
-=========================================*/
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".admin-tab-btn").forEach(btn => {
         btn.addEventListener("click", () => showTab(btn.dataset.tab));
@@ -1306,3 +1631,4 @@ document.addEventListener("DOMContentLoaded", function () {
     loadBlogs();
     loadNewsEvents();
 });
+ main
