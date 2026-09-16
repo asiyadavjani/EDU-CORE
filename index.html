@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduCore Portal</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="./style.css">
+    <title>EduCore Portal — IT Training, Karachi</title>
 
-    <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
-    <script type="module">
-        import { protectPage } from "./authGuard.js";
-        // Sirf Admin access kar sakta hai
-        protectPage(["Admin"]);
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts: Manrope = headings/numbers, Open Sans = body (matches your style.css) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./style.css">
+    <!-- home.css ko style.css ke BAAD rakhein, taake new sections theek se style hon -->
+    <link rel="stylesheet" href="./home.css">
 </head>
 <body>
 
@@ -26,11 +28,11 @@
                 🔥 Admissions Open
             </span>
             <span class="offer-text">
-                New Web Development, Digital Marketing & AI batches are now live.
+                New Web Development, Digital Marketing &amp; AI batches are now live.
             </span>
         </div>
 
-        <a href="./enrollment.html" class="offer-btn">
+        <a href="./quiz.html" class="offer-btn">
             Take Eligibility Quiz
             <i class="fa-solid fa-arrow-right"></i>
         </a>
@@ -45,64 +47,63 @@
 <div id="header-placeholder"></div>
 
 <!-- ====================================
-     FLOATING SIDEBAR NAVIGATION 
+     FLOATING SIDEBAR NAVIGATION
 ===================================== -->
 <div class="side-floating-bar">
-  <!-- Phone Contact -->
   <a href="tel:03200918060" class="side-item">
     <i class="fa-solid fa-phone"></i>
-    <span class="side-tooltip">03200918060</span>
+    <span class="side-tooltip">0320-0918060</span>
   </a>
 
-  <!-- Email Support -->
   <a href="mailto:support@educore.com" class="side-item">
     <i class="fa-solid fa-envelope"></i>
-    <span class="side-tooltip">@educore</span>
+    <span class="side-tooltip">support@educore.com</span>
   </a>
 
-  <!-- Quick FAQ / Page Link -->
   <a href="./faq.html" class="side-item accent-item">
     <i class="fa-solid fa-circle-question"></i>
-    <span class="side-tooltip">FAQs</span>
+    <span class="side-tooltip">Any Question?</span>
   </a>
 </div>
 
-<!-- HERO SLIDER -->
+<!-- ====================================
+     HERO SLIDER
+===================================== -->
 <div class="page-container">
     <section class="hero-slider">
         <div class="slider-container">
             <div class="slider-content">
-                <h1 class="animate-text-left">40% off your first 3 months. Learn more for less.</h1>
-                <p class="animate-text-bottom">Personal Plan is your career companion for AI and more cutting-edge skills.</p>
-                <div class="slider-actions animate-fade">
-                    <button class="slider-btn-primary">Get Started</button>
-                    <button class="slider-btn-secondary" onclick="openResultModal()">Take Quiz First</button>
+                <h1 class="animate-text-left" data-hero-title>Learn today, earn this year.</h1>
+                <p class="animate-text-bottom" data-hero-sub>On campus in Karachi or online — job-ready batches in Web Development, AI, and Digital Marketing. Every course includes live projects and a verified certificate.</p>
+                <div class="slider-actions animate-fade" data-hero-cta>
+                    <button class="slider-btn-primary" onclick="window.location.href='./enrollment.html'">Enroll now</button>
+                    <button class="slider-btn-secondary" onclick="window.location.href='./quiz.html'">Take the quiz first</button>
                 </div>
             </div>
 
             <div class="slider-graphics-pure">
-                <div class="circles-group">
+                <div class="circles-group" data-hero-shape>
                     <div class="pure-circle c-light"></div>
                     <div class="pure-circle c-teal"></div>
                     <div class="pure-circle c-blue-grey"></div>
                     <div class="pure-circle c-dark-grey"></div>
                 </div>
 
-                <div class="asterisk-shape">
+                <div class="asterisk-shape" data-hero-shape>
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </div>
 
-                <div class="staircase-arrow">
+                <div class="staircase-arrow" data-hero-shape>
                     <svg width="150" height="150" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M150 10V50H110V90H70V130H30V170" stroke="#718096" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M15 155L30 170L45 155" stroke="#718096" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </div>
 
-                <div class="triangles-mosaic">
+                <div class="triangles-mosaic" data-hero-shape>
                     <div class="tr-sharp color-1"></div>
                     <div class="tr-sharp color-2"></div>
                     <div class="tr-sharp color-3"></div>
@@ -121,10 +122,542 @@
     </section>
 </div>
 
+<!-- ====================================
+     PARTNER MARQUEE
+===================================== -->
+<section class="ec-marquee-sec">
+    <p class="ec-marquee-label">Our graduates now work here</p>
+    <div class="ec-marquee" id="ecMarquee">
+        <div class="ec-marquee-track" id="ecMarqueeTrack">
+            <span class="ec-logo"><i class="fa-brands fa-google"></i> Google</span>
+            <span class="ec-logo"><i class="fa-brands fa-microsoft"></i> Microsoft</span>
+            <span class="ec-logo"><i class="fa-brands fa-meta"></i> Meta</span>
+            <span class="ec-logo"><i class="fa-brands fa-aws"></i> Amazon</span>
+            <span class="ec-logo"><i class="fa-solid fa-network-wired"></i> Cisco</span>
+            <span class="ec-logo"><i class="fa-brands fa-adobe"></i> Adobe</span>
+            <span class="ec-logo"><i class="fa-brands fa-upwork"></i> Upwork</span>
+            <span class="ec-logo"><i class="fa-brands fa-github"></i> GitHub</span>
+            <span class="ec-logo"><i class="fa-brands fa-figma"></i> Figma</span>
+            <span class="ec-logo"><i class="fa-solid fa-building-columns"></i> NAVTTC</span>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     ABOUT
+===================================== -->
+<section class="ec-about-sec ec-sec" id="ecAbout">
+    <div class="ec-wrap">
+        <header class="ec-sec-head ec-sec-head--center">
+            <span class="ec-eyebrow"><i class="fa-solid fa-graduation-cap"></i> About EduCore</span>
+            <h2>What is EduCore?</h2>
+            <p>We've been delivering IT training in Karachi since 2018 — job-ready skills, verified certificates, and a team that stays with you even after the course ends.</p>
+        </header>
+
+        <div class="ec-about-grid">
+            <article class="ec-about-card">
+                <span class="ec-about-icon"><i class="fa-solid fa-laptop-code"></i></span>
+                <h3>What we teach</h3>
+                <p>Job-ready batches in Web Development, Digital Marketing, and AI/Data — every course includes live projects.</p>
+            </article>
+            <article class="ec-about-card">
+                <span class="ec-about-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                <h3>Why EduCore</h3>
+                <p>QR-verified certificates, NAVTTC-recognised vocational tracks, and trainers with real industry experience.</p>
+            </article>
+            <article class="ec-about-card">
+                <span class="ec-about-icon"><i class="fa-solid fa-user-group"></i></span>
+                <h3>Who can join</h3>
+                <p>Whether you're a beginner or a working professional — every track starts from entry level, with no prior coding experience required.</p>
+            </article>
+            <article class="ec-about-card">
+                <span class="ec-about-icon"><i class="fa-solid fa-rocket"></i></span>
+                <h3>How to get started</h3>
+                <p>Take the eligibility quiz first, or go straight ahead and enroll in your course — either way takes under 5 minutes.</p>
+            </article>
+        </div>
+
+        <div class="ec-about-actions">
+            <a class="ec-btn ec-btn-dark" href="./enrollment.html">Enroll now</a>
+            <a class="ec-btn ec-btn-outline" href="./quiz.html">Take the quiz</a>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     STATS  (GSAP counters)
+===================================== -->
+<section class="ec-stats-sec" id="ecStats">
+    <div class="ec-wrap">
+        <div class="ec-stats">
+            <div class="ec-stat">
+                <span class="ec-stat-icon"><i class="fa-solid fa-user-graduate"></i></span>
+                <span class="ec-stat-num" data-count="200000" data-suffix="+">200,000+</span>
+                <span class="ec-stat-label">Students trained</span>
+            </div>
+            <div class="ec-stat">
+                <span class="ec-stat-icon"><i class="fa-solid fa-chalkboard-user"></i></span>
+                <span class="ec-stat-num" data-count="400" data-suffix="+">400+</span>
+                <span class="ec-stat-label">Trainers on staff</span>
+            </div>
+            <div class="ec-stat">
+                <span class="ec-stat-icon"><i class="fa-solid fa-chart-line"></i></span>
+                <span class="ec-stat-num" data-count="70" data-suffix="%">70%</span>
+                <span class="ec-stat-label">Employment rate</span>
+            </div>
+            <div class="ec-stat">
+                <span class="ec-stat-icon"><i class="fa-solid fa-rocket"></i></span>
+                <span class="ec-stat-num" data-count="150" data-suffix="+">150+</span>
+                <span class="ec-stat-label">Startups launched</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     COURSES
+     Animated card grid — Firestore ke `courses` collection se banta hai.
+     Render code: home-content.js
+===================================== -->
+<section class="ec-courses-sec ec-sec" id="ecCourses">
+    <div class="ec-wrap">
+        <header class="ec-sec-head">
+            <span class="ec-eyebrow"><i class="fa-solid fa-book-open"></i> Courses</span>
+            <h2>Our Courses</h2>
+            <p>Diploma tracks and short skill courses — updated live from the admin dashboard, so you always see the latest list here.</p>
+        </header>
+
+        <div class="ec-courses-grid" id="coursesGrid" role="list">
+            <p class="ec-empty-note">Loading courses…</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     MEET THE TEACHERS
+     Photo mosaic — Firestore ke approved teachers se banta hai.
+     Render code: teachers-home.js
+===================================== -->
+<section class="tm-band" id="ecTeachers">
+    <div class="tm-mosaic" id="teachersGrid" role="list">
+        <p class="teachers-empty-note">Loading teachers…</p>
+    </div>
+
+    <div class="tm-copy">
+        <h2>We don't just teach courses<br>We build careers</h2>
+        <p>Behind every course is an industry expert. Click any photo to see their profile.</p>
+        <div class="tm-actions">
+            <a class="ec-btn ec-btn-cyan" href="./enrollment.html">Enroll now</a>
+            <a class="ec-btn ec-btn-ghost" href="./quiz.html">Take the quiz</a>
+        </div>
+    </div>
+</section>
+
+<!-- Teacher profile modal -->
+<div class="teacher-modal-overlay" id="teacherModalOverlay" role="dialog" aria-modal="true" aria-labelledby="teacherModalName">
+    <div class="teacher-modal">
+        <button class="teacher-modal-close" id="teacherModalClose" aria-label="Close profile">&times;</button>
+        <img id="teacherModalPhoto" src="" alt="">
+        <div class="teacher-modal-fallback" id="teacherModalFallback"></div>
+        <h3 id="teacherModalName"></h3>
+        <p class="teacher-modal-title" id="teacherModalTitleText"></p>
+        <p class="teacher-modal-bio" id="teacherModalBio"></p>
+    </div>
+</div>
+
+<!-- Blog post modal ("Read More" from the Popular Blogs section) -->
+<div class="blog-modal-overlay" id="blogModalOverlay" role="dialog" aria-modal="true" aria-labelledby="blogModalTitle">
+    <div class="blog-modal">
+        <button class="teacher-modal-close" id="blogModalClose" aria-label="Close post">&times;</button>
+        <img id="blogModalImage" src="" alt="" style="display:none;">
+        <span class="blog-modal-tag" id="blogModalCategory" style="display:none;"></span>
+        <h3 id="blogModalTitle"></h3>
+        <p class="blog-modal-body" id="blogModalBody"></p>
+    </div>
+</div>
+
+<!-- News / event modal ("Read More" from the News & Events section) -->
+<div class="news-modal-overlay" id="newsModalOverlay" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
+    <div class="news-modal">
+        <button class="teacher-modal-close" id="newsModalClose" aria-label="Close">&times;</button>
+        <img id="newsModalImage" src="" alt="" style="display:none;">
+        <span class="news-modal-date" id="newsModalDate"></span>
+        <h3 id="newsModalTitle"></h3>
+        <p class="news-modal-body" id="newsModalBody"></p>
+        <a class="ec-btn ec-btn-blue" id="newsModalLink" href="#" style="display:none;">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+</div>
+
+<!-- ====================================
+     CERTIFICATIONS
+===================================== -->
+<section class="ec-cert-sec ec-sec" id="ecCerts">
+    <div class="ec-wrap ec-cert-grid">
+        <div class="ec-cert-copy">
+            <h2>Course complete, proof in hand</h2>
+            <p>At the end of every course, you get a verifiable certificate — with a QR code an employer can check in seconds. Add it directly to your resume and LinkedIn.</p>
+
+            <ul class="ec-cert-points">
+                <li><i class="fa-solid fa-shield-halved"></i><div><strong>Verifiable ID</strong><span>A unique code on every certificate, verifiable on our portal.</span></div></li>
+                <li><i class="fa-solid fa-briefcase"></i><div><strong>Portfolio included</strong><span>3 live projects you can showcase to clients.</span></div></li>
+                <li><i class="fa-solid fa-award"></i><div><strong>NAVTTC recognised</strong><span>Vocational courses registered with the government.</span></div></li>
+            </ul>
+
+            <a class="ec-btn ec-btn-dark" href="./enrollment.html">See certificate tracks</a>
+        </div>
+
+        <div class="ec-cert-stack" id="ecCertStack">
+            <article class="ec-cert-card" data-cert="3">
+                <span class="ec-cert-ribbon"></span>
+                <p class="ec-cert-issuer">EduCore &middot; Networking</p>
+                <h3>Cisco CCNA Fundamentals</h3>
+                <p class="ec-cert-id">ID&nbsp;ECN-2026-04412</p>
+                <span class="ec-cert-sign"></span>
+            </article>
+            <article class="ec-cert-card" data-cert="2">
+                <span class="ec-cert-ribbon"></span>
+                <p class="ec-cert-issuer">EduCore &middot; Data</p>
+                <h3>Data Analytics with Python</h3>
+                <p class="ec-cert-id">ID&nbsp;ECD-2026-01987</p>
+                <span class="ec-cert-sign"></span>
+            </article>
+            <article class="ec-cert-card" data-cert="1">
+                <span class="ec-cert-ribbon"></span>
+                <p class="ec-cert-issuer">EduCore &middot; Development</p>
+                <h3>MERN Stack Web Development</h3>
+                <p class="ec-cert-id">ID&nbsp;ECW-2026-00731</p>
+                <span class="ec-cert-sign"></span>
+            </article>
+        </div>
+    </div>
+
+    <div class="ec-wrap">
+        <div class="ec-accred">
+            <span>Accredited &amp; aligned with</span>
+            <div class="ec-accred-list">
+                <em>Cisco Networking Academy</em>
+                <em>Microsoft Learn</em>
+                <em>Google Career Certificates</em>
+                <em>Meta Blueprint</em>
+                <em>NAVTTC Pakistan</em>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     SUCCESS STORIES
+     Firestore ke `successStories` collection se banta hai (Admin tab).
+     Render code: home-content.js
+===================================== -->
+<section class="ec-success-sec ec-sec" id="ecSuccess">
+    <div class="ec-wrap">
+        <header class="ec-sec-head ec-sec-head--center">
+            <span class="ec-eyebrow"><i class="fa-solid fa-star"></i> Success Stories</span>
+            <h2>Our graduates are our best proof</h2>
+            <p>What our students achieved after completing their course — in their own words.</p>
+        </header>
+
+        <div class="ec-success-grid" id="successGrid" role="list">
+            <p class="ec-empty-note">Loading success stories…</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     STUDENT REVIEWS  (bento)
+===================================== -->
+<section class="ec-rev-sec ec-sec" id="ecReviews">
+    <div class="ec-wrap">
+        <header class="ec-sec-head ec-sec-head--split">
+            <div>
+                <h2>What students say</h2>
+                <p>Verified reviews from people who completed their course and started working.</p>
+            </div>
+            <div class="ec-rev-score">
+                <strong>4.8</strong>
+                <span class="ec-rev-stars" aria-label="4.8 out of 5">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                </span>
+                <small>3,140 reviews</small>
+            </div>
+        </header>
+
+        <div class="ec-rev-grid" id="ecRevGrid">
+
+            <!-- A -->
+            <article class="ec-rev ec-rev--navy ec-rev--w7">
+                <span class="ec-rev-quote"><i class="fa-solid fa-quote-right"></i></span>
+                <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                <p class="ec-rev-text">“Six months ago I only knew HTML. After the MERN batch, I landed my first job on Shahrah-e-Faisal — and the teachers still reply on WhatsApp.”</p>
+                <footer class="ec-rev-by">
+                    <span class="ec-av" data-initials="AR"></span>
+                    <span><strong>Ahmed Raza</strong><small>Frontend Developer &middot; Karachi</small></span>
+                </footer>
+            </article>
+
+            <!-- B -->
+            <article class="ec-rev ec-rev--gold ec-rev--w5">
+                <span class="ec-rev-quote"><i class="fa-solid fa-quote-right"></i></span>
+                <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                <p class="ec-rev-text">“The fees were affordable, but the teaching matched any expensive institute. Now I manage my own clients on Upwork.”</p>
+                <footer class="ec-rev-by">
+                    <span class="ec-av" data-initials="MK"></span>
+                    <span><strong>Maryam Khan</strong><small>Freelance Designer &middot; Hyderabad</small></span>
+                </footer>
+            </article>
+
+            <!-- C -->
+            <article class="ec-rev ec-rev--sky ec-rev--w5">
+                <span class="ec-rev-quote"><i class="fa-solid fa-quote-right"></i></span>
+                <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                <p class="ec-rev-text">“Zero fluff. An assignment after every class, a review every week. Twelve weeks from idea to the Play Store.”</p>
+                <footer class="ec-rev-by">
+                    <span class="ec-av" data-initials="JA"></span>
+                    <span><strong>Junaid Ali</strong><small>Flutter Developer &middot; Lahore</small></span>
+                </footer>
+            </article>
+
+            <!-- D : flip card -->
+            <article class="ec-rev ec-rev--flip ec-rev--w7" data-flip tabindex="0" role="button" aria-label="Saba Farooq's review — click to see results">
+                <div class="ec-rev-inner">
+                    <div class="ec-rev-face ec-rev-front ec-rev--navy">
+                        <span class="ec-rev-quote"><i class="fa-solid fa-quote-right"></i></span>
+                        <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                        <p class="ec-rev-text">“For two years I tried teaching myself. Here I got the same thing in 4 months, with real structure.”</p>
+                        <footer class="ec-rev-by">
+                            <span class="ec-av" data-initials="SF"></span>
+                            <span><strong>Saba Farooq</strong><small>Data Analyst &middot; Karachi</small></span>
+                        </footer>
+                        <span class="ec-flip-hint"><i class="fa-solid fa-arrows-rotate"></i> See results</span>
+                    </div>
+
+                    <div class="ec-rev-face ec-rev-back ec-rev--navy">
+                        <p class="ec-rev-backname"><strong>Saba Farooq</strong><small>Data Analyst &middot; Karachi</small></p>
+                        <div class="ec-rev-metrics">
+                            <div><b>Rs 185k</b><span>Monthly salary</span></div>
+                            <div><b>4 mo</b><span>Course to job</span></div>
+                        </div>
+                        <p class="ec-rev-delivered">What she got</p>
+                        <ul class="ec-rev-list">
+                            <li><i class="fa-regular fa-circle-check"></i> 3 portfolio dashboards</li>
+                            <li><i class="fa-regular fa-circle-check"></i> Mock interviews</li>
+                            <li><i class="fa-regular fa-circle-check"></i> CV &amp; LinkedIn review</li>
+                            <li><i class="fa-regular fa-circle-check"></i> Employer referral</li>
+                        </ul>
+                        <span class="ec-flip-hint"><i class="fa-solid fa-arrows-rotate"></i> Back</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- E -->
+            <article class="ec-rev ec-rev--plain ec-rev--w6">
+                <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                <p class="ec-rev-text">“The evening batch meant I could manage it alongside my job. Lab access stays open on Sundays too.”</p>
+                <footer class="ec-rev-by">
+                    <span class="ec-av" data-initials="HS"></span>
+                    <span><strong>Hassan Shaikh</strong><small>Network Engineer &middot; Islamabad</small></span>
+                </footer>
+            </article>
+
+            <!-- F -->
+            <article class="ec-rev ec-rev--plain ec-rev--w6">
+                <span class="ec-rev-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></span>
+                <p class="ec-rev-text">“The digital marketing course ran campaigns on real budgets. I landed my first client before the course even ended.”</p>
+                <footer class="ec-rev-by">
+                    <span class="ec-av" data-initials="NI"></span>
+                    <span><strong>Nimra Iqbal</strong><small>Digital Marketer &middot; Karachi</small></span>
+                </footer>
+            </article>
+
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     POPULAR BLOGS
+     Firestore ke `blogs` collection se banta hai (Admin tab).
+     Render code: home-content.js
+===================================== -->
+<section class="ec-blogs-sec ec-sec" id="ecBlogs">
+    <div class="ec-wrap">
+        <header class="ec-sec-head">
+            <span class="ec-eyebrow"><i class="fa-solid fa-blog"></i> Popular Blogs</span>
+            <h2>Keep learning, even after the course</h2>
+            <p>Career tips, industry trends, and guides — from our team.</p>
+        </header>
+
+        <div class="ec-blogs-grid" id="blogsGrid" role="list">
+            <p class="ec-empty-note">Loading blog posts…</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     NEWS & EVENTS
+     Firestore ke `newsEvents` collection se banta hai (Admin tab).
+     Render code: home-content.js
+===================================== -->
+<section class="ec-news-sec ec-sec" id="ecNews">
+    <div class="ec-wrap">
+        <header class="ec-sec-head">
+            <span class="ec-eyebrow"><i class="fa-solid fa-calendar-days"></i> News &amp; Events</span>
+            <h2>What's new</h2>
+            <p>New batches, admissions, and campus events — all in one place.</p>
+        </header>
+
+        <div class="ec-news-grid" id="newsGrid" role="list">
+            <p class="ec-empty-note">Loading news &amp; events…</p>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     CAMPUS MAP  (Karachi default)
+===================================== -->
+<section class="ec-map-sec ec-sec" id="ecMap">
+    <div class="ec-wrap">
+        <header class="ec-sec-head">
+            <h2>Find a campus</h2>
+            <p>Our head office is in Karachi. Click any campus below and the map will jump there.</p>
+        </header>
+
+        <div class="ec-map-grid">
+            <!-- Head office ka data common.html ke footer se liya gaya hai.
+                 Baaki campuses placeholder hain — apne asli address daalein
+                 aur lat/lng Google Maps par right-click → coordinates se
+                 copy kar ke data-lat / data-lng mein paste kar dein. -->
+            <div class="ec-camp-list" id="ecCampusList">
+                <button class="ec-camp ec-camp--tagged is-active" data-lat="24.8607" data-lng="67.0011"
+                        data-city="Karachi" data-name="EduCore Head Office"
+                        data-addr="A-25, Tech Zone, Karachi, Pakistan"
+                        data-phone="0320-0918060" data-hours="Mon–Sat, 9am – 9pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Karachi — Tech Zone</strong>
+                        <small>A-25, Tech Zone, Karachi</small>
+                    </span>
+                    <span class="ec-camp-tag">Head office</span>
+                </button>
+
+                <button class="ec-camp" data-lat="24.9204" data-lng="67.0900"
+                        data-city="Karachi" data-name="Gulshan-e-Iqbal Campus"
+                        data-addr="Block 13-D, Main University Road, Gulshan-e-Iqbal, Karachi"
+                        data-phone="0320 0918061" data-hours="Mon–Sat, 10am – 8pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Karachi — Gulshan-e-Iqbal</strong>
+                        <small>Block 13-D, Main University Road</small>
+                    </span>
+                </button>
+
+                <button class="ec-camp" data-lat="24.9056" data-lng="67.0822"
+                        data-city="Karachi" data-name="Gulistan-e-Johar Campus"
+                        data-addr="Rashid Minhas Road, Gulistan-e-Johar, Karachi"
+                        data-phone="0320 0918062" data-hours="Mon–Sat, 9am – 9pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Karachi — Gulistan-e-Johar</strong>
+                        <small>Rashid Minhas Road</small>
+                    </span>
+                </button>
+
+                <button class="ec-camp" data-lat="25.3960" data-lng="68.3578"
+                        data-city="Hyderabad" data-name="Latifabad Campus"
+                        data-addr="Unit 7, Latifabad, Hyderabad"
+                        data-phone="0320 0918063" data-hours="Mon–Sat, 10am – 8pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Hyderabad — Latifabad</strong>
+                        <small>Unit 7, Latifabad</small>
+                    </span>
+                </button>
+
+                <button class="ec-camp" data-lat="31.4697" data-lng="74.2728"
+                        data-city="Lahore" data-name="Johar Town Campus"
+                        data-addr="Block G1, Johar Town, Lahore"
+                        data-phone="0320 0918064" data-hours="Mon–Sat, 10am – 8pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Lahore — Johar Town</strong>
+                        <small>Block G1, Johar Town</small>
+                    </span>
+                </button>
+
+                <button class="ec-camp" data-lat="33.7089" data-lng="73.0567"
+                        data-city="Islamabad" data-name="Blue Area Campus"
+                        data-addr="Jinnah Avenue, Blue Area, Islamabad"
+                        data-phone="0320 0918065" data-hours="Mon–Sat, 10am – 7pm">
+                    <span class="ec-camp-pin"><i class="fa-solid fa-location-dot"></i></span>
+                    <span class="ec-camp-body">
+                        <strong>Islamabad — Blue Area</strong>
+                        <small>Jinnah Avenue, Blue Area</small>
+                    </span>
+                </button>
+            </div>
+
+            <div class="ec-map-panel">
+                <div class="ec-map-frame">
+                    <iframe id="ecMapFrame"
+                            title="EduCore campus location"
+                            src="https://maps.google.com/maps?q=24.8607,67.0011&z=15&hl=en&output=embed"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+
+                <div class="ec-map-card" id="ecMapCard">
+                    <h3 id="ecMapName">EduCore Head Office</h3>
+                    <p class="ec-map-addr" id="ecMapAddr">A-25, Tech Zone, Karachi, Pakistan</p>
+                    <dl class="ec-map-meta">
+                        <div><dt>Phone</dt><dd id="ecMapPhone">0320-0918060</dd></div>
+                        <div><dt>Open</dt><dd id="ecMapHours">Mon–Sat, 9am – 9pm</dd></div>
+                    </dl>
+                    <a class="ec-btn ec-btn-blue" id="ecMapDir" href="https://www.google.com/maps/dir/?api=1&destination=24.8607,67.0011" target="_blank" rel="noopener">
+                        Get directions <i class="fa-solid fa-diamond-turn-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================
+     CLOSING CTA
+===================================== -->
+<section class="ec-cta-sec">
+    <div class="ec-wrap ec-cta">
+        <div>
+            <h2>Next batch starts October 1st</h2>
+            <p>Seats are limited. Take the eligibility quiz first — it takes 3 minutes and gives you your recommended track.</p>
+        </div>
+        <div class="ec-cta-actions">
+            <a class="ec-btn ec-btn-cyan" href="./enrollment.html">Enroll now</a>
+            <a class="ec-btn ec-btn-ghost" href="./quiz.html">Take the quiz</a>
+        </div>
+    </div>
+</section>
+
 <!-- FOOTER PLACEHOLDER -->
 <div id="footer-placeholder"></div>
 
 <!-- JavaScript -->
-<script type="module" src="./app.js"></script>
+<script src="./app.js"></script>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="./home.js"></script>
+
+<!-- Teachers come from Firestore, so this stays a module (it imports
+     firebaseConfig.js). Keep it AFTER home.js: home.js listens for the
+     "teachers:rendered" event this file dispatches. -->
+<script type="module" src="./teachers-home.js"></script>
+
+<!-- Courses / Success Stories / Popular Blogs / News & Events — same
+     reasoning as teachers-home.js above: a module so it can read
+     Firestore, kept after home.js because it dispatches "courses:rendered"
+     / "success:rendered" / "blogs:rendered" / "news:rendered" for home.js
+     to animate once each grid actually has cards in it. -->
+<script type="module" src="./home-content.js"></script>
 </body>
 </html>

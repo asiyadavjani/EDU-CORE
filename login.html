@@ -135,6 +135,22 @@
         .footer-text { text-align: center; margin-top: 22px; font-size: 13px; color: var(--text-muted); }
         .footer-text a { color: var(--orange-accent); text-decoration: none; font-weight: 600; }
 
+        .back-home-link {
+            position: fixed;
+            top: 22px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            z-index: 10;
+            transition: color 0.3s ease;
+        }
+        .back-home-link:hover { color: var(--theme-accent-blue); }
+
         /* file:// warning banner */
         .env-warning {
             position: fixed; top: 0; left: 0; right: 0;
@@ -171,6 +187,8 @@
 </head>
 <body>
 
+    <a href="./index.html" class="back-home-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+
     <div class="glass-card" id="loginCard">
         <div class="role-selector">
             <button type="button" class="role-btn active" data-role="Student">
@@ -191,7 +209,7 @@
                 <label>Email Address</label>
                 <div class="input-field">
                     <i class="fa-solid fa-envelope field-icon"></i>
-                    <input type="email" id="email" placeholder="name@example.com" required>
+                    <input type="email" id="email" placeholder="name@example.com" autocomplete="username" required>
                 </div>
             </div>
 
@@ -199,7 +217,7 @@
                 <label>Password</label>
                 <div class="input-field">
                     <i class="fa-solid fa-lock field-icon"></i>
-                    <input type="password" id="password" placeholder="••••••••" required>
+                    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required>
                     <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
                 </div>
             </div>
@@ -279,6 +297,17 @@
                 window.selectedRole = this.getAttribute("data-role");
                 if (roleHeading) roleHeading.innerText = window.selectedRole;
                 if (submitBtn) submitBtn.innerText = `Log In as ${window.selectedRole}`;
+
+                // Student/Teacher/Admin all share this one login.html URL, so
+                // the browser's saved-password autofill has no way to know
+                // which of your several saved logins belongs to this tab —
+                // it can silently fill in a DIFFERENT account's leftover
+                // password from a previous role. Clearing it on every tab
+                // switch means you always retype (or re-pick) the password
+                // for the role you actually selected, instead of unknowingly
+                // submitting a stale mismatched one.
+                const pwField = document.getElementById("password");
+                if (pwField) pwField.value = "";
             });
         });
     </script>

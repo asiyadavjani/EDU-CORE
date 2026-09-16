@@ -3,46 +3,22 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | EduCore</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="./admin.css">
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>EduCore | Admin Dashboard</title>
-
-
-<!-- Bootstrap -->
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-    rel="stylesheet">
-
-
-<!-- Font Awesome -->
-<link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
-
-<!-- Google Font -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-
-<!-- Existing CSS -->
-<link rel="stylesheet" href="./admin.css">
-
-
+    <!-- Auth Guard (Script ko yahan rakhein taake page load hone se pehle security check ho) -->
+    <script type="module">
+        import { protectPage } from "../authGuard.js";
+        // Sirf Admin access kar sakta hai
+        protectPage(["Admin"], { loadingEl: "authLoading", contentEl: "pageContent" });
+    </script>
 </head>
 
 <body>
-
-
-<!-- =========================================================
-     SIDEBAR
-========================================================= -->
 
 <aside id="sidebar" class="sidebar">
 
@@ -202,7 +178,6 @@
 
 <!-- =========================================================
      MAIN CONTENT
-========================================================= -->
 
 <div class="main-content">
 
@@ -2313,7 +2288,6 @@
 
 <!-- =========================================================
      BOOTSTRAP
-========================================================= -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js">
@@ -2323,7 +2297,6 @@
 
 <!-- =========================================================
      CHART.JS
-========================================================= -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
@@ -2332,7 +2305,6 @@
 
 <!-- =========================================================
      EXISTING JS
-========================================================= -->
 
 <!--
 <script type="module">
@@ -2359,4 +2331,374 @@
 
 </body>
 
+    <!-- Shown immediately; swapped out once the role check below passes. -->
+    <div id="authLoading">Checking access…</div>
+
+    <div id="pageContent">
+
+        <div class="admin-topbar">
+            <div class="admin-brand"><i class="fa-solid fa-graduation-cap"></i> EduCore <span>Admin</span></div>
+            <div class="admin-topbar-actions">
+                <div class="admin-notif-wrap">
+                    <button type="button" class="admin-notif-bell" id="notifBell" aria-label="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="admin-notif-badge" id="notifBadge" style="display:none;">0</span>
+                    </button>
+                    <div class="admin-notif-dropdown" id="notifDropdown" style="display:none;">
+                        <div class="admin-notif-head">Notifications</div>
+                        <div id="notifList" class="admin-notif-list"></div>
+                    </div>
+                </div>
+                <a href="../index.html" class="admin-home-btn"><i class="fa-solid fa-house"></i> Home</a>
+                <button id="logoutBtn" class="admin-logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </div>
+
+        <div class="admin-wrap">
+
+            <!-- QUICK STATS -->
+            <div class="admin-stats-row" id="adminStats">
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statAwaiting">0</span>
+                    <span class="admin-stat-label">Awaiting Approval</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statAccepted">0</span>
+                    <span class="admin-stat-label">Accepted Students</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statCourses">0</span>
+                    <span class="admin-stat-label">Courses</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statTeachers">0</span>
+                    <span class="admin-stat-label">Teachers</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statPendingTeachers">0</span>
+                    <span class="admin-stat-label">Pending Teachers</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="admin-stat-value" id="statPendingOrders">0</span>
+                    <span class="admin-stat-label">Pending Orders</span>
+                </div>
+            </div>
+
+            <!-- ANALYTICS -->
+            <div class="admin-charts-row">
+                <div class="admin-chart-card">
+                    <h3><i class="fa-solid fa-users"></i> Teachers &amp; Students</h3>
+                    <div class="admin-chart-box"><canvas id="chartCounts"></canvas></div>
+                </div>
+                <div class="admin-chart-card">
+                    <h3><i class="fa-solid fa-building"></i> Courses by Campus</h3>
+                    <div class="admin-chart-box"><canvas id="chartCampus"></canvas></div>
+                </div>
+                <div class="admin-chart-card">
+                    <h3><i class="fa-solid fa-calendar-check"></i> Attendance Rate</h3>
+                    <div class="admin-chart-box"><canvas id="chartAttendance"></canvas></div>
+                </div>
+                <div class="admin-chart-card">
+                    <h3><i class="fa-solid fa-graduation-cap"></i> Our Track Record</h3>
+                    <div class="admin-chart-box"><canvas id="chartTrackRecord"></canvas></div>
+                </div>
+                <div class="admin-chart-card">
+                    <h3><i class="fa-solid fa-layer-group"></i> Students by Course</h3>
+                    <div class="admin-chart-box"><canvas id="chartStudentsByCourse"></canvas></div>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="admin-tabs">
+                <button class="admin-tab-btn active" data-tab="applications"><i class="fa-solid fa-user-check"></i> Student Applications</button>
+                <button class="admin-tab-btn" data-tab="teacherApplications"><i class="fa-solid fa-chalkboard-user"></i> Teacher Applications</button>
+                <button class="admin-tab-btn" data-tab="courses"><i class="fa-solid fa-book"></i> Courses</button>
+                <button class="admin-tab-btn" data-tab="teachers"><i class="fa-solid fa-user-tie"></i> Teachers</button>
+                <button class="admin-tab-btn" data-tab="orders"><i class="fa-solid fa-receipt"></i> Orders</button>
+                <button class="admin-tab-btn" data-tab="successStories"><i class="fa-solid fa-star"></i> Success Stories</button>
+                <button class="admin-tab-btn" data-tab="blogs"><i class="fa-solid fa-blog"></i> Blog Posts</button>
+                <button class="admin-tab-btn" data-tab="newsEvents"><i class="fa-solid fa-newspaper"></i> News &amp; Events</button>
+            </div>
+
+            <!-- APPLICATIONS TAB -->
+            <div class="admin-tab-panel active" id="tab-applications">
+                <div class="admin-panel-head">
+                    <h2>Student Applications</h2>
+                    <div class="admin-filter-group">
+                        <label>Filter:</label>
+                        <select id="applicationsFilter">
+                            <option value="Awaiting Approval" selected>Awaiting Approval</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Entry Test Pending">Entry Test Pending</option>
+                            <option value="Failed">Failed Entry Test</option>
+                            <option value="all">All</option>
+                        </select>
+                        <button id="refreshApplicationsBtn" class="admin-btn-secondary"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    </div>
+                </div>
+                <div id="applicationsList" class="admin-list"></div>
+            </div>
+
+            <!-- TEACHER APPLICATIONS TAB -->
+            <div class="admin-tab-panel" id="tab-teacherApplications">
+                <div class="admin-panel-head">
+                    <h2>Teacher Applications</h2>
+                    <div class="admin-filter-group">
+                        <label>Filter:</label>
+                        <select id="teacherApplicationsFilter">
+                            <option value="pending" selected>Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="all">All</option>
+                        </select>
+                        <button id="refreshTeacherApplicationsBtn" class="admin-btn-secondary" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                    </div>
+                    <p class="admin-panel-sub">Teachers show up here the moment they sign up with role = Teacher. Accept activates their dashboard login and lists them on the homepage; Reject denies it. (Teachers added directly below in the Teachers tab don't need review — they're auto-approved.)</p>
+                </div>
+                <div id="teacherApplicationsList" class="admin-list"></div>
+            </div>
+
+            <!-- COURSES TAB -->
+            <div class="admin-tab-panel" id="tab-courses">
+                <div class="admin-panel-head">
+                    <h2>Courses</h2>
+                </div>
+
+                <form id="courseForm" class="admin-inline-form">
+                    <input type="hidden" id="courseEditId">
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Course Title*</label>
+                            <input type="text" id="courseTitle" placeholder="e.g. Google Ads" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Category*</label>
+                            <select id="courseCategory" required>
+                                <option value="Diploma Track">Diploma Track (admission-based)</option>
+                                <option value="Skill Course" selected>Skill Course (catalog / cart)</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Price (PKR, 0 = Free)*</label>
+                            <input type="number" id="coursePrice" min="0" value="0" required>
+                        </div>
+                        <div class="input-box">
+                            <!-- Needed so future reports (e.g. paid vs free per
+                                 campus) have real data to work with — same
+                                 campus list as enrollment.html's own field. -->
+                            <label>Campus*</label>
+                            <select id="courseCampus" required>
+                                <option value="">Select campus</option>
+                                <option value="Main Campus">Main Campus</option>
+                                <!-- Placeholder extra campuses so the per-campus chart on
+                                     the Admin dashboard has more than one bucket to show —
+                                     rename these to your real campuses, or remove them, any
+                                     time from this dropdown (and the matching one in
+                                     enrollment.html). -->
+                                <option value="North Campus">North Campus</option>
+                                <option value="Online Campus">Online Campus</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>Assign Teacher</label>
+                            <select id="courseTeacher">
+                                <option value="">-- none yet --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Description</label>
+                        <textarea id="courseDescription" rows="2" placeholder="Short description shown on the course catalog"></textarea>
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-btn-primary" id="courseSubmitBtn"><i class="fa-solid fa-plus"></i> Add Course</button>
+                        <button type="button" class="admin-btn-secondary" id="courseCancelEditBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <div id="coursesList" class="admin-list"></div>
+            </div>
+
+            <!-- TEACHERS TAB -->
+            <div class="admin-tab-panel" id="tab-teachers">
+                <div class="admin-panel-head">
+                    <h2>Teachers</h2>
+                    <p class="admin-panel-sub">Photos & bios added here also appear in the "Meet the Teachers" section on the homepage. Teachers added directly below are auto-approved; teachers who signed themselves up go through the Teacher Applications tab first.</p>
+                </div>
+
+                <form id="teacherForm" class="admin-inline-form">
+                    <input type="hidden" id="teacherEditId">
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Full Name*</label>
+                            <input type="text" id="teacherName" placeholder="e.g. Ahmed Raza" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Title / Specialty*</label>
+                            <input type="text" id="teacherTitle" placeholder="e.g. Senior Web Developer" required>
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Bio</label>
+                        <textarea id="teacherBio" rows="2" placeholder="Short bio shown on their profile"></textarea>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Photo (max 300KB)</label>
+                        <input type="file" id="teacherPhotoInput" accept="image/*">
+                        <img id="teacherPhotoPreview" style="display:none;" class="admin-photo-preview">
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-btn-primary" id="teacherSubmitBtn"><i class="fa-solid fa-plus"></i> Add Teacher</button>
+                        <button type="button" class="admin-btn-secondary" id="teacherCancelEditBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <div id="teachersList" class="admin-list admin-list-grid"></div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div class="admin-tab-panel" id="tab-orders">
+                <div class="admin-panel-head">
+                    <h2>Orders (Paid Courses)</h2>
+                    <p class="admin-panel-sub">Confirm payment received outside the system (bank transfer / JazzCash), then mark it Paid here to unlock access.</p>
+                </div>
+                <div id="ordersList" class="admin-list"></div>
+            </div>
+
+            <!-- SUCCESS STORIES TAB -->
+            <div class="admin-tab-panel" id="tab-successStories">
+                <div class="admin-panel-head">
+                    <h2>Success Stories</h2>
+                    <p class="admin-panel-sub">Whatever you add here shows to everyone in the homepage's "Success Stories" section. Add real graduates' genuine stories — the more real, the more impact.</p>
+                </div>
+
+                <form id="storyForm" class="admin-inline-form">
+                    <input type="hidden" id="storyEditId">
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Student Name*</label>
+                            <input type="text" id="storyName" placeholder="e.g. Ahmed Raza" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Outcome / Role*</label>
+                            <input type="text" id="storyOutcome" placeholder="e.g. Freelance Web Developer" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Course</label>
+                            <input type="text" id="storyCourse" placeholder="e.g. MERN Stack Web Development">
+                        </div>
+                        <div class="input-box">
+                            <label>Highlight (short stat, optional)</label>
+                            <input type="text" id="storyHighlight" placeholder="e.g. Upwork Top Rated">
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Story*</label>
+                        <textarea id="storyText" rows="3" placeholder="Short story — this is what will show on the homepage" required></textarea>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Photo (optional, max 5MB — na ho to initials dikhengay)</label>
+                        <input type="file" id="storyPhotoInput" accept="image/*">
+                        <img id="storyPhotoPreview" style="display:none;" class="admin-photo-preview">
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-btn-primary" id="storySubmitBtn"><i class="fa-solid fa-plus"></i> Add Story</button>
+                        <button type="button" class="admin-btn-secondary" id="storyCancelEditBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <div id="storiesList" class="admin-list admin-list-grid"></div>
+            </div>
+
+            <!-- BLOG POSTS TAB -->
+            <div class="admin-tab-panel" id="tab-blogs">
+                <div class="admin-panel-head">
+                    <h2>Blog Posts</h2>
+                    <p class="admin-panel-sub">Posts added here show up in the homepage's "Popular Blogs" section. "Full Post" is the text that opens in a modal when someone clicks "Read More".</p>
+                </div>
+
+                <form id="blogForm" class="admin-inline-form">
+                    <input type="hidden" id="blogEditId">
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Title*</label>
+                            <input type="text" id="blogTitle" placeholder="e.g. 5 Skills Every Web Developer Needs" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Category</label>
+                            <input type="text" id="blogCategory" placeholder="e.g. Web Development">
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Excerpt* (this short summary shows on the card)</label>
+                        <textarea id="blogExcerpt" rows="2" placeholder="1-2 line summary" required></textarea>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Full Post*</label>
+                        <textarea id="blogBody" rows="5" placeholder="Write the full blog post here" required></textarea>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Cover Image (optional, max 5MB)</label>
+                        <input type="file" id="blogImageInput" accept="image/*">
+                        <img id="blogImagePreview" style="display:none;" class="admin-thumb-preview">
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-btn-primary" id="blogSubmitBtn"><i class="fa-solid fa-plus"></i> Add Post</button>
+                        <button type="button" class="admin-btn-secondary" id="blogCancelEditBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <div id="blogsList" class="admin-list admin-list-grid"></div>
+            </div>
+
+            <!-- NEWS & EVENTS TAB -->
+            <div class="admin-tab-panel" id="tab-newsEvents">
+                <div class="admin-panel-head">
+                    <h2>News &amp; Events</h2>
+                    <p class="admin-panel-sub">New batches, admissions, events — add them here and they'll show in the homepage's "News &amp; Events" section.</p>
+                </div>
+
+                <form id="newsForm" class="admin-inline-form">
+                    <input type="hidden" id="newsEditId">
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Title*</label>
+                            <input type="text" id="newsTitle" placeholder="e.g. Naya Web Development Batch" required>
+                        </div>
+                        <div class="input-box">
+                            <label>Date*</label>
+                            <input type="date" id="newsDate" required>
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Excerpt*</label>
+                        <textarea id="newsExcerpt" rows="3" placeholder="Short details" required></textarea>
+                    </div>
+                    <div class="admin-form-grid">
+                        <div class="input-box">
+                            <label>Link (optional — button is site ya page par le jayega)</label>
+                            <input type="text" id="newsLink" placeholder="e.g. ./enrollment.html">
+                        </div>
+                    </div>
+                    <div class="input-box full-width">
+                        <label>Image (optional, max 5MB)</label>
+                        <input type="file" id="newsImageInput" accept="image/*">
+                        <img id="newsImagePreview" style="display:none;" class="admin-thumb-preview">
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="submit" class="admin-btn-primary" id="newsSubmitBtn"><i class="fa-solid fa-plus"></i> Add</button>
+                        <button type="button" class="admin-btn-secondary" id="newsCancelEditBtn" style="display:none;">Cancel Edit</button>
+                    </div>
+                </form>
+
+                <div id="newsList" class="admin-list admin-list-grid"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+    <script type="module" src="./admin.js"></script>
+</body>
 </html>

@@ -19,6 +19,20 @@
 
     --orange-accent: #f58220;
     --shadow-header: 0 8px 25px rgba(0, 0, 0, .04);
+
+    /* admin.css / teacher.css / student.css already reference these four —
+       they were never actually defined here, so every border-radius and
+       transition that used them was silently resolving to nothing (square
+       corners, no hover transition) instead of erroring. Adding them here
+       is purely additive: nothing that already worked changes, but every
+       card/button that was quietly falling back to "no radius" picks up
+       real rounded corners and a smooth hover the moment this loads. */
+    --border-radius-sm: 6px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 18px;
+    --border-radius-full: 999px;
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, .08);
+    --transition-fast: all 0.2s ease;
 }
 
 /* Reset Base */
@@ -315,29 +329,33 @@ body {
     gap: 14px;
 }
 
-.cart-btn {
-    position: relative;
+/* Mobile menu toggle button (hamburger) — hidden on desktop, .main-header
+   shows it only under 900px, where .center-nav is otherwise unreachable.
+   See section 6 below for the mobile nav panel it opens. */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 21px;
     color: var(--text-dark);
-    font-size: 18px;
-    text-decoration: none;
-    margin-right: 15px;
-    margin-top: 15px;
+    padding: 8px;
+    line-height: 1;
 }
 
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    background: var(--primary-blue);
-    color: white;
-    font-size: 11px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+/* Log In / Sign Up / Enroll Now copy shown inside the mobile hamburger
+   drawer (.center-nav). Hidden by default — only shown under 900px, see
+   below — so desktop keeps using the original .header-actions bar. */
+.mobile-nav-actions {
+    display: none;
+}
+
+/* Dim backdrop for the mobile drawer — hidden by default, only ever
+   shown under 900px (see below) via a pure CSS sibling selector, so it
+   always stays in sync with .center-nav's .nav-open class with no extra
+   JS needed. */
+.nav-backdrop {
+    display: none;
 }
 
 .login-btn {
@@ -883,9 +901,111 @@ width: 90px;
     .main-header {
         padding: 0 20px;
     }
+    /* .center-nav (Home / About / Courses / Check Result / Search) has no
+       room in the header below 900px, so it moves into a toggleable panel
+       that drops down under the header instead — opened by #navToggle
+       (see .nav-toggle above and app.js for the click handling). Without
+       .nav-open it stays display:none, i.e. exactly the old behaviour. */
     .center-nav {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: #ffffff;
+        border-top: 1px solid var(--border-light);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.14);
+        padding: 10px 20px 20px;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        z-index: 9998;
     }
+
+    .center-nav.nav-open {
+        display: flex;
+    }
+
+    /* Dims the page behind the drawer while it's open. Sits below the
+       header (z-index 9999) and the drawer itself (9998) so both stay
+       fully visible/usable, but above ordinary page content. */
+    .center-nav.nav-open ~ #navBackdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 20, 45, 0.45);
+        z-index: 9990;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        width: 100%;
+    }
+
+    .drop-btn, .nav-btn-link, .home-btn {
+        width: 100%;
+        justify-content: space-between;
+        padding: 14px 4px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    /* Dropdowns (About / Courses) open on tap — app.js toggles .open on
+       .dropdown — instead of :hover, since touchscreens have no real
+       hover state. Scoped to this breakpoint only; desktop hover above
+       is untouched. */
+    .dropdown-menu, .about-content-box {
+        position: static;
+        display: none;
+        width: 100% !important;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        padding: 4px 0 10px 14px;
+    }
+
+    .dropdown.open .dropdown-menu {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .dropdown.open .about-content-box {
+        display: block;
+    }
+
+    .search-container {
+        width: 100%;
+        margin-top: 14px;
+    }
+
+    /* Login/Sign Up/Enroll Now live here now (duplicated from
+       .header-actions in common.html) so they're always reachable via
+       the hamburger, even on the smallest phones. */
+    .mobile-nav-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .mobile-nav-actions .login-btn,
+    .mobile-nav-actions .signup-btn,
+    .mobile-nav-actions .enroll-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        padding: 12px;
+        font-size: 14px;
+    }
+
     .slider-container {
         flex-direction: column;
         text-align: center;
@@ -901,5 +1021,151 @@ width: 90px;
 @media (max-width: 500px) {
     .footer-container {
         grid-template-columns: 1fr;
+    }
+}
+
+/*===================================================
+  6. HEADER — MOBILE FIT  (added)
+
+  Bug: .center-nav @900px par hide ho jata hai, lekin .header-actions
+  (cart + Log In + Sign Up + Enroll Now) apni poori width lete rehte hain.
+  390px par ye buttons viewport se bahar chale jate the aur har page
+  horizontally scroll hone lagta tha — index, faq, quiz aur enrollment
+  sab par (enrollment sab se zyada, ~337px).
+
+  body { overflow-x: hidden } isay chhupa nahi paata: html par set na ho
+  to browser phir bhi scroll karne deta hai, aur chhupa bhi deta to
+  buttons kat jaate — masla hal nahi hota. Isliye header ko actually
+  fit karaya gaya hai.
+
+  Ye block sirf add kiya gaya hai, upar ka koi rule change nahi hua.
+====================================================*/
+@media (max-width: 900px) {
+    .main-header {
+        padding: 0 14px;
+        gap: 10px;
+    }
+
+    .brand-logo { height: 62px; }
+    .brand-name { font-size: 19px; }
+
+    .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Bug fix: Log In / Sign Up were being display:none'd on small
+       screens with no way left to reach them (.center-nav's own hamburger
+       didn't exist when this rule was first written). Now that the
+       hamburger drawer has its own .mobile-nav-actions copy of these
+       buttons (see above), the slim header bar's .header-actions is
+       hidden entirely instead of shrinking button-by-button — logo +
+       hamburger only, everything else lives in the drawer. */
+    .header-actions { display: none; }
+}
+
+@media (max-width: 520px) {
+    .brand-logo { height: 52px; }
+    .brand-name { font-size: 17px; }
+}
+
+@media (max-width: 360px) {
+    .brand-name { display: none; }   /* logo akela kaafi hai */
+}
+
+/*===================================================
+  7. FOOTER PARTNER STRIP — MOBILE WRAP  (added)
+
+  .strip-container flex row hai aur .partners-logos ke teen boxes
+  (Ministry of IT / Ignite Tech Fund / EduCore Global Academy) wrap
+  nahi hote the, is liye ~360px se neeche footer viewport se bahar
+  nikal jata tha. Ye har us page par hota hai jahan common.html ka
+  footer inject hota hai.
+====================================================*/
+@media (max-width: 760px) {
+    .strip-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .partners-logos {
+        flex-wrap: wrap;
+        gap: 14px 18px;
+    }
+}
+
+/*===================================================
+  8. HEADER — TABLET / SMALL LAPTOP FIT  (added)
+
+  900px se 1150px ke beech .center-nav abhi bhi visible hota hai aur
+  uske andar 280px ka search box .header-actions ki jagah kha jata hai,
+  jis se "Sign Up" aur "Enroll Now" viewport se bahar nikal jate the.
+  Is range mein search hide kar diya (neeche 900px par wo pehle hi
+  .center-nav ke saath hide hai) aur baqi spacing thori kam ki hai.
+====================================================*/
+@media (min-width: 901px) and (max-width: 1150px) {
+    .main-header { padding: 0 20px; }
+
+    .brand-logo { height: 72px; }
+    .brand-name { font-size: 20px; }
+
+    .center-nav { gap: 18px; }
+    .nav-links  { gap: 16px; }
+
+    .search-container { display: none; }
+
+    .header-actions { gap: 10px; }
+
+    .login-btn,
+    .signup-btn,
+    .enroll-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+}
+
+/*===================================================
+  9. LONG LINKS — WRAP INSTEAD OF PUSHING  (added)
+
+  FAQ answers mein poore URLs plain text ki tarah likhe hain
+  (lms.digiskills..., play.google.com/...). Ye ek lamba word hote
+  hain jo tootta nahi, is liye chhoti screens par page ko chaura
+  kar dete the.
+====================================================*/
+.faq-question,
+.faq-answer,
+.faq-answer a,
+.faq-note {
+    overflow-wrap: anywhere;
+}
+
+/*===================================================
+  10. FLOATING WIDGETS — MOBILE  (added)
+
+  .side-floating-bar (phone / email / FAQ quick-links, index.html only)
+  is position:fixed at a spot that sits right on top of page content
+  once you scroll — on a full-height phone screen there's no scroll
+  distance left to get it out of the way. Its 2 links are already in
+  the footer (phone + email under "Connect", FAQ under "Quick Links"),
+  so it's hidden below 768px instead of redesigned.
+
+  #backToTopBtn is a normal floating button and stays, just a touch
+  smaller/closer to the corner on small phones so it covers less.
+====================================================*/
+@media (max-width: 768px) {
+    .side-floating-bar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    #backToTopBtn, .scroll-btn {
+        width: 38px;
+        height: 38px;
+        bottom: 16px;
+        right: 16px;
     }
 }

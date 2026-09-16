@@ -1,6 +1,3 @@
-/* =========================
-   GLOBAL
-========================= */
 
 html {
     scroll-behavior: smooth;
@@ -66,7 +63,6 @@ a {
 
 /* =========================
    SIDEBAR
-========================= */
 
 .sidebar {
     position: fixed;
@@ -216,7 +212,6 @@ a {
 
 /* =========================
    MAIN
-========================= */
 
 .main-content {
     min-height: 100vh;
@@ -230,7 +225,6 @@ a {
 
 /* =========================
    TOPBAR
-========================= */
 
 .topbar {
     height: 82px;
@@ -302,7 +296,6 @@ a {
 
 /* =========================
    NOTIFICATIONS
-========================= */
 
 .notification-wrapper {
     position: relative;
@@ -498,7 +491,6 @@ a {
 
 /* =========================
    ADMIN PROFILE
-========================= */
 
 .admin-profile {
     display: flex;
@@ -545,7 +537,6 @@ a {
 
 /* =========================
    PAGE HEADING
-========================= */
 
 .page-heading {
     display: flex;
@@ -577,7 +568,6 @@ a {
 
 /* =========================
    PAGE SECTIONS
-========================= */
 
 .page-section {
     display: block;
@@ -603,7 +593,6 @@ a {
 
 /* =========================
    STAT CARDS
-========================= */
 
 .stat-card {
     min-height: 130px;
@@ -682,7 +671,6 @@ a {
 
 /* =========================
    DASHBOARD CARDS
-========================= */
 
 .dashboard-card {
     background: white;
@@ -750,7 +738,6 @@ a {
 
 /* =========================
    TABLES
-========================= */
 
 .table-responsive {
     overflow-x: auto;
@@ -840,7 +827,6 @@ a {
 
 /* =========================
    STATUS BADGES
-========================= */
 
 .status-badge {
     display: inline-flex;
@@ -874,7 +860,6 @@ a {
 
 /* =========================
    BUTTONS
-========================= */
 
 .primary-btn {
     display: inline-flex;
@@ -914,7 +899,6 @@ a {
 
 /* =========================
    FILTER BAR
-========================= */
 
 .filter-bar {
     display: flex;
@@ -978,7 +962,6 @@ a {
 
 /* =========================
    COURSES
-========================= */
 
 .course-card {
     height: 100%;
@@ -1111,7 +1094,6 @@ a {
 
 /* =========================
    BLOCK / UNBLOCK
-========================= */
 
 .action-btn {
     border: 0;
@@ -1147,7 +1129,6 @@ a {
 
 /* =========================
    ARTICLE APPROVALS
-========================= */
 
 .pending-count {
     display: flex;
@@ -1236,7 +1217,6 @@ a {
 
 /* =========================
    MODAL
-========================= */
 
 .custom-modal {
     position: fixed;
@@ -1412,7 +1392,6 @@ a {
 
 /* =========================
    REPORTS
-========================= */
 
 .report-card {
     background: white;
@@ -1434,7 +1413,6 @@ a {
 
 /* =========================
    ANNOUNCEMENTS
-========================= */
 
 .announcement-grid {
     display: grid;
@@ -1529,7 +1507,6 @@ a {
 
 /* =========================
    SETTINGS
-========================= */
 
 .settings-card {
     max-width: 900px;
@@ -1582,7 +1559,6 @@ a {
 
 /* =========================
    RESPONSIVE
-========================= */
 
 @media (max-width: 1200px) {
 
@@ -1843,7 +1819,6 @@ a {
 
 /* =========================================================
    PAGINATION
-========================================================= */
 
 .pagination-container {
     width: 100%;
@@ -1952,7 +1927,6 @@ a {
 
 /* =========================================================
    COURSE TABLE ACTION BUTTONS
-========================================================= */
 
 #coursesTable .action-buttons {
     display: flex;
@@ -2058,5 +2032,755 @@ a {
     #coursesTable .delete-course-btn {
         width: 32px;
         height: 32px;
+    }
+}
+/*====================================
+        ADMIN DASHBOARD LAYOUT
+        (style.css, linked before this file, already defines the
+        --primary-blue / --border-* / --shadow-* variables used below)
+body {
+    background: var(--bg-light-grey);
+}
+
+/* Visibility is controlled by authGuard.js via an inline style, not here —
+   see authGuard.js's protectPage() for why this must NOT say display:none. */
+#pageContent {
+    padding: 0 !important;
+}
+
+.admin-topbar {
+    background: var(--theme-gradient);
+    color: #fff;
+    padding: 18px 35px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-brand {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-brand span {
+    color: var(--theme-accent-blue);
+}
+
+.admin-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* NOTIFICATION BELL */
+.admin-notif-wrap {
+    position: relative;
+}
+
+.admin-notif-bell {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: var(--transition-fast);
+}
+
+.admin-notif-bell:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.admin-notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--theme-dark-bg);
+}
+
+.admin-notif-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 320px;
+    max-width: 85vw;
+    background: var(--bg-body);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    z-index: 500;
+    color: var(--text-dark);
+}
+
+.admin-notif-head {
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-heading);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.admin-notif-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.admin-notif-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.admin-notif-item:last-child {
+    border-bottom: none;
+}
+
+.admin-notif-item:hover {
+    background: var(--bg-light-grey);
+    color: var(--primary-blue);
+}
+
+.admin-logout-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.admin-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.admin-home-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.admin-home-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.admin-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 25px 80px;
+}
+
+/* STATS */
+.admin-stats-row {
+    display: grid;
+    /* auto-fit instead of a hardcoded column count — this row has grown from
+       4 to 6 cards already and will likely grow again; this way it always
+       wraps cleanly instead of leaving a lopsided half-empty last row. */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.admin-stat-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-header);
+}
+
+.admin-stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--primary-blue);
+}
+
+.admin-stat-label {
+    font-size: 12px;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+/* ANALYTICS */
+.admin-charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.admin-chart-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-header);
+    transition: var(--transition-fast);
+}
+
+.admin-chart-card:hover {
+    box-shadow: var(--shadow-card);
+}
+
+.admin-chart-card h3 {
+    font-size: 14px;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.admin-chart-card h3 i {
+    color: var(--primary-blue);
+}
+
+.admin-chart-box {
+    position: relative;
+    height: 220px;
+}
+
+/* TABS */
+.admin-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.admin-tab-btn {
+    padding: 12px 22px;
+    border: 1px solid var(--border-input);
+    border-radius: var(--border-radius-full);
+    background: var(--bg-body);
+    color: var(--text-dark);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.admin-tab-btn.active,
+.admin-tab-btn:hover {
+    background: var(--primary-blue);
+    color: #fff;
+    border-color: var(--primary-blue);
+}
+
+.admin-tab-panel {
+    display: none;
+}
+
+.admin-tab-panel.active {
+    display: block;
+    animation: fadeUp .4s ease;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.admin-panel-head h2 {
+    color: var(--text-heading);
+    font-size: 20px;
+}
+
+.admin-panel-sub {
+    font-size: 13px;
+    color: var(--text-dark);
+    width: 100%;
+    margin-top: -8px;
+}
+
+.admin-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.admin-filter-group select {
+    padding: 8px 12px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-input);
+}
+
+/* FORMS (reuse .input-box / .form-grid styling from enrollment.css-like
+   patterns, defined inline here since admin.html doesn't load
+   enrollment.css) */
+.admin-inline-form {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow-header);
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 15px;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.input-box.full-width {
+    grid-column: span 2;
+}
+
+.input-box label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-heading);
+    font-size: 13px;
+}
+
+.input-box input,
+.input-box select,
+.input-box textarea {
+    border: 1px solid var(--border-input);
+    border-radius: var(--border-radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.admin-photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 10px;
+    border: 2px solid var(--theme-accent-blue);
+}
+
+.admin-form-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.admin-btn-primary,
+.admin-btn-secondary {
+    padding: 11px 24px;
+    border-radius: var(--border-radius-full);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.admin-btn-primary {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.admin-btn-primary:hover {
+    background: var(--primary-blue-hover);
+}
+
+.admin-btn-secondary {
+    background: var(--bg-light-grey);
+    color: var(--text-dark);
+    border: 1px solid var(--border-input);
+}
+
+/* LISTS */
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.admin-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+}
+
+.admin-empty-note {
+    color: var(--icon-grey);
+    font-size: 14px;
+    padding: 20px;
+    text-align: center;
+}
+
+.admin-row-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    box-shadow: var(--shadow-header);
+}
+
+.admin-row-main h3 {
+    font-size: 15px;
+    color: var(--text-heading);
+    margin-bottom: 4px;
+}
+
+.admin-row-main p {
+    font-size: 12.5px;
+    color: var(--text-dark);
+    margin: 2px 0;
+}
+
+.admin-row-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.admin-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.badge-awaiting { background: #fef3c7; color: #92400e; }
+.badge-accepted { background: #dcfce7; color: #166534; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+.badge-pending  { background: #e0f2fe; color: #075985; }
+.badge-failed   { background: #fee2e2; color: #991b1b; }
+.badge-free     { background: #dcfce7; color: #166534; }
+.badge-paid     { background: #fef3c7; color: #92400e; }
+.badge-linked   { background: #dbeafe; color: #1e40af; }
+.badge-unlinked { background: #f1f5f9; color: #64748b; }
+
+.admin-btn-accept {
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.admin-btn-reject {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.admin-btn-edit,
+.admin-btn-delete,
+.admin-btn-paid {
+    border: none;
+    padding: 8px 14px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.admin-btn-edit { background: #e0f2fe; color: #075985; }
+.admin-btn-delete { background: #fee2e2; color: #991b1b; }
+.admin-btn-paid { background: #16a34a; color: #fff; }
+
+.admin-teacher-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-header);
+}
+
+.admin-teacher-card img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 2px solid var(--theme-accent-blue);
+}
+
+.admin-teacher-card h3 {
+    font-size: 14px;
+    color: var(--text-heading);
+}
+
+.admin-teacher-card p {
+    font-size: 12px;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+}
+
+/* Rectangular cover-image variant, used by the Blog Posts / News & Events
+   tabs — .admin-teacher-card's circular photo + centered text suits a
+   person's profile, not a card with a title + excerpt, so this is a
+   separate class rather than a modifier on top of it. */
+.admin-thumb-preview {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: var(--border-radius-sm);
+    margin-top: 10px;
+    border: 1px solid var(--border-light);
+}
+
+.admin-content-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-header);
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-content-card .admin-content-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background: var(--bg-light-grey);
+}
+
+.admin-content-card .admin-content-body {
+    padding: 16px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-content-card h3 {
+    font-size: 14.5px;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+}
+
+.admin-content-card p {
+    font-size: 12.5px;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.admin-content-card .admin-row-actions {
+    margin-top: auto;
+}
+
+@media (max-width: 992px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .input-box.full-width {
+        grid-column: span 1;
+    }
+}
+
+/*====================================
+        AUTH GUARD LOADING / ERROR SCREEN
+        (markup injected by authGuard.js — see authGuard.js for the
+        step-by-step status text / timeout error it writes in here)
+#authLoading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 20px;
+    text-align: center;
+    background: var(--bg-light-grey);
+}
+
+.auth-spinner {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 4px solid var(--border-light);
+    border-top-color: var(--primary-blue);
+    animation: authSpin 0.8s linear infinite;
+}
+
+@keyframes authSpin {
+    to { transform: rotate(360deg); }
+}
+
+.auth-loading-text {
+    color: var(--text-dark);
+    font-size: 14px;
+    max-width: 440px;
+    line-height: 1.6;
+}
+
+#authLoading.auth-loading-error .auth-error-icon {
+    font-size: 34px;
+    color: #dc2626;
+}
+
+#authLoading.auth-loading-error .auth-loading-text {
+    color: #991b1b;
+    max-width: 460px;
+}
+
+.auth-loading-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.auth-loading-actions button,
+.auth-loading-actions a {
+    padding: 10px 20px;
+    border-radius: var(--border-radius-full);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.auth-loading-actions button {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.auth-loading-actions a {
+    background: var(--bg-body);
+    color: var(--text-dark);
+    border: 1px solid var(--border-input);
+    display: inline-flex;
+    align-items: center;
+}
+
+/*====================================
+        ADMIN DASHBOARD — MOBILE FIT  (added)
+
+        .admin-topbar is a space-between row (brand — bell / Home /
+        Logout) with no wrap and 35px side padding. Everything below it
+        (.admin-stats-row, .admin-charts-row, .admin-list-grid) already
+        uses auto-fit/auto-fill grids so those reflow on their own — this
+        block only tightens the topbar and form/list spacing that didn't.
+@media (max-width: 640px) {
+    .admin-topbar {
+        padding: 14px 16px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .admin-brand {
+        font-size: 16px;
+        gap: 6px;
+    }
+
+    .admin-brand span {
+        display: none;
+    }
+
+    .admin-topbar-actions {
+        gap: 8px;
+    }
+
+    .admin-notif-bell {
+        width: 34px;
+        height: 34px;
+        font-size: 13px;
+    }
+
+    .admin-home-btn,
+    .admin-logout-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .admin-wrap {
+        padding: 20px 14px 60px;
+    }
+
+    .admin-tab-btn {
+        padding: 9px 15px;
+        font-size: 12.5px;
+    }
+
+    .admin-row-card {
+        padding: 14px 16px;
     }
 }

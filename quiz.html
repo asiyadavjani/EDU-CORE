@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduCore | Entry Test Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./enrollment.css">
+    <link rel="stylesheet" href="./quiz.css">
+</head>
+
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <section class="quiz-page-wrap">
+
+        <!-- STAGE 1: IDENTIFY STUDENT -->
+        <div class="portal-box quiz-stage active" id="quizLookupStage">
+            <div class="search-box-panel">
+                <h2>Entry Test / Eligibility Quiz</h2>
+                <p>Enter your registration CNIC to confirm your identity.</p>
+                <span class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Don't use dashes (-) in CNIC number.</span>
+                <div class="input-box">
+                    <label>CNIC Number*</label>
+                    <input type="text" id="quizCnicInput" placeholder="4220109966883">
+                </div>
+                <button class="search-btn" id="quizStartBtn"><i class="fa-solid fa-play"></i> Start Test</button>
+                <div id="quizLookupMessage" class="quiz-message" style="display:none;"></div>
+                <p style="margin-top:20px;font-size:13px;">Haven't registered yet? <a href="./enrollment.html">Register here first</a>.</p>
+            </div>
+        </div>
+
+        <!-- STAGE 2: THE QUIZ ITSELF -->
+        <div class="portal-box quiz-stage" id="quizActiveStage">
+            <div class="quiz-header-row">
+                <div>
+                    <h2 id="quizCandidateName">Candidate</h2>
+                    <p id="quizCourseLabel" class="quiz-course-label">Course: -</p>
+                </div>
+                <div class="quiz-timer" id="quizTimer"><i class="fa-solid fa-clock"></i> 10:00</div>
+            </div>
+
+            <div class="quiz-progress-track">
+                <div class="quiz-progress-fill" id="quizProgressFill"></div>
+            </div>
+            <p class="quiz-progress-label" id="quizProgressLabel">Question 1 of 6</p>
+
+            <div class="quiz-question-card">
+                <h3 id="quizQuestionText">Question text...</h3>
+                <div class="quiz-options" id="quizOptionsList"></div>
+            </div>
+
+            <div class="quiz-nav-buttons">
+                <button class="quiz-btn-secondary" id="quizPrevBtn"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+                <button class="quiz-btn-primary" id="quizNextBtn">Next <i class="fa-solid fa-arrow-right"></i></button>
+                <button class="quiz-btn-primary" id="quizSubmitBtn" style="display:none;"><i class="fa-solid fa-paper-plane"></i> Submit Test</button>
+            </div>
+        </div>
+
+        <!-- STAGE 3: RESULT OF THIS ATTEMPT -->
+        <div class="portal-box quiz-stage" id="quizResultStage">
+            <div class="search-box-panel" id="quizResultContent">
+                <!-- filled in by quiz.js -->
+            </div>
+        </div>
+
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script type="module" src="./quiz.js"></script>
+    <script src="./app.js"></script>
+</body>
+
+</html>

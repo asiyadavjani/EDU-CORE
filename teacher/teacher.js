@@ -1,14 +1,7 @@
-// import {
-//     uploadImageToCloudinary,
-//     MAX_UPLOAD_BYTES
-// } from "../cloudinary.js";
+/*=========================================
+        FIREBASE IMPORTS
 import { db, auth } from "../firebaseConfig.js";
-
-import {
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
     doc,
     getDoc,
@@ -20,2572 +13,694 @@ import {
     where,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { CHART_COLORS, CHART_PALETTE, renderChart, emptyChartConfig } from "../charts.js";
+import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
 
-
-// =====================================================
-// CONFIG
-// =====================================================
-
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-
-
-// =====================================================
-// GLOBAL STATE
-// =====================================================
-
-let myUid = "";
-let myProfile = null;
-
+/*=========================================
+        STATE
+let myUid = null;
+let myProfile = null;      // the teachers/{id} doc that belongs to this login
 let myCourses = [];
 let myStudents = [];
+let myAttendance = [];     // attendance docs this teacher has submitted
+let attendanceDraft = [];  // [{cnic, name, status}] for the course+date currently on screen
 
-let attendanceDraft = [];
+// Bumped every time onAuthStateChanged fires. It CAN fire more than once
+// during a single page view (e.g. a token refresh), and without this guard
+// two overlapping runs racing their Firestore reads would let whichever one
+// finishes LAST silently win — flipping the screen between "No Application
+// Found" and the real dashboard even though nothing about the account
+// actually changed. Same idea as the `settled` guard in authGuard.js.
+let authRunId = 0;
 
-let charts = {};
-let teacherBlogs = [];
-
-// =====================================================
-// HELPER
-// =====================================================
-
-function $(id) {
-    return document.getElementById(id);
+/*=========================================
+        HELPERS
+function friendlyFirestoreError(error) {
+    console.error(error);
+    if (error && error.code === "permission-denied") {
+        return "Database permission denied. Please check the Firestore rules.";
+    }
+    return "Something went wrong. (" + (error && error.message ? error.message : "unknown error") + ")";
 }
 
-
-// =====================================================
-// AUTH UI
-// =====================================================
-
-function updateTeacherUI() {
-
-    if (!myProfile) return;
-
-    const name =
-        myProfile.name ||
-        myProfile.fullName ||
-        "Teacher";
-
-    const firstName = name.split(" ")[0];
-
-    const nameLabel = $("teacherNameLabel");
-    const avatar = $("dashUserAvatar");
-    const greeting = $("dashGreeting");
-
-    if (nameLabel) {
-        nameLabel.textContent = name;
-    }
-
-    if (avatar) {
-        avatar.textContent =
-            name.charAt(0).toUpperCase();
-    }
-
-    if (greeting) {
-        greeting.textContent =
-            `Welcome back, ${firstName}!`;
-    }
+function val(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
 }
-
-
-// =====================================================
-// TAB NAVIGATION
-// =====================================================
 
 function showTab(tabName) {
-
-    document
-        .querySelectorAll(".dash-tab-panel")
-        .forEach(panel => {
-            panel.classList.remove("active");
-        });
-
-    document
-        .querySelectorAll(".dash-nav-item")
-        .forEach(item => {
-            item.classList.remove("active");
-        });
-
-    const panel =
-        document.getElementById(`tab-${tabName}`);
-
-    const navItem =
-        document.querySelector(
-            `.dash-nav-item[data-tab="${tabName}"]`
-        );
-
-    if (panel) {
-        panel.classList.add("active");
-    }
-
-    if (navItem) {
-        navItem.classList.add("active");
-    }
+    document.querySelectorAll(".dash-tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".dash-nav-item").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + tabName).classList.add("active");
+    document.querySelector(`.dash-nav-item[data-tab="${tabName}"]`).classList.add("active");
 }
 
-
-// =====================================================
-// LOAD TEACHER PROFILE
-// =====================================================
-
-async function loadTeacherProfile() {
-
-    if (!myUid) return;
-
-    const teacherRef =
-        doc(db, "teachers", myUid);
-
-    const teacherSnap =
-        await getDoc(teacherRef);
-
-    if (!teacherSnap.exists()) {
-        throw new Error(
-            "Teacher profile not found."
-        );
-    }
-
-    myProfile = {
-        id: teacherSnap.id,
-        ...teacherSnap.data()
-    };
-
-    updateTeacherUI();
-    loadProfileForm();
-}
-
-
-// =====================================================
-// LOAD COURSES
-// =====================================================
-
-async function loadMyCourses() {
-
-    if (!myProfile) return;
-
-    myCourses = [];
-
-    const coursesRef =
-        collection(db, "courses");
-
-    let coursesSnap;
-
-    try {
-
-        const q =
-            query(
-                coursesRef,
-                where(
-                    "teacherId",
-                    "==",
-                    myProfile.id
-                )
-            );
-
-        coursesSnap =
-            await getDocs(q);
-
-    } catch (error) {
-
-        console.warn(
-            "teacherId query failed:",
-            error
-        );
-
-        coursesSnap =
-            await getDocs(coursesRef);
-    }
-
-    coursesSnap.forEach(courseDoc => {
-
-        const data =
-            courseDoc.data();
-
-        const teacherId =
-            data.teacherId ||
-            data.teacherUid ||
-            "";
-
-        if (
-            teacherId === myProfile.id ||
-            teacherId === myUid
-        ) {
-
-            myCourses.push({
-                id: courseDoc.id,
-                ...data
-            });
+// Same lightweight count-up technique already used elsewhere on the site
+// (enrollment.js's stats section) — kept consistent rather than importing.
+function animateCounters() {
+    document.querySelectorAll(".dash-stat-value.counter").forEach(el => {
+        const target = +el.getAttribute("data-target") || 0;
+        const duration = 900;
+        const startTime = performance.now();
+        function step(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            el.innerText = Math.floor(progress * target);
+            if (progress < 1) requestAnimationFrame(step);
+            else el.innerText = target;
         }
-    });
-
-    renderMyCourses();
-    updateCourseStats();
-    populateAttendanceCourses();
-}
-
-
-// =====================================================
-// RENDER COURSES
-// =====================================================
-
-function renderMyCourses() {
-
-    const container =
-        $("myCoursesList");
-
-    if (!container) return;
-
-    if (myCourses.length === 0) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                <i class="fa-solid fa-book-open"></i>
-                <p>No courses assigned to you yet.</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML =
-        myCourses.map(course => {
-
-            const courseName =
-                course.title ||
-                course.name ||
-                "Untitled Course";
-
-            const description =
-                course.description ||
-                course.shortDescription ||
-                "No course description available.";
-
-            const image =
-                course.image ||
-                course.thumbnail ||
-                "";
-
-            const paid =
-                course.isPaid === true ||
-                course.paid === true;
-
-            const badgeClass =
-                paid
-                    ? "badge-paid"
-                    : "badge-free";
-
-            const badgeText =
-                paid
-                    ? "Paid"
-                    : "Free";
-
-            return `
-                <div class="dash-course-card">
-
-                    ${
-                        image
-                            ? `
-                                <img
-                                    src="${image}"
-                                    alt="${courseName}"
-                                    class="img-fluid"
-                                >
-                            `
-                            : `
-                                <div class="dash-course-placeholder">
-                                    <i class="fa-solid fa-book-open"></i>
-                                </div>
-                            `
-                    }
-
-                    <div class="dash-course-body">
-
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-
-                            <h3>
-                                ${courseName}
-                            </h3>
-
-                            <span class="dash-badge ${badgeClass}">
-                                ${badgeText}
-                            </span>
-
-                        </div>
-
-                        <p>
-                            ${description}
-                        </p>
-
-                    </div>
-
-                </div>
-            `;
-        }).join("");
-}
-
-
-// =====================================================
-// COURSE STATS
-// =====================================================
-
-function updateCourseStats() {
-
-    const stat =
-        $("statMyCourses");
-
-    if (stat) {
-        stat.textContent =
-            myCourses.length;
-    }
-}
-
-
-// =====================================================
-// LOAD STUDENTS
-// =====================================================
-
-async function loadMyStudents() {
-
-    myStudents = [];
-
-    const studentsRef =
-        collection(db, "students");
-
-    const q =
-        query(
-            studentsRef,
-            where(
-                "assignedTeacherUid",
-                "==",
-                myUid
-            )
-        );
-
-    const snapshot =
-        await getDocs(q);
-
-    snapshot.forEach(studentDoc => {
-
-        myStudents.push({
-            id: studentDoc.id,
-            ...studentDoc.data()
-        });
-    });
-
-    renderMyStudents();
-    renderOverviewStudents();
-    updateStudentStats();
-}
-
-// =====================================================
-// LOAD TEACHER BLOGS
-// =====================================================
-
-async function loadTeacherBlogs() {
-
-    teacherBlogs = [];
-
-    const blogsRef = collection(db, "blogs");
-
-    const q = query(
-        blogsRef,
-        where("authorUid", "==", myUid)
-    );
-
-    const snapshot = await getDocs(q);
-
-    snapshot.forEach(blogDoc => {
-
-        teacherBlogs.push({
-            id: blogDoc.id,
-            ...blogDoc.data()
-        });
-
-    });
-
-    renderTeacherBlogs();
-}
-
-// =====================================================
-// RENDER TEACHER BLOGS
-// =====================================================
-
-function renderTeacherBlogs() {
-
-    const container = $("teacherBlogsList");
-
-    if (!container) return;
-
-    if (teacherBlogs.length === 0) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                <i class="fa-solid fa-blog"></i>
-                <p>No blog posts yet.</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML = teacherBlogs.map(blog => {
-
-        let statusClass = "badge-pending";
-        let statusText = "Pending";
-
-        if (blog.status === "approved") {
-            statusClass = "badge-passed";
-            statusText = "Approved";
-        }
-
-        if (blog.status === "rejected") {
-            statusClass = "badge-failed";
-            statusText = "Rejected";
-        }
-
-        return `
-            <div class="dash-student-row">
-
-                <div class="dash-student-top">
-
-                    <div>
-                        <h4>
-                            ${blog.title || "Untitled Blog"}
-                        </h4>
-
-                        <span class="dash-badge ${statusClass}">
-                            ${statusText}
-                        </span>
-                    </div>
-
-                    <small>
-                        ${blog.category || "General"}
-                    </small>
-
-                </div>
-
-                <p class="mb-0">
-                    ${blog.excerpt || "No excerpt available."}
-                </p>
-
-            </div>
-        `;
-
-    }).join("");
-}
-
-// =====================================================
-// TEACHER BLOG EVENTS
-// =====================================================
-
-function setupTeacherBlogEvents() {
-
-    const createBlogBtn = $("createBlogBtn");
-    const blogForm = $("teacherBlogForm");
-
-    if (createBlogBtn) {
-
-        createBlogBtn.addEventListener("click", () => {
-
-            const modalElement =
-                document.getElementById("teacherBlogModal");
-
-            if (modalElement) {
-
-                const modal =
-                    bootstrap.Modal.getOrCreateInstance(
-                        modalElement
-                    );
-
-                modal.show();
-            }
-
-        });
-    }
-
-    if (blogForm) {
-
-        blogForm.addEventListener("submit", async (event) => {
-
-            event.preventDefault();
-
-            const title =
-                $("blogTitle")?.value.trim();
-
-            const category =
-                $("blogCategory")?.value.trim();
-
-            const excerpt =
-                $("blogExcerpt")?.value.trim();
-
-            const body =
-                $("blogBody")?.value.trim();
-
-            if (!title || !category || !excerpt || !body) {
-
-                alert("Please fill all required fields.");
-                return;
-            }
-
-            try {
-
-                const blogsRef =
-                    collection(db, "blogs");
-
-                const newBlogRef =
-                    doc(blogsRef);
-
-                await setDoc(newBlogRef, {
-
-                    title: title,
-                    category: category,
-                    excerpt: excerpt,
-                    body: body,
-
-                    image: "",
-
-                    status: "pending",
-
-                    authorUid: myUid,
-
-                    authorId:
-                        myProfile?.id || myUid,
-
-                    authorName:
-                        myProfile?.name ||
-                        myProfile?.fullName ||
-                        "Teacher",
-
-                    createdAt:
-                        serverTimestamp(),
-
-                    updatedAt:
-                        serverTimestamp()
-
-                });
-
-                alert(
-                    "Blog submitted successfully! Waiting for admin approval."
-                );
-
-                blogForm.reset();
-
-                const modalElement =
-                    document.getElementById(
-                        "teacherBlogModal"
-                    );
-
-                if (modalElement) {
-
-                    const modal =
-                        bootstrap.Modal.getInstance(
-                            modalElement
-                        );
-
-                    if (modal) {
-                        modal.hide();
-                    }
-                }
-
-                await loadTeacherBlogs();
-
-            } catch (error) {
-
-                console.error(
-                    "Error creating teacher blog:",
-                    error
-                );
-
-                alert(
-                    "Failed to submit blog. Please try again."
-                );
-            }
-
-        });
-    }
-}
-
-
-
-// =====================================================
-// RENDER STUDENTS
-// =====================================================
-
-function renderMyStudents() {
-
-    const container =
-        $("myStudentsList");
-
-    if (!container) return;
-
-    if (myStudents.length === 0) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                <i class="fa-solid fa-user-graduate"></i>
-                <p>No students assigned to you yet.</p>
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML =
-        myStudents.map(student => {
-
-            const name =
-                student.name ||
-                student.fullName ||
-                "Student";
-
-            const progress =
-                Number(
-                    student.progressPercent
-                ) || 0;
-
-            const remark =
-                student.teacherRemark || "";
-
-            let statusClass =
-                "badge-pending";
-
-            let statusText =
-                "In Progress";
-
-            if (progress >= 80) {
-
-                statusClass =
-                    "badge-passed";
-
-                statusText =
-                    "Excellent";
-
-            } else if (progress < 40) {
-
-                statusClass =
-                    "badge-failed";
-
-                statusText =
-                    "Needs Help";
-            }
-
-            return `
-                <div class="dash-student-row">
-
-                    <div class="dash-student-top">
-
-                        <div>
-
-                            <h4>
-                                ${name}
-                            </h4>
-
-                            <span class="dash-badge ${statusClass}">
-                                ${statusText}
-                            </span>
-
-                        </div>
-
-                        <strong>
-                            ${progress}%
-                        </strong>
-
-                    </div>
-
-                    <div class="dash-progress-track">
-
-                        <div
-                            class="dash-progress-fill"
-                            style="width: ${Math.min(
-                                progress,
-                                100
-                            )}%"
-                        ></div>
-
-                    </div>
-
-                    <div class="dash-student-controls">
-
-                        <input
-                            type="number"
-                            class="form-control progressInput"
-                            value="${progress}"
-                            min="0"
-                            max="100"
-                            placeholder="Progress %"
-                        >
-
-                        <input
-                            type="text"
-                            class="form-control remarkInput"
-                            value="${remark}"
-                            placeholder="Teacher remark"
-                        >
-
-                        <button
-                            type="button"
-                            class="btn btn-primary saveProgressBtn"
-                            data-id="${student.id}"
-                        >
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            Save
-                        </button>
-
-                    </div>
-
-                </div>
-            `;
-        }).join("");
-}
-
-
-// =====================================================
-// OVERVIEW STUDENTS
-// =====================================================
-
-function renderOverviewStudents() {
-
-    const container =
-        $("overviewStudentsList");
-
-    if (!container) return;
-
-    const students =
-        myStudents.slice(0, 5);
-
-    if (students.length === 0) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                No recent students.
-            </div>
-        `;
-
-        return;
-    }
-
-    container.innerHTML =
-        students.map(student => {
-
-            const name =
-                student.name ||
-                student.fullName ||
-                "Student";
-
-            const progress =
-                Number(
-                    student.progressPercent
-                ) || 0;
-
-            return `
-                <div class="dash-row-mini">
-
-                    <div>
-                        <strong>
-                            ${name}
-                        </strong>
-                    </div>
-
-                    <span class="dash-badge badge-pending">
-                        ${progress}%
-                    </span>
-
-                </div>
-            `;
-        }).join("");
-}
-
-
-// =====================================================
-// STUDENT STATS
-// =====================================================
-
-function updateStudentStats() {
-
-    const count =
-        myStudents.length;
-
-    const statStudents =
-        $("statMyStudents");
-
-    if (statStudents) {
-        statStudents.textContent =
-            count;
-    }
-
-    if (count === 0) {
-
-        if ($("statAvgProgress")) {
-            $("statAvgProgress").textContent =
-                "0%";
-        }
-
-        if ($("statTopScorers")) {
-            $("statTopScorers").textContent =
-                "0";
-        }
-
-        return;
-    }
-
-    const totalProgress =
-        myStudents.reduce(
-            (total, student) =>
-                total +
-                (
-                    Number(
-                        student.progressPercent
-                    ) || 0
-                ),
-            0
-        );
-
-    const average =
-        Math.round(
-            totalProgress / count
-        );
-
-    const topScorers =
-        myStudents.filter(
-            student =>
-                (
-                    Number(
-                        student.progressPercent
-                    ) || 0
-                ) >= 80
-        ).length;
-
-    if ($("statAvgProgress")) {
-        $("statAvgProgress").textContent =
-            `${average}%`;
-    }
-
-    if ($("statTopScorers")) {
-        $("statTopScorers").textContent =
-            topScorers;
-    }
-}
-
-
-// =====================================================
-// SAVE STUDENT PROGRESS
-// =====================================================
-
-async function saveStudentProgress(
-    studentId,
-    progress,
-    remark,
-    button
-) {
-
-    const value =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                Number(progress) || 0
-            )
-        );
-
-    if (button) {
-
-        button.disabled = true;
-
-        button.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Saving...
-        `;
-    }
-
-    try {
-
-        const studentRef =
-            doc(
-                db,
-                "students",
-                studentId
-            );
-
-        await updateDoc(
-            studentRef,
-            {
-                progressPercent: value,
-                teacherRemark:
-                    remark || "",
-                updatedAt:
-                    serverTimestamp()
-            }
-        );
-
-        const student =
-            myStudents.find(
-                item =>
-                    item.id === studentId
-            );
-
-        if (student) {
-
-            student.progressPercent =
-                value;
-
-            student.teacherRemark =
-                remark || "";
-        }
-
-        renderMyStudents();
-        renderOverviewStudents();
-        updateStudentStats();
-        renderDashboardCharts();
-
-        alert(
-            "Student progress saved successfully."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Progress save error:",
-            error
-        );
-
-        alert(
-            "Progress save failed. Please check Firestore permissions."
-        );
-
-    } finally {
-
-        if (button) {
-
-            button.disabled = false;
-
-            button.innerHTML = `
-                <i class="fa-solid fa-floppy-disk"></i>
-                Save
-            `;
-        }
-    }
-}
-
-
-// =====================================================
-// ATTENDANCE COURSES
-// =====================================================
-
-function populateAttendanceCourses() {
-
-    const select =
-        $("attendanceCourseSelect");
-
-    if (!select) return;
-
-    select.innerHTML = `
-        <option value="">
-            -- Select Course --
-        </option>
-    `;
-
-    myCourses.forEach(course => {
-
-        const name =
-            course.title ||
-            course.name ||
-            "Untitled Course";
-
-        select.insertAdjacentHTML(
-            "beforeend",
-            `
-                <option value="${course.id}">
-                    ${name}
-                </option>
-            `
-        );
+        requestAnimationFrame(step);
     });
 }
 
-
-// =====================================================
-// RENDER ATTENDANCE STUDENTS
-// =====================================================
-
-function renderAttendanceStudents() {
-
-    const container =
-        $("attendanceStudentsList");
-
-    const courseId =
-        $("attendanceCourseSelect")?.value;
-
-    if (!container) return;
-
-    if (!courseId) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                Please select a course first.
-            </div>
-        `;
-
-        attendanceDraft = [];
-
-        if ($("attendanceSaveBtn")) {
-            $("attendanceSaveBtn").disabled =
-                true;
-        }
-
-        return;
-    }
-
-    const courseStudents =
-        myStudents.filter(student => {
-
-            if (!student.courseId) {
-                return true;
-            }
-
-            if (
-                Array.isArray(
-                    student.courseIds
-                )
-            ) {
-                return student.courseIds.includes(
-                    courseId
-                );
-            }
-
-            return (
-                student.courseId === courseId
-            );
-        });
-
-    if (courseStudents.length === 0) {
-
-        container.innerHTML = `
-            <div class="dash-empty-note">
-                No students found for this course.
-            </div>
-        `;
-
-        attendanceDraft = [];
-
-        if ($("attendanceSaveBtn")) {
-            $("attendanceSaveBtn").disabled =
-                true;
-        }
-
-        return;
-    }
-
-    attendanceDraft =
-        courseStudents.map(student => ({
-            studentId: student.id,
-            name:
-                student.name ||
-                student.fullName ||
-                "Student",
-            present: true
-        }));
-
-    container.innerHTML =
-        attendanceDraft.map(
-            (student, index) => `
-                <div class="attendance-row">
-
-                    <div class="attendance-name">
-                        ${student.name}
-                    </div>
-
-                    <div class="attendance-toggle">
-
-                        <button
-                            type="button"
-                            class="is-present active"
-                            data-index="${index}"
-                            data-present="true"
-                        >
-                            <i class="fa-solid fa-check"></i>
-                            Present
-                        </button>
-
-                        <button
-                            type="button"
-                            class="is-absent"
-                            data-index="${index}"
-                            data-present="false"
-                        >
-                            <i class="fa-solid fa-xmark"></i>
-                            Absent
-                        </button>
-
-                    </div>
-
-                </div>
-            `
-        ).join("");
-
-    if ($("attendanceSaveBtn")) {
-        $("attendanceSaveBtn").disabled =
-            false;
-    }
+function initials(name) {
+    if (!name) return "T";
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
 }
 
+/*=========================================
+        BOOTSTRAP — figure out who's logged in,
+        then check their teacher application status
+onAuthStateChanged(auth, async (user) => {
+    if (!user) return; // authGuard.js already handles the redirect for this
 
-// =====================================================
-// ATTENDANCE TOGGLE
-// =====================================================
-
-function toggleAttendance(
-    index,
-    present
-) {
-
-    if (!attendanceDraft[index]) {
-        return;
-    }
-
-    attendanceDraft[index].present =
-        present;
-
-    document
-        .querySelectorAll(
-            `.attendance-toggle button[data-index="${index}"]`
-        )
-        .forEach(button => {
-
-            button.classList.remove(
-                "active"
-            );
-        });
-
-    const selectedButton =
-        document.querySelector(
-            `.attendance-toggle button[data-index="${index}"][data-present="${present}"]`
-        );
-
-    if (selectedButton) {
-        selectedButton.classList.add(
-            "active"
-        );
-    }
-}
-
-
-// =====================================================
-// SAVE ATTENDANCE
-// =====================================================
-
-async function saveAttendance() {
-
-    const courseSelect =
-        $("attendanceCourseSelect");
-
-    const dateInput =
-        $("attendanceDate");
-
-    const saveButton =
-        $("attendanceSaveBtn");
-
-    if (
-        !courseSelect ||
-        !dateInput ||
-        !saveButton
-    ) {
-        return;
-    }
-
-    const courseId =
-        courseSelect.value;
-
-    const date =
-        dateInput.value;
-
-    if (!courseId) {
-
-        alert(
-            "Please select a course."
-        );
-
-        return;
-    }
-
-    if (!date) {
-
-        alert(
-            "Please select a date."
-        );
-
-        return;
-    }
-
-    if (attendanceDraft.length === 0) {
-
-        alert(
-            "No students available for attendance."
-        );
-
-        return;
-    }
-
-    const course =
-        myCourses.find(
-            item =>
-                item.id === courseId
-        );
-
-    const courseName =
-        course?.title ||
-        course?.name ||
-        "Course";
-
-    const presentCount =
-        attendanceDraft.filter(
-            student =>
-                student.present
-        ).length;
-
-    const attendanceData = {};
-
-    attendanceDraft.forEach(student => {
-
-        attendanceData[
-            student.studentId
-        ] = {
-            name: student.name,
-            present: student.present
-        };
-    });
-
-    const attendanceId =
-        `${courseId}_${date}`;
-
-    saveButton.disabled = true;
-
-    saveButton.innerHTML = `
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        Saving...
-    `;
+    const runId = ++authRunId;
+    myUid = user.uid;
 
     try {
-
-        const attendanceRef =
-            doc(
-                db,
-                "attendance",
-                attendanceId
-            );
-
-        await setDoc(
-            attendanceRef,
-            {
-                courseId: courseId,
-                courseName: courseName,
-
-                teacherId:
-                    myProfile?.id ||
-                    myUid,
-
-                teacherUid:
-                    myUid,
-
-                teacherName:
-                    myProfile?.name ||
-                    myProfile?.fullName ||
-                    "Teacher",
-
-                date: date,
-
-                records:
-                    attendanceData,
-
-                presentCount:
-                    presentCount,
-
-                totalCount:
-                    attendanceDraft.length,
-
-                updatedAt:
-                    serverTimestamp()
-            },
-            {
-                merge: true
-            }
-        );
-
-        alert(
-            "Attendance saved successfully."
-        );
-
+        const userDoc = await getDoc(doc(db, "users", myUid));
+        if (runId !== authRunId) return; // a newer auth event already started; this one is stale
+        const fullName = userDoc.exists() ? userDoc.data().fullName : "Teacher";
+        document.getElementById("teacherNameLabel").innerText = fullName || "Teacher";
+        document.getElementById("dashUserAvatar").innerText = initials(fullName);
+        document.getElementById("dashGreeting").innerText = "Welcome back, " + (fullName ? fullName.split(" ")[0] : "Teacher");
     } catch (error) {
-
-        console.error(
-            "Attendance save error:",
-            error
-        );
-
-        alert(
-            "Attendance save failed. Please check Firestore permissions."
-        );
-
-    } finally {
-
-        saveButton.disabled = false;
-
-        saveButton.innerHTML = `
-            <i class="fa-solid fa-floppy-disk"></i>
-            Save Attendance
-        `;
-    }
-}
-
-
-// =====================================================
-// PROFILE FORM
-// =====================================================
-
-function loadProfileForm() {
-
-    if (!myProfile) return;
-
-    const nameInput =
-        $("profileName");
-
-    const titleInput =
-        $("profileTitle");
-
-    const bioInput =
-        $("profileBio");
-
-    const preview =
-        $("profilePhotoPreview");
-
-    if (nameInput) {
-
-        nameInput.value =
-            myProfile.name ||
-            myProfile.fullName ||
-            "";
+        console.error(error);
     }
 
-    if (titleInput) {
+    if (runId !== authRunId) return;
+    await refreshMyProfile(runId);
+});
 
-        titleInput.value =
-            myProfile.title ||
-            myProfile.specialty ||
-            "";
-    }
-
-    if (bioInput) {
-
-        bioInput.value =
-            myProfile.bio ||
-            "";
-    }
-
-    if (
-        preview &&
-        myProfile.photo
-    ) {
-
-        preview.src =
-            myProfile.photo;
-
-        preview.style.display =
-            "block";
-    }
-}
-
-
-// =====================================================
-// PHOTO PREVIEW
-// =====================================================
-
-function setupPhotoPreview() {
-
-    const input =
-        $("profilePhotoInput");
-
-    const preview =
-        $("profilePhotoPreview");
-
-    if (!input || !preview) {
-        return;
-    }
-
-    input.addEventListener(
-        "change",
-        () => {
-
-            const file =
-                input.files?.[0];
-
-            if (!file) {
-
-                preview.style.display =
-                    "none";
-
-                return;
-            }
-
-            if (
-                !file.type.startsWith(
-                    "image/"
-                )
-            ) {
-
-                alert(
-                    "Please select an image file."
-                );
-
-                input.value = "";
-
-                return;
-            }
-
-            if (
-                file.size >
-                MAX_UPLOAD_BYTES
-            ) {
-
-                alert(
-                    "Image file is too large. Maximum size is 5 MB."
-                );
-
-                input.value = "";
-
-                return;
-            }
-
-            const reader =
-                new FileReader();
-
-            reader.onload =
-                event => {
-
-                    preview.src =
-                        event.target.result;
-
-                    preview.style.display =
-                        "block";
-                };
-
-            reader.readAsDataURL(file);
-        }
-    );
-}
-
-
-// =====================================================
-// SAVE TEACHER PROFILE
-// =====================================================
-
-async function saveTeacherProfile(
-    event
-) {
-
-    event.preventDefault();
-
-    const nameInput =
-        $("profileName");
-
-    const titleInput =
-        $("profileTitle");
-
-    const bioInput =
-        $("profileBio");
-
-    const photoInput =
-        $("profilePhotoInput");
-
-    const submitButton =
-        $("profileSubmitBtn");
-
-    if (
-        !nameInput ||
-        !titleInput ||
-        !bioInput
-    ) {
-        return;
-    }
-
-    const name =
-        nameInput.value.trim();
-
-    const title =
-        titleInput.value.trim();
-
-    const bio =
-        bioInput.value.trim();
-
-    if (!name) {
-
-        alert(
-            "Please enter your name."
-        );
-
-        return;
-    }
-
-    if (!title) {
-
-        alert(
-            "Please enter your title or specialty."
-        );
-
-        return;
-    }
-
-    if (submitButton) {
-
-        submitButton.disabled = true;
-
-        submitButton.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            Saving...
-        `;
-    }
-
+// Every Teacher signup now creates its own /teachers/{uid} doc directly
+// (see signup.html) — there's no more separate "claim a profile from a
+// list" step, which used to let any logged-in teacher attach themselves to
+// ANY unclaimed profile, including someone else's. The doc id IS this
+// login's uid, so a plain getDoc is all that's needed here, and what gates
+// the real dashboard now is Admin's accept/reject decision (the `status`
+// field) rather than whether a profile has been "linked" yet.
+async function refreshMyProfile(runId) {
     try {
-
-        /*
-         * Cloudinary temporarily disabled.
-         * Teammate's cloudinary.js can be connected later.
-         */
-
-        const photoUrl =
-            myProfile?.photo || "";
-
-        const file =
-            photoInput?.files?.[0];
-
-        if (
-            file &&
-            file.size >
-            MAX_UPLOAD_BYTES
-        ) {
-
-            throw new Error(
-                "Selected image is too large. Maximum size is 5 MB."
-            );
-        }
-
-        const teacherRef =
-            doc(
-                db,
-                "teachers",
-                myUid
-            );
-
-        await updateDoc(
-            teacherRef,
-            {
-                name: name,
-                title: title,
-                bio: bio,
-                photo: photoUrl,
-                updatedAt:
-                    serverTimestamp()
-            }
-        );
-
-        myProfile = {
-            ...myProfile,
-
-            name: name,
-            title: title,
-            bio: bio,
-            photo: photoUrl
-        };
-
-        updateTeacherUI();
-        loadProfileForm();
-
-        alert(
-            "Profile updated successfully."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Profile update error:",
-            error
-        );
-
-        alert(
-            error.message ||
-            "Profile update failed."
-        );
-
-    } finally {
-
-        if (submitButton) {
-
-            submitButton.disabled = false;
-
-            submitButton.innerHTML = `
-                <i class="fa-solid fa-floppy-disk"></i>
-                Save Profile
-            `;
-        }
-    }
-}
-
-
-// =====================================================
-// CHARTS
-// =====================================================
-
-function destroyCharts() {
-
-    Object.values(charts)
-        .forEach(chart => {
-
-            try {
-
-                if (chart) {
-                    chart.destroy();
-                }
-
-            } catch (error) {
-
-                console.warn(
-                    "Chart destroy error:",
-                    error
-                );
-            }
-        });
-
-    charts = {};
-}
-
-
-function renderDashboardCharts() {
-
-    if (
-        typeof Chart ===
-        "undefined"
-    ) {
-
-        console.warn(
-            "Chart.js is not loaded."
-        );
-
-        return;
-    }
-
-    destroyCharts();
-
-
-    // ---------------------------------------------
-    // STUDENT PROGRESS
-    // ---------------------------------------------
-
-    const progressCanvas =
-        $("chartStudentProgress");
-
-    if (progressCanvas) {
-
-        const labels =
-            myStudents.map(
-                student =>
-                    student.name ||
-                    student.fullName ||
-                    "Student"
-            );
-
-        const data =
-            myStudents.map(
-                student =>
-                    Number(
-                        student.progressPercent
-                    ) || 0
-            );
-
-        charts.progress =
-            new Chart(
-                progressCanvas,
-                {
-                    type: "bar",
-
-                    data: {
-                        labels: labels,
-
-                        datasets: [
-                            {
-                                label:
-                                    "Progress %",
-
-                                data: data,
-
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-
-                    options: {
-                        responsive: true,
-
-                        maintainAspectRatio:
-                            false,
-
-                        scales: {
-                            y: {
-                                beginAtZero:
-                                    true,
-
-                                max: 100
-                            }
-                        }
-                    }
-                }
-            );
-    }
-
-
-    // ---------------------------------------------
-    // COURSE BREAKDOWN
-    // ---------------------------------------------
-
-    const courseCanvas =
-        $("chartCourseBreakdown");
-
-    if (courseCanvas) {
-
-        const courseLabels =
-            myCourses.map(
-                course =>
-                    course.title ||
-                    course.name ||
-                    "Course"
-            );
-
-        const courseData =
-            myCourses.map(
-                course => {
-
-                    return myStudents.filter(
-                        student => {
-
-                            return (
-                                student.course ===
-                                (
-                                    course.title ||
-                                    course.name
-                                )
-                            );
-                        }
-                    ).length;
-                }
-            );
-
-        charts.courses =
-            new Chart(
-                courseCanvas,
-                {
-                    type: "doughnut",
-
-                    data: {
-
-                        labels:
-                            courseLabels.length
-                                ? courseLabels
-                                : ["No Courses"],
-
-                        datasets: [
-                            {
-                                data:
-                                    courseLabels.length
-                                        ? courseData
-                                        : [1],
-
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-
-                    options: {
-                        responsive: true,
-
-                        maintainAspectRatio:
-                            false
-                    }
-                }
-            );
-    }
-
-
-    // ---------------------------------------------
-    // STUDENT RANKING
-    // ---------------------------------------------
-
-    const rankingCanvas =
-        $("chartRanking");
-
-    if (rankingCanvas) {
-
-        const rankingStudents =
-            [...myStudents]
-                .sort(
-                    (a, b) =>
-                        (
-                            Number(
-                                b.progressPercent
-                            ) || 0
-                        ) -
-                        (
-                            Number(
-                                a.progressPercent
-                            ) || 0
-                        )
-                )
-                .slice(0, 5);
-
-        charts.ranking =
-            new Chart(
-                rankingCanvas,
-                {
-                    type: "bar",
-
-                    data: {
-
-                        labels:
-                            rankingStudents.map(
-                                student =>
-                                    student.name ||
-                                    student.fullName ||
-                                    "Student"
-                            ),
-
-                        datasets: [
-                            {
-                                label:
-                                    "Progress %",
-
-                                data:
-                                    rankingStudents.map(
-                                        student =>
-                                            Number(
-                                                student.progressPercent
-                                            ) || 0
-                                    ),
-
-                                borderWidth: 1
-                            }
-                        ]
-                    },
-
-                    options: {
-
-                        responsive: true,
-
-                        maintainAspectRatio:
-                            false,
-
-                        scales: {
-
-                            y: {
-                                beginAtZero:
-                                    true,
-
-                                max: 100
-                            }
-                        }
-                    }
-                }
-            );
-    }
-   
-    // ---------------------------------------------
-    // MY ATTENDANCE ACTIVITY
-    // ---------------------------------------------
-
-    const attendanceCanvas =
-        $("chartMyAttendance");
-
-    if (attendanceCanvas) {
-
-        try {
-
-            const attendanceRef =
-                collection(db, "attendance");
-
-            const attendanceQuery =
-                query(
-                    attendanceRef,
-                    where(
-                        "teacherUid",
-                        "==",
-                        myUid
-                    )
-                );
-
-            getDocs(attendanceQuery)
-                .then(snapshot => {
-
-                    const attendanceDocs = [];
-
-                    snapshot.forEach(docSnap => {
-
-                        attendanceDocs.push({
-                            id: docSnap.id,
-                            ...docSnap.data()
-                        });
-
-                    });
-
-                    attendanceDocs.sort(
-                        (a, b) =>
-                            String(a.date || "")
-                                .localeCompare(
-                                    String(b.date || "")
-                                )
-                    );
-
-                    const latestRecords =
-                        attendanceDocs.slice(-7);
-
-                    const labels =
-                        latestRecords.map(
-                            item => item.date || "Date"
-                        );
-
-                    const presentData =
-                        latestRecords.map(
-                            item =>
-                                Number(
-                                    item.presentCount
-                                ) || 0
-                        );
-
-                    const absentData =
-                        latestRecords.map(item => {
-
-                            const total =
-                                Number(
-                                    item.totalCount
-                                ) || 0;
-
-                            const present =
-                                Number(
-                                    item.presentCount
-                                ) || 0;
-
-                            return Math.max(
-                                total - present,
-                                0
-                            );
-
-                        });
-
-                    if (charts.attendance) {
-                        charts.attendance.destroy();
-                    }
-
-                    charts.attendance =
-                        new Chart(
-                            attendanceCanvas,
-                            {
-                                type: "bar",
-
-                                data: {
-                                    labels:
-                                        labels.length
-                                            ? labels
-                                            : ["No Data"],
-
-                                    datasets: [
-                                        {
-                                            label:
-                                                "Present",
-
-                                            data:
-                                                labels.length
-                                                    ? presentData
-                                                    : [0],
-
-                                            borderWidth: 1
-                                        },
-                                        {
-                                            label:
-                                                "Absent",
-
-                                            data:
-                                                labels.length
-                                                    ? absentData
-                                                    : [0],
-
-                                            borderWidth: 1
-                                        }
-                                    ]
-                                },
-
-                                options: {
-                                    responsive: true,
-
-                                    maintainAspectRatio:
-                                        false,
-
-                                    scales: {
-                                        y: {
-                                            beginAtZero:
-                                                true,
-
-                                            ticks: {
-                                                precision: 0
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        );
-
-                })
-                .catch(error => {
-
-                    console.error(
-                        "Attendance chart error:",
-                        error
-                    );
-
-                });
-
-        } catch (error) {
-
-            console.error(
-                "Attendance chart setup error:",
-                error
-            );
-
-        }
-    }
-
-
-}
-
-
-// =====================================================
-// NAVIGATION EVENTS
-// =====================================================
-
-function setupNavigation() {
-
-    document
-        .querySelectorAll(
-            ".dash-nav-item"
-        )
-        .forEach(item => {
-
-            item.addEventListener(
-                "click",
-                event => {
-
-                    event.preventDefault();
-
-                    const tab =
-                        item.dataset.tab;
-
-                    if (tab) {
-                        showTab(tab);
-                    }
-                }
-            );
-        });
-}
-
-
-// =====================================================
-// MOBILE SIDEBAR MENU
-// =====================================================
-
-function setupMobileMenu() {
-
-    const menuButton =
-        $("teacherMenuToggle");
-
-    const sidebar =
-        document.querySelector(".dash-sidebar");
-
-    if (!menuButton || !sidebar) {
-        console.warn(
-            "Teacher mobile menu elements not found."
-        );
-        return;
-    }
-
-
-    // Open / close sidebar with hamburger
-    menuButton.addEventListener(
-        "click",
-        () => {
-
-            sidebar.classList.toggle("active");
-
-        }
-    );
-
-
-    // Close sidebar after selecting a menu item
-    sidebar
-        .querySelectorAll(".dash-nav-item")
-        .forEach(item => {
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    sidebar.classList.remove("active");
-
-                }
-            );
-
-        });
-}
-
-
-
-// =====================================================
-// STUDENT EVENTS
-// =====================================================
-
-function setupStudentEvents() {
-
-    const studentsContainer =
-        $("myStudentsList");
-
-    if (!studentsContainer) {
-        return;
-    }
-
-    studentsContainer.addEventListener(
-        "click",
-        event => {
-
-            const button =
-                event.target.closest(
-                    ".saveProgressBtn"
-                );
-
-            if (!button) return;
-
-            const studentId =
-                button.dataset.id;
-
-            const row =
-                button.closest(
-                    ".dash-student-row"
-                );
-
-            if (!row) return;
-
-            const progressInput =
-                row.querySelector(
-                    ".progressInput"
-                );
-
-            const remarkInput =
-                row.querySelector(
-                    ".remarkInput"
-                );
-
-            saveStudentProgress(
-                studentId,
-                progressInput?.value,
-                remarkInput?.value,
-                button
-            );
-        }
-    );
-}
-
-
-// =====================================================
-// ATTENDANCE EVENTS
-// =====================================================
-
-function setupAttendanceEvents() {
-
-    const courseSelect =
-        $("attendanceCourseSelect");
-
-    const dateInput =
-        $("attendanceDate");
-
-    const studentsContainer =
-        $("attendanceStudentsList");
-
-    const saveButton =
-        $("attendanceSaveBtn");
-
-
-    if (courseSelect) {
-
-        courseSelect.addEventListener(
-            "change",
-            renderAttendanceStudents
-        );
-    }
-
-
-    if (dateInput) {
-
-        dateInput.addEventListener(
-            "change",
-            renderAttendanceStudents
-        );
-    }
-
-
-    if (studentsContainer) {
-
-        studentsContainer.addEventListener(
-            "click",
-            event => {
-
-                const button =
-                    event.target.closest(
-                        ".attendance-toggle button"
-                    );
-
-                if (!button) return;
-
-                const index =
-                    Number(
-                        button.dataset.index
-                    );
-
-                const present =
-                    button.dataset.present ===
-                    "true";
-
-                toggleAttendance(
-                    index,
-                    present
-                );
-            }
-        );
-    }
-
-
-    if (saveButton) {
-
-        saveButton.addEventListener(
-            "click",
-            saveAttendance
-        );
-    }
-}
-
-
-// =====================================================
-// PROFILE EVENTS
-// =====================================================
-
-function setupProfileEvents() {
-
-    const form =
-        $("teacherProfileForm");
-
-    if (form) {
-
-        form.addEventListener(
-            "submit",
-            saveTeacherProfile
-        );
-    }
-}
-
-
-// =====================================================
-// LOGOUT
-// =====================================================
-
-async function logoutTeacher() {
-    try {
-
-        await signOut(auth);
-
-        // Logout ke baad direct home page
-        window.location.replace("../index.html");
-
-    } catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-
-        alert(
-            "Logout failed. Please try again."
-        );
-    }
-}
-
-
-function setupLogout() {
-
-    const logoutButton =
-        $("logoutBtn");
-
-    const statusLogoutButton =
-        $("appStatusLogoutBtn");
-
-
-    if (logoutButton) {
-
-        logoutButton.addEventListener(
-            "click",
-            logoutTeacher
-        );
-    }
-
-
-    if (statusLogoutButton) {
-
-        statusLogoutButton.addEventListener(
-            "click",
-            logoutTeacher
-        );
-    }
-}
-
-
-// =====================================================
-// AUTHENTICATION UI
-// =====================================================
-
-function showDashboard() {
-
-    const shell =
-        $("dashShell");
-
-    const statusScreen =
-        $("appStatusScreen");
-
-
-    if (statusScreen) {
-
-        statusScreen.style.display =
-            "none";
-    }
-
-
-    if (shell) {
-
-        shell.style.display =
-            "";
-    }
-}
-
-
-function showApplicationStatus(
-    status,
-    message
-) {
-
-    const shell =
-        $("dashShell");
-
-    const statusScreen =
-        $("appStatusScreen");
-
-    const icon =
-        $("appStatusIcon");
-
-    const title =
-        $("appStatusTitle");
-
-    const messageElement =
-        $("appStatusMessage");
-
-
-    if (shell) {
-
-        shell.style.display =
-            "none";
-    }
-
-
-    if (statusScreen) {
-
-        statusScreen.style.display =
-            "flex";
-    }
-
-
-    if (icon) {
-
-        icon.className =
-            "fa-solid fa-hourglass-half appstatus-icon";
-    }
-
-
-    if (status === "rejected") {
-
-        if (icon) {
-
-            icon.className =
-                "fa-solid fa-circle-xmark appstatus-icon is-negative";
-        }
-
-
-        if (title) {
-
-            title.textContent =
-                "Application Rejected";
-        }
-
-    } else {
-
-        if (title) {
-
-            title.textContent =
-                "Application Under Review";
-        }
-    }
-
-
-    if (messageElement) {
-
-        messageElement.textContent =
-            message ||
-            "Your teacher application is currently under review.";
-    }
-}
-
-// =====================================================
-// INITIALIZE DASHBOARD
-// =====================================================
-
-async function initializeDashboard() {
-
-    try {
-
-        await loadTeacherProfile();
-
-        if (!myProfile) {
+        const snap = await getDoc(doc(db, "teachers", myUid));
+        // Stale run — a newer reload/auth event has already taken over.
+        // Applying this result now would be exactly the kind of flicker
+        // this guard exists to prevent.
+        if (runId !== authRunId) return;
+
+        if (!snap.exists()) {
+            // Shouldn't normally happen anymore (signup always creates this
+            // doc) — guards against an older account from before this
+            // change, or a manually deleted doc, instead of silently
+            // breaking.
+            myProfile = null;
+            showApplicationStatus("missing");
             return;
         }
 
-        const status =
-            String(
-                myProfile.status ||
-                "approved"
-            ).toLowerCase();
+        myProfile = { id: snap.id, ...snap.data() };
+        // Same "missing status = approved" convention used on the homepage
+        // mosaic and in Admin's Teachers tab, so teacher docs created
+        // before this feature existed keep working exactly as before.
+        const status = myProfile.status || "approved";
 
-
-        if (
-            status !== "approved" &&
-            status !== "active"
-        ) {
-
-            showApplicationStatus(
-                status,
-                myProfile.statusMessage
-            );
-
+        if (status !== "approved") {
+            showApplicationStatus(status === "rejected" ? "rejected" : "pending");
             return;
         }
-
 
         showDashboard();
+        await loadMyCourses();
+        await loadMyStudents();
+        populateProfileForm();
 
-
-        await Promise.all([
-            loadMyCourses(),
-            loadMyStudents(),
-              loadTeacherBlogs()
-        ]);
-
-
-        renderDashboardCharts();
-
+        populateAttendanceCourseSelect();
+        renderStudentProgressChart();
+        renderCourseBreakdownChart();
+        await loadMyAttendance();
+        await loadRankingData();
     } catch (error) {
-
-        console.error(
-            "Teacher dashboard initialization error:",
-            error
-        );
-
-        const shell =
-            $("dashShell");
-
-        if (shell) {
-
-            shell.innerHTML = `
-                <div class="dash-empty-note p-4">
-
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-
-                    <p>
-                        Unable to load teacher dashboard.
-                    </p>
-
-                    <small>
-                        ${
-                            error.message ||
-                            "Unknown error"
-                        }
-                    </small>
-
-                </div>
-            `;
-        }
+        alert(friendlyFirestoreError(error));
     }
 }
 
+/*=========================================
+        APPLICATION STATUS SCREEN
+        (replaces the old CLAIM PROFILE FLOW)
+const APPLICATION_STATUS_CONTENT = {
+    pending: {
+        icon: "fa-hourglass-half",
+        negative: false,
+        title: "Application Under Review",
+        message: "Thanks for applying! Your teacher application is pending review. Admin will accept or reject it soon — check back later, or reload this page."
+    },
+    rejected: {
+        icon: "fa-circle-xmark",
+        negative: true,
+        title: "Application Not Approved",
+        message: "Your teacher application wasn't approved. If you think this is a mistake, please contact the site admin."
+    },
+    missing: {
+        icon: "fa-triangle-exclamation",
+        negative: true,
+        title: "No Application Found",
+        message: "We couldn't find a teacher application linked to this account. Please contact the site admin."
+    }
+};
 
-// =====================================================
-// DOM READY
-// =====================================================
+function showApplicationStatus(statusKey) {
+    const info = APPLICATION_STATUS_CONTENT[statusKey] || APPLICATION_STATUS_CONTENT.missing;
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+    document.getElementById("dashShell").style.display = "none";
 
-        setupNavigation();
+    const icon = document.getElementById("appStatusIcon");
+    icon.className = "fa-solid " + info.icon + " appstatus-icon" + (info.negative ? " is-negative" : "");
+    document.getElementById("appStatusTitle").innerText = info.title;
+    document.getElementById("appStatusMessage").innerText = info.message;
+    document.getElementById("appStatusScreen").style.display = "flex";
+}
 
+// Clearing the inline style (rather than hardcoding "flex") lets it fall
+// back to whatever the stylesheet says — same reasoning as authGuard.js's
+// own comment about this exact pitfall.
+function showDashboard() {
+    document.getElementById("appStatusScreen").style.display = "none";
+    document.getElementById("dashShell").style.display = "";
+}
 
-        setupMobileMenu();
+/*=========================================
+        MY COURSES
+async function loadMyCourses() {
+    const container = document.getElementById("myCoursesList");
+    try {
+        const snap = await getDocs(query(collection(db, "courses"), where("teacherId", "==", myProfile.id)));
+        myCourses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderMyCourses();
+    } catch (error) {
+        container.innerHTML = '<p class="dash-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
 
-        setupStudentEvents();
+function renderMyCourses() {
+    const container = document.getElementById("myCoursesList");
+    document.getElementById("statMyCourses").setAttribute("data-target", myCourses.length);
 
-        setupAttendanceEvents();
+    if (myCourses.length === 0) {
+        container.innerHTML = '<p class="dash-empty-note">No course assigned yet. Ask the Admin to assign your course(s).</p>';
+        return;
+    }
+    container.innerHTML = myCourses.map(c => `
+        <div class="dash-course-card">
+            <h3>${c.title} <span class="dash-badge ${c.price > 0 ? 'badge-paid' : 'badge-free'}">${c.price > 0 ? 'PKR ' + c.price : 'Free'}</span></h3>
+            <p><strong>Category:</strong> ${c.category}</p>
+            <p>${c.description || 'No description yet.'}</p>
+        </div>
+    `).join("");
+}
 
-        setupPhotoPreview();
+/*=========================================
+        MY STUDENTS
+async function loadMyStudents() {
+    const container = document.getElementById("myStudentsList");
+    try {
+        const snap = await getDocs(query(collection(db, "students"), where("assignedTeacherUid", "==", myUid)));
+        myStudents = snap.docs.map(d => d.data());
+        renderMyStudents();
+        renderOverview();
+    } catch (error) {
+        container.innerHTML = '<p class="dash-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
 
-        setupProfileEvents();
+function renderMyStudents() {
+    const container = document.getElementById("myStudentsList");
 
-        setupLogout();
-        setupTeacherBlogEvents();
+    if (myStudents.length === 0) {
+        container.innerHTML = '<p class="dash-empty-note">No students assigned to you yet. Once the Admin accepts a student\'s application for a course matching your name, they\'ll show up here.</p>';
+        return;
+    }
 
+    container.innerHTML = myStudents.map(s => `
+        <div class="dash-student-row" data-cnic="${s.cnic}">
+            <div class="dash-student-top">
+                <h3>${s.name} <span class="dash-badge ${s.entryTestStatus === 'Passed' ? 'badge-passed' : (s.entryTestStatus === 'Failed' ? 'badge-failed' : 'badge-pending')}">${s.entryTestStatus || 'Pending'}</span></h3>
+                <p><strong>Roll:</strong> ${s.rollNumber} &nbsp;|&nbsp; <strong>Course:</strong> ${s.course} &nbsp;|&nbsp; <strong>Marks:</strong> ${s.marksObtained ?? '-'} (${s.resultGrade || '-'})</p>
+            </div>
+            <div class="dash-progress-track"><div class="dash-progress-fill" style="width:${s.progressPercent || 0}%"></div></div>
+            <div class="dash-student-controls">
+                <input type="number" min="0" max="100" value="${s.progressPercent || 0}" class="progressInput" aria-label="Progress %">
+                <span style="font-size:12px;color:var(--text-dark);">%</span>
+                <input type="text" value="${s.teacherRemark || ''}" placeholder="Remark (optional)" class="remarkInput">
+                <button type="button" class="saveProgressBtn"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+            </div>
+        </div>
+    `).join("");
 
-        if ($("attendanceDate")) {
+    container.querySelectorAll(".dash-student-row").forEach(row => {
+        const cnic = row.dataset.cnic;
+        row.querySelector(".saveProgressBtn").addEventListener("click", () => {
+            const percent = Math.max(0, Math.min(100, Number(row.querySelector(".progressInput").value) || 0));
+            const remark = row.querySelector(".remarkInput").value.trim();
+            saveStudentProgress(cnic, percent, remark, row);
+        });
+    });
+}
 
-            const today =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
+async function saveStudentProgress(cnic, percent, remark, row) {
+    const btn = row.querySelector(".saveProgressBtn");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+        await updateDoc(doc(db, "students", cnic), {
+            progressPercent: percent,
+            teacherRemark: remark,
+            updatedAt: serverTimestamp()
+        });
+        row.querySelector(".dash-progress-fill").style.width = percent + "%";
+        const student = myStudents.find(s => s.cnic === cnic);
+        if (student) { student.progressPercent = percent; student.teacherRemark = remark; }
+        renderOverview();
+        btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 1200);
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }
+}
 
-            $("attendanceDate").value =
-                today;
+/*=========================================
+        ANALYTICS CHARTS
+function renderStudentProgressChart() {
+    if (typeof Chart === "undefined") return;
+    if (myStudents.length === 0) {
+        renderChart("chartStudentProgress", emptyChartConfig("bar", "No students yet"));
+        return;
+    }
+    const top = myStudents.slice(0, 8);
+    renderChart("chartStudentProgress", {
+        type: "bar",
+        data: {
+            labels: top.map(s => s.name),
+            datasets: [{ data: top.map(s => s.progressPercent || 0), backgroundColor: CHART_COLORS.teal, borderRadius: 6, maxBarThickness: 40 }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100 } }
+        }
+    });
+}
+
+function renderCourseBreakdownChart() {
+    if (typeof Chart === "undefined") return;
+    if (myCourses.length === 0) {
+        renderChart("chartCourseBreakdown", emptyChartConfig("doughnut", "No courses yet"));
+        return;
+    }
+    // Student count per course, matched by title the same way
+    // loadAttendanceForSelection() matches a roster to a course — students
+    // don't carry a courseId, just the course title they registered under.
+    const counts = myCourses.map(c => myStudents.filter(s => s.course === c.title).length);
+    renderChart("chartCourseBreakdown", {
+        type: "doughnut",
+        data: {
+            labels: myCourses.map(c => c.title),
+            datasets: [{ data: counts, backgroundColor: CHART_PALETTE, borderWidth: 0 }]
+        },
+        options: { plugins: { legend: { position: "bottom" } }, cutout: "60%" }
+    });
+}
+
+// Ranking needs every OTHER teacher's students too, not just this
+// teacher's own roster — students/{cnic} allows list to any signed-in
+// user (same rule the Teacher Applications badge counts already lean on),
+// so this is one extra read rather than a rules change.
+async function loadRankingData() {
+    try {
+        const snap = await getDocs(query(collection(db, "students"), where("applicationStatus", "==", "Accepted")));
+        renderRankingChart(snap.docs.map(d => d.data()));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function renderRankingChart(allAcceptedStudents) {
+    if (typeof Chart === "undefined") return;
+    const note = document.getElementById("rankingNote");
+
+    const byTeacher = {};
+    allAcceptedStudents.forEach(s => {
+        if (!s.assignedTeacherUid) return;
+        if (!byTeacher[s.assignedTeacherUid]) byTeacher[s.assignedTeacherUid] = { name: s.assignedTeacherName || "Teacher", total: 0, count: 0 };
+        byTeacher[s.assignedTeacherUid].total += s.progressPercent || 0;
+        byTeacher[s.assignedTeacherUid].count++;
+    });
+
+    // Ranked by average student progress — the most defensible read on
+    // "which teacher is doing well" from data this app actually has,
+    // rather than raw student count (which just rewards a big roster).
+    const ranked = Object.entries(byTeacher)
+        .map(([uid, v]) => ({ uid, name: v.name, avg: Math.round(v.total / v.count) }))
+        .sort((a, b) => b.avg - a.avg);
+
+    if (ranked.length === 0) {
+        renderChart("chartRanking", emptyChartConfig("bar", "No ranking data yet"));
+        if (note) note.innerText = "";
+        return;
+    }
+
+    const top = ranked.slice(0, 6);
+    renderChart("chartRanking", {
+        type: "bar",
+        data: {
+            labels: top.map(t => t.name),
+            datasets: [{
+                data: top.map(t => t.avg),
+                backgroundColor: top.map(t => t.uid === myUid ? CHART_COLORS.orange : CHART_COLORS.blue),
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, max: 100 } }
+        }
+    });
+
+    if (note) {
+        const myRank = ranked.findIndex(t => t.uid === myUid);
+        note.innerText = myRank >= 0
+            ? `Your ranking: #${myRank + 1} of ${ranked.length} (based on students' average progress)`
+            : "Your students' average progress isn't available yet.";
+    }
+}
+
+/*=========================================
+        ATTENDANCE
+        One document per (course, date) — the doc ID itself is
+        `${courseId}_${date}`, so marking the same class twice on the same
+        day naturally overwrites instead of duplicating. Marking a session
+        at all is also what "this teacher was active" means for the
+        Attendance Activity chart below — there's no separate schedule
+        system to check them into.
+function populateAttendanceCourseSelect() {
+    const select = document.getElementById("attendanceCourseSelect");
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = '<option value="">-- select course --</option>' +
+        myCourses.map(c => `<option value="${c.id}">${c.title}</option>`).join("");
+    select.value = current;
+}
+
+async function loadAttendanceForSelection() {
+    const courseId = document.getElementById("attendanceCourseSelect").value;
+    const dateInput = document.getElementById("attendanceDate");
+    const container = document.getElementById("attendanceStudentsList");
+    const saveBtn = document.getElementById("attendanceSaveBtn");
+
+    if (!courseId || !dateInput.value) {
+        container.innerHTML = '<p class="dash-empty-note">Please select both a course and a date.</p>';
+        saveBtn.disabled = true;
+        return;
+    }
+
+    const course = myCourses.find(c => c.id === courseId);
+    const roster = myStudents.filter(s => s.course === course?.title);
+
+    if (roster.length === 0) {
+        container.innerHTML = '<p class="dash-empty-note">No students are assigned to this course yet.</p>';
+        saveBtn.disabled = true;
+        attendanceDraft = [];
+        return;
+    }
+
+    const date = dateInput.value;
+
+    // Re-opening a date that was already marked should show what was
+    // actually saved, not reset everyone back to Present — otherwise
+    // fixing one student's mark would silently wipe the rest of the class.
+    let existingStatuses = {};
+    try {
+        const snap = await getDoc(doc(db, "attendance", courseId + "_" + date));
+        if (snap.exists()) {
+            (snap.data().records || []).forEach(r => { existingStatuses[r.cnic] = r.status; });
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    attendanceDraft = roster.map(s => ({
+        cnic: s.cnic,
+        name: s.name,
+        status: existingStatuses[s.cnic] || "present"
+    }));
+
+    renderAttendanceStudentsList();
+    saveBtn.disabled = false;
+}
+
+function renderAttendanceStudentsList() {
+    const container = document.getElementById("attendanceStudentsList");
+    container.innerHTML = attendanceDraft.map(r => `
+        <div class="attendance-row" data-cnic="${r.cnic}">
+            <span class="attendance-name">${r.name}</span>
+            <div class="attendance-toggle">
+                <button type="button" class="is-present ${r.status === 'present' ? 'active' : ''}" data-status="present">Present</button>
+                <button type="button" class="is-absent ${r.status === 'absent' ? 'active' : ''}" data-status="absent">Absent</button>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll(".attendance-row").forEach(row => {
+        const cnic = row.dataset.cnic;
+        row.querySelectorAll("button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const record = attendanceDraft.find(r => r.cnic === cnic);
+                if (record) record.status = btn.dataset.status;
+                row.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+    });
+}
+
+async function saveAttendance() {
+    const courseId = document.getElementById("attendanceCourseSelect").value;
+    const date = document.getElementById("attendanceDate").value;
+    const course = myCourses.find(c => c.id === courseId);
+    if (!courseId || !date || attendanceDraft.length === 0) return;
+
+    const saveBtn = document.getElementById("attendanceSaveBtn");
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+    const presentCount = attendanceDraft.filter(r => r.status === "present").length;
+
+    try {
+        await setDoc(doc(db, "attendance", courseId + "_" + date), {
+            courseId,
+            courseName: course?.title || "",
+            teacherId: myProfile.id,
+            teacherUid: myUid,
+            teacherName: myProfile.name || "",
+            date,
+            records: attendanceDraft,
+            presentCount,
+            totalCount: attendanceDraft.length,
+            updatedAt: serverTimestamp()
+        });
+        saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+        await loadMyAttendance();
+        setTimeout(() => { saveBtn.innerHTML = originalHTML; saveBtn.disabled = false; }, 1500);
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+        saveBtn.innerHTML = originalHTML;
+        saveBtn.disabled = false;
+    }
+}
+
+async function loadMyAttendance() {
+    try {
+        const snap = await getDocs(query(collection(db, "attendance"), where("teacherUid", "==", myUid)));
+        myAttendance = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderMyAttendanceChart();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function renderMyAttendanceChart() {
+    if (typeof Chart === "undefined") return;
+    if (myAttendance.length === 0) {
+        renderChart("chartMyAttendance", emptyChartConfig("bar", "No attendance recorded yet"));
+        return;
+    }
+    const byDate = {};
+    myAttendance.forEach(a => { byDate[a.date] = (byDate[a.date] || 0) + 1; });
+    const dates = Object.keys(byDate).sort().slice(-10);
+
+    renderChart("chartMyAttendance", {
+        type: "bar",
+        data: {
+            labels: dates,
+            datasets: [{ data: dates.map(d => byDate[d]), backgroundColor: CHART_COLORS.blue, borderRadius: 6, maxBarThickness: 40 }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+/*=========================================
+        OVERVIEW TAB
+function renderOverview() {
+    document.getElementById("statMyStudents").setAttribute("data-target", myStudents.length);
+
+    const avg = myStudents.length
+        ? Math.round(myStudents.reduce((sum, s) => sum + (s.progressPercent || 0), 0) / myStudents.length)
+        : 0;
+    document.getElementById("statAvgProgress").innerText = avg + "%";
+
+    const passed = myStudents.filter(s => s.entryTestStatus === "Passed").length;
+    document.getElementById("statTopScorers").setAttribute("data-target", passed);
+
+    animateCounters();
+
+    const container = document.getElementById("overviewStudentsList");
+    if (myStudents.length === 0) {
+        container.innerHTML = '<p class="dash-empty-note">No students yet.</p>';
+        return;
+    }
+    container.innerHTML = myStudents.slice(0, 5).map(s => `
+        <div class="dash-row-mini">
+            <span>${s.name}</span>
+            <span class="dash-badge badge-pending">${s.course}</span>
+            <span>${s.progressPercent || 0}% complete</span>
+        </div>
+    `).join("");
+}
+
+/*=========================================
+        MY PROFILE
+let pendingProfilePhoto = null; // Cloudinary URL once uploaded
+let profilePhotoUploading = false; // blocks Save while an upload is in flight
+
+function populateProfileForm() {
+    document.getElementById("profileName").value = myProfile.name || "";
+    document.getElementById("profileTitle").value = myProfile.title || "";
+    document.getElementById("profileBio").value = myProfile.bio || "";
+    pendingProfilePhoto = myProfile.photo || null;
+    const preview = document.getElementById("profilePhotoPreview");
+    if (myProfile.photo) {
+        preview.src = myProfile.photo;
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
+    }
+}
+
+async function handleProfileSubmit(e) {
+    e.preventDefault();
+
+    if (profilePhotoUploading) {
+        alert("The photo is still uploading — please wait a moment and click Save again.");
+        return;
+    }
+
+    const btn = document.getElementById("profileSubmitBtn");
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        await updateDoc(doc(db, "teachers", myProfile.id), {
+            name: val("profileName"),
+            title: val("profileTitle"),
+            bio: val("profileBio"),
+            photo: pendingProfilePhoto || "",
+            updatedAt: serverTimestamp()
+        });
+        myProfile.name = val("profileName");
+        myProfile.title = val("profileTitle");
+        myProfile.bio = val("profileBio");
+        myProfile.photo = pendingProfilePhoto || "";
+        document.getElementById("teacherNameLabel").innerText = myProfile.name;
+        document.getElementById("dashUserAvatar").innerText = initials(myProfile.name);
+        alert("Profile updated!");
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+/*=========================================
+        WIRING
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".dash-nav-item").forEach(item => {
+        item.addEventListener("click", () => showTab(item.dataset.tab));
+    });
+
+    const attendanceDateInput = document.getElementById("attendanceDate");
+    if (attendanceDateInput) attendanceDateInput.value = new Date().toISOString().slice(0, 10);
+    document.getElementById("attendanceCourseSelect")?.addEventListener("change", loadAttendanceForSelection);
+    attendanceDateInput?.addEventListener("change", loadAttendanceForSelection);
+    document.getElementById("attendanceSaveBtn")?.addEventListener("click", saveAttendance);
+
+    document.getElementById("profileForm").addEventListener("submit", handleProfileSubmit);
+
+    document.getElementById("profilePhotoInput").addEventListener("change", async function () {
+        const input = this;
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            alert("Photo file size must be less than " + Math.round(MAX_UPLOAD_BYTES / 1024 / 1024) + "MB");
+            input.value = "";
+            return;
         }
 
+        const preview = document.getElementById("profilePhotoPreview");
+        preview.src = URL.createObjectURL(file); // instant local preview
+        preview.style.display = "block";
 
-        onAuthStateChanged(
-            auth,
-            async user => {
+        profilePhotoUploading = true;
+        input.disabled = true;
+        try {
+            pendingProfilePhoto = await uploadImageToCloudinary(file);
+        } catch (error) {
+            alert(error.message);
+            input.value = "";
+            preview.style.display = pendingProfilePhoto ? "block" : "none";
+            if (pendingProfilePhoto) preview.src = pendingProfilePhoto;
+        } finally {
+            profilePhotoUploading = false;
+            input.disabled = false;
+        }
+    });
 
-                if (!user) {
-
-                    window.location.href =
-                        "../index.html";
-
-                    return;
-                }
-
-                myUid =
-                    user.uid;
-
-                await initializeDashboard();
-            }
-        );
+    async function handleLogout() {
+        try {
+            await signOut(auth);
+            window.location.href = "../login.html";
+        } catch (error) {
+            alert(friendlyFirestoreError(error));
+        }
     }
-);
 
+    document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+    // Same logout button also lives on the application-status screen
+    // (pending/rejected teachers never reach the sidebar's logoutBtn).
+    document.getElementById("appStatusLogoutBtn").addEventListener("click", handleLogout);
+});

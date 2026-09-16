@@ -1,8 +1,3 @@
-/* =========================================================
-   EDUCORE — TEACHER DASHBOARD
-   Polished + Responsive
-   JS classes/IDs preserved
-========================================================= */
 
 :root {
 
@@ -34,7 +29,6 @@
 
 /* =========================================================
    GLOBAL
-========================================================= */
 
 body {
 
@@ -63,7 +57,6 @@ a {
 
 /* =========================================================
    AUTH LOADING
-========================================================= */
 
 #authLoading {
 
@@ -168,7 +161,6 @@ a {
 
 /* =========================================================
    MAIN SHELL
-========================================================= */
 
 .dash-shell {
 
@@ -183,7 +175,6 @@ a {
 /* =========================================================
    SIDEBAR
    Fixed on desktop
-========================================================= */
 
 .dash-sidebar {
 
@@ -220,7 +211,6 @@ a {
 
 /* =========================================================
    SIDEBAR BRAND
-========================================================= */
 
 .dash-sidebar-brand {
 
@@ -279,7 +269,6 @@ a {
 
 /* =========================================================
    SIDEBAR NAV
-========================================================= */
 
 .dash-nav {
 
@@ -356,7 +345,6 @@ a {
 
 /* =========================================================
    SIDEBAR FOOTER
-========================================================= */
 
 .dash-sidebar-footer {
 
@@ -431,7 +419,6 @@ a {
 
 /* =========================================================
    MAIN
-========================================================= */
 
 .dash-main {
 
@@ -445,7 +432,6 @@ a {
 
 /* =========================================================
    TOPBAR
-========================================================= */
 
 .dash-topbar {
 
@@ -562,7 +548,6 @@ a {
 
 /* =========================================================
    CONTENT
-========================================================= */
 
 .dash-content {
 
@@ -576,7 +561,6 @@ a {
 
 /* =========================================================
    TAB ANIMATION
-========================================================= */
 
 .dash-tab-panel {
 
@@ -611,7 +595,6 @@ a {
 
 /* =========================================================
    STAT CARDS
-========================================================= */
 
 .dash-stats-row {
 
@@ -727,7 +710,6 @@ a {
 
 /* =========================================================
    CHARTS
-========================================================= */
 
 .dash-charts-row {
 
@@ -804,7 +786,6 @@ a {
 
 /* =========================================================
    PANELS
-========================================================= */
 
 .dash-panel {
 
@@ -865,7 +846,6 @@ a {
 
 /* =========================================================
    MINI OVERVIEW ROW
-========================================================= */
 
 .dash-row-mini {
 
@@ -912,7 +892,6 @@ a {
 
 /* =========================================================
    COURSE CARDS
-========================================================= */
 
 .dash-list-grid {
 
@@ -982,7 +961,6 @@ a {
 
 /* =========================================================
    BADGES
-========================================================= */
 
 .dash-badge {
 
@@ -1041,7 +1019,6 @@ a {
 
 /* =========================================================
    STUDENT ROW
-========================================================= */
 
 .dash-student-row {
 
@@ -1105,7 +1082,6 @@ a {
 
 /* =========================================================
    PROGRESS
-========================================================= */
 
 .dash-progress-track {
 
@@ -1138,7 +1114,6 @@ a {
 
 /* =========================================================
    STUDENT CONTROLS
-========================================================= */
 
 .dash-student-controls {
 
@@ -1226,7 +1201,6 @@ a {
 
 /* =========================================================
    ATTENDANCE
-========================================================= */
 
 .attendance-row {
 
@@ -1321,7 +1295,6 @@ a {
 
 /* =========================================================
    FORM
-========================================================= */
 
 .dash-form {
 
@@ -1475,7 +1448,6 @@ a {
 
 /* =========================================================
    APPLICATION STATUS
-========================================================= */
 
 .appstatus-wrap {
 
@@ -1626,7 +1598,6 @@ a {
 
 /* =========================================================
    RESPONSIVE — TABLET
-========================================================= */
 
 @media (max-width: 1100px) {
 
@@ -1666,7 +1637,6 @@ a {
 /* =========================================================
    HAMBURGER BUTTON
    Hidden on desktop
-========================================================= */
 
 .teacher-menu-toggle {
 
@@ -1676,7 +1646,6 @@ a {
 
 /* =========================================================
    MOBILE — HAMBURGER SIDEBAR
-========================================================= */
 
 @media (max-width: 860px) {
 
@@ -1818,7 +1787,6 @@ a {
 
 /* =========================================================
    SMALL TABLET / LARGE MOBILE
-========================================================= */
 
 @media (max-width: 767px) {
 
@@ -1918,7 +1886,6 @@ a {
 
 /* =========================================================
    PHONE
-========================================================= */
 
 @media (max-width: 575px) {
 
@@ -2060,7 +2027,6 @@ a {
 
 /* =========================================================
    SIDEBAR SCROLLBAR
-========================================================= */
 
 .dash-sidebar::-webkit-scrollbar {
 
@@ -2084,7 +2050,6 @@ a {
 
 /* =========================================================
    REDUCED MOTION
-========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
 
@@ -2095,5 +2060,882 @@ a {
         animation-duration: 0.01ms !important;
 
         transition-duration: 0.01ms !important;
+    }
+}
+/*====================================
+        TEACHER DASHBOARD
+        (style.css, linked before this file, already defines the
+        --primary-blue / --theme-* / --border-* / --shadow-* variables)
+body {
+    background: var(--bg-light-grey);
+}
+
+/* Visibility is controlled by authGuard.js via an inline style, not here —
+   see authGuard.js's protectPage() for why this must NOT say display:none. */
+
+/*====================================
+        SHELL LAYOUT (sidebar + main)
+.dash-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.dash-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: var(--theme-gradient);
+    color: #fff;
+    padding: 26px 18px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.dash-sidebar-brand {
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    margin-bottom: 34px;
+}
+
+.dash-sidebar-brand span {
+    color: var(--theme-accent-blue);
+    font-weight: 700;
+}
+
+.dash-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--border-radius-sm);
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition-fast);
+}
+
+.dash-nav-item i {
+    width: 18px;
+    text-align: center;
+}
+
+.dash-nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.dash-nav-item.active {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    box-shadow: inset 3px 0 0 var(--theme-accent-blue);
+}
+
+.dash-sidebar-footer {
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dash-logout-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.dash-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dash-home-btn {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.dash-home-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dash-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-topbar {
+    background: var(--bg-body);
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.dash-topbar-title h1 {
+    font-size: 20px;
+    color: var(--text-heading);
+}
+
+.dash-topbar-title p {
+    font-size: 13px;
+    color: var(--text-dark);
+    margin-top: 2px;
+}
+
+.dash-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dash-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--theme-gradient);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.dash-user-name {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.dash-user-role {
+    display: block;
+    font-size: 11.5px;
+    color: var(--icon-grey);
+}
+
+.dash-content {
+    padding: 28px 32px 90px;
+    max-width: 1200px;
+}
+
+/*====================================
+        APPLICATION STATUS SCREEN
+        (replaces the old insecure "claim a profile" screen — this teacher's
+        own /teachers/{uid} doc is looked up directly now, so there is
+        nothing left to pick from a list. See teacher.js.)
+.appstatus-wrap {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 20px;
+    background: var(--bg-light-grey);
+}
+
+.appstatus-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-header);
+    padding: 40px;
+    max-width: 480px;
+    text-align: center;
+    animation: fadeUp .5s ease;
+}
+
+.appstatus-icon {
+    font-size: 30px;
+    color: var(--primary-blue);
+    background: #e0f2fe;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+/* Swapped in by teacher.js for a rejected / not-found application. */
+.appstatus-icon.is-negative {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.appstatus-card h2 {
+    color: var(--text-heading);
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.appstatus-card p {
+    color: var(--text-dark);
+    font-size: 13.5px;
+    margin-bottom: 22px;
+    line-height: 1.6;
+}
+
+.appstatus-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.appstatus-logout-btn {
+    background: var(--bg-light-grey);
+    color: var(--text-dark);
+    border: 1px solid var(--border-input);
+    padding: 10px 22px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.appstatus-logout-btn:hover {
+    background: var(--border-light);
+}
+
+.appstatus-home-btn {
+    background: var(--bg-light-grey);
+    color: var(--text-dark);
+    border: 1px solid var(--border-input);
+    padding: 10px 22px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.appstatus-home-btn:hover {
+    background: var(--border-light);
+}
+
+/*====================================
+        TABS
+.dash-tab-panel {
+    display: none;
+}
+
+.dash-tab-panel.active {
+    display: block;
+    animation: fadeUp .4s ease;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/*====================================
+        STAT CARDS
+.dash-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.dash-stat-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-header);
+    transition: var(--transition-fast);
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card);
+}
+
+.dash-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.icon-blue   { background: #e0f2fe; color: #0369a1; }
+.icon-teal   { background: #ccfbf1; color: #0f766e; }
+.icon-orange { background: #ffedd5; color: #c2410c; }
+.icon-dark   { background: #ede9fe; color: #5b21b6; }
+
+.dash-stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.dash-stat-label {
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+/*====================================
+        ANALYTICS CHARTS
+.dash-charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.dash-chart-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-header);
+    transition: var(--transition-fast);
+}
+
+.dash-chart-card:hover {
+    box-shadow: var(--shadow-card);
+}
+
+.dash-chart-card h3 {
+    font-size: 14px;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.dash-chart-card h3 i {
+    color: var(--primary-blue);
+}
+
+.dash-chart-box {
+    position: relative;
+    height: 200px;
+}
+
+.dash-chart-note {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-dark);
+    text-align: center;
+}
+
+/*====================================
+        ATTENDANCE MARKING
+.attendance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-light-grey);
+    border-radius: var(--border-radius-sm);
+}
+
+.attendance-row .attendance-name {
+    font-weight: 600;
+    color: var(--text-heading);
+    font-size: 13.5px;
+}
+
+.attendance-toggle {
+    display: flex;
+    gap: 6px;
+}
+
+.attendance-toggle button {
+    border: 1px solid var(--border-input);
+    background: var(--bg-body);
+    color: var(--text-dark);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.attendance-toggle button.is-present.active {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #15803d;
+}
+
+.attendance-toggle button.is-absent.active {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #b91c1c;
+}
+
+/*====================================
+        PANELS / LISTS
+.dash-panel {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 22px;
+    box-shadow: var(--shadow-header);
+}
+
+.dash-panel-head {
+    margin-bottom: 18px;
+}
+
+.dash-panel-head h2 {
+    font-size: 17px;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dash-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.dash-empty-note {
+    color: var(--icon-grey);
+    font-size: 14px;
+    padding: 26px;
+    text-align: center;
+}
+
+.dash-row-mini {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    font-size: 13px;
+    color: var(--text-dark);
+    flex-wrap: wrap;
+}
+
+.dash-row-mini span:first-child {
+    font-weight: 600;
+    color: var(--text-heading);
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Course card */
+.dash-course-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-header);
+    transition: var(--transition-fast);
+}
+
+.dash-course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card);
+    border-color: var(--theme-accent-blue);
+}
+
+.dash-course-card h3 {
+    font-size: 15px;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+}
+
+.dash-course-card p {
+    font-size: 12.5px;
+    color: var(--text-dark);
+    margin: 3px 0;
+}
+
+/* Student roster row */
+.dash-student-row {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-header);
+}
+
+.dash-student-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.dash-student-top h3 {
+    font-size: 14.5px;
+    color: var(--text-heading);
+}
+
+.dash-student-top p {
+    font-size: 12px;
+    color: var(--text-dark);
+}
+
+.dash-progress-track {
+    width: 100%;
+    height: 8px;
+    background: var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.dash-progress-fill {
+    height: 100%;
+    background: var(--theme-gradient);
+    border-radius: 10px;
+    transition: width .6s ease;
+}
+
+.dash-student-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dash-student-controls input[type="number"] {
+    width: 70px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-input);
+    border-radius: var(--border-radius-sm);
+    font-size: 13px;
+}
+
+.dash-student-controls input[type="text"] {
+    flex: 1;
+    min-width: 160px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-input);
+    border-radius: var(--border-radius-sm);
+    font-size: 13px;
+}
+
+.dash-student-controls button {
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.dash-student-controls button:hover {
+    background: var(--primary-blue-hover);
+}
+
+.dash-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.badge-passed { background: #dcfce7; color: #166534; }
+.badge-failed { background: #fee2e2; color: #991b1b; }
+.badge-pending { background: #e0f2fe; color: #075985; }
+.badge-free { background: #dcfce7; color: #166534; }
+.badge-paid { background: #fef3c7; color: #92400e; }
+
+/*====================================
+        PROFILE FORM
+.dash-form {
+    background: var(--bg-body);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: 25px;
+    box-shadow: var(--shadow-header);
+    max-width: 600px;
+}
+
+.dash-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 6px;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+}
+
+.input-box.full-width {
+    grid-column: span 2;
+}
+
+.input-box label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-heading);
+    font-size: 13px;
+}
+
+.input-box input,
+.input-box select,
+.input-box textarea {
+    border: 1px solid var(--border-input);
+    border-radius: var(--border-radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.dash-photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-top: 10px;
+    border: 2px solid var(--theme-accent-blue);
+}
+
+.dash-btn-primary {
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    padding: 11px 26px;
+    border-radius: var(--border-radius-full);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.dash-btn-primary:hover {
+    background: var(--primary-blue-hover);
+}
+
+/*====================================
+        AUTH GUARD LOADING / ERROR SCREEN
+#authLoading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 20px;
+    text-align: center;
+    background: var(--bg-light-grey);
+}
+
+.auth-spinner {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 4px solid var(--border-light);
+    border-top-color: var(--primary-blue);
+    animation: authSpin 0.8s linear infinite;
+}
+
+@keyframes authSpin {
+    to { transform: rotate(360deg); }
+}
+
+.auth-loading-text {
+    color: var(--text-dark);
+    font-size: 14px;
+    max-width: 440px;
+    line-height: 1.6;
+}
+
+#authLoading.auth-loading-error .auth-error-icon {
+    font-size: 34px;
+    color: #dc2626;
+}
+
+#authLoading.auth-loading-error .auth-loading-text {
+    color: #991b1b;
+    max-width: 460px;
+}
+
+.auth-loading-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.auth-loading-actions button,
+.auth-loading-actions a {
+    padding: 10px 20px;
+    border-radius: var(--border-radius-full);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.auth-loading-actions button {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.auth-loading-actions a {
+    background: var(--bg-body);
+    color: var(--text-dark);
+    border: 1px solid var(--border-input);
+    display: inline-flex;
+    align-items: center;
+}
+
+/*====================================
+        RESPONSIVE
+@media (max-width: 992px) {
+    .dash-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 860px) {
+    .dash-shell {
+        flex-direction: column;
+    }
+    .dash-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        padding: 14px 16px;
+        overflow-x: auto;
+    }
+    .dash-sidebar-brand {
+        margin-bottom: 0;
+        margin-right: 14px;
+        flex-shrink: 0;
+    }
+    .dash-nav {
+        flex-direction: row;
+        flex: none;
+    }
+    .dash-nav-item {
+        white-space: nowrap;
+    }
+    .dash-nav-item.active {
+        box-shadow: inset 0 -3px 0 var(--theme-accent-blue);
+    }
+    .dash-sidebar-footer {
+        border-top: none;
+        padding-top: 0;
+        margin-left: 10px;
+        flex-direction: row;
+    }
+    .dash-home-btn,
+    .dash-logout-btn {
+        width: auto;
+        white-space: nowrap;
+    }
+    .dash-content {
+        padding: 22px 18px 70px;
+    }
+    .dash-topbar {
+        padding: 16px 18px;
+    }
+    .dash-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .input-box.full-width {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 560px) {
+    .dash-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Student name + Present/Absent buttons don't wrap by default, so a
+       longer name plus both buttons can get tight on a phone. */
+    .attendance-row {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+
+    .attendance-toggle button {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 }

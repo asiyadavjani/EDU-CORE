@@ -1,2374 +1,3 @@
-import {
-    db,
-    auth,
-    collection,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-    serverTimestamp
-} from "../firebaseConfig.js";
-
-import {
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    /* =========================================================
-       GLOBAL STATE
-    ========================================================= */
-
-    let allStudents = [];
-    let allTeachers = [];
-    let allCourses = [];
-    let allArticles = [];
-    let allAnnouncements = [];
-    let allOrders = [];
-    let allAttendance = [];
-
-    let editingCourseId = null;
-    let currentArticleId = null;
-
-    const ITEMS_PER_PAGE = 5;
-    let studentPage = 1;
-    let teacherPage = 1;
-    let coursePage = 1;
-
-
-    /* =========================================================
-       HELPERS
-    ========================================================= */
-
-    function $(id) {
-        return document.getElementById(id);
-    }
-
-
-    function escapeHTML(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-
-    function formatDate(value) {
-        if (!value) return "N/A";
-
-        try {
-            if (typeof value.toDate === "function") {
-                return value.toDate().toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric"
-                });
-            }
-
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return "N/A";
-
-            return date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric"
-            });
-        } catch {
-            return "N/A";
-        }
-    }
-
-
-    function getCategoryName(category) {
-        const value = String(category || "").toLowerCase().trim();
-
-        if (value === "web" || value.includes("web")) {
-            return "Web Development";
-        }
-
-        if (
-            value === "design" ||
-            value.includes("graphic") ||
-            value.includes("design")
-        ) {
-            return "Graphic Design";
-        }
-
-        if (value === "marketing" || value.includes("marketing")) {
-            return "Digital Marketing";
-        }
-
-        if (
-            value === "ai" ||
-            value.includes("artificial") ||
-            value.includes("data")
-        ) {
-            return "AI & Data";
-        }
-
-        return category || "Other";
-    }
-
-
-    function getCategorySlug(category) {
-        const value = String(category || "").toLowerCase().trim();
-
-        if (value === "web" || value.includes("web")) return "web";
-        if (
-            value === "design" ||
-            value.includes("graphic") ||
-            value.includes("design")
-        ) return "design";
-        if (value === "marketing" || value.includes("marketing")) return "marketing";
-        if (
-            value === "ai" ||
-            value.includes("artificial") ||
-            value.includes("data")
-        ) return "ai";
-
-        return value.replace(/\s+/g, "-");
-    }
-
-
-    function showFirebaseError(message, error) {
-        console.error(message, error);
-
-        alert(
-            `${message}\n\n${error?.message || "Unknown Firebase error"}`
-        );
-    }
-
-
-    /* =========================================================
-       DASHBOARD STATS + RECENT ENROLLMENTS
-    ========================================================= */
-
-    async function loadOrders() {
-        try {
-            const snapshot = await getDocs(collection(db, "orders"));
-
-            allOrders = snapshot.docs.map(item => ({
-                id: item.id,
-                ...item.data()
-            }));
-        } catch (error) {
-            console.warn("Orders could not be loaded:", error);
-            allOrders = [];
-        }
-    }
-
-
-    async function loadAttendance() {
-        try {
-            const snapshot = await getDocs(collection(db, "attendance"));
-
-            allAttendance = snapshot.docs.map(item => ({
-                id: item.id,
-                ...item.data()
-            }));
-        } catch (error) {
-            console.warn("Attendance could not be loaded:", error);
-            allAttendance = [];
-        }
-    }
-
-
-    async function loadDashboardStats() {
-        try {
-            const [studentsSnapshot, teachersSnapshot, coursesSnapshot] =
-                await Promise.all([
-                    getDocs(collection(db, "students")),
-                    getDocs(collection(db, "teachers")),
-                    getDocs(collection(db, "courses"))
-                ]);
-
-            if ($("studentCount")) {
-                $("studentCount").textContent = studentsSnapshot.size;
-            }
-
-            if ($("teacherCount")) {
-                $("teacherCount").textContent = teachersSnapshot.size;
-            }
-
-            if ($("courseCount")) {
-                $("courseCount").textContent = coursesSnapshot.size;
-            }
-
-            /*
-               In the actual project, orders are the enrollment/payment
-               records. When orders exist we show their count. Otherwise
-               accepted students are used as the useful fallback.
-            */
-            if ($("enrollmentCount")) {
-                $("enrollmentCount").textContent =
-                    allOrders.length ||
-                    studentsSnapshot.docs.filter(studentDoc => {
-                        const data = studentDoc.data();
-                        return String(data.applicationStatus || "")
-                            .toLowerCase() === "accepted";
-                    }).length;
-            }
-
-            renderRecentEnrollments();
-            renderDashboardCharts();
-            renderReports();
-        } catch (error) {
-            showFirebaseError(
-                "Dashboard data load nahi ho saka.",
-                error
-            );
-        }
-    }
-
-
-    function renderRecentEnrollments() {
-        const tbody = document.querySelector(
-            "#dashboard .custom-table tbody"
-        );
-
-        if (!tbody) return;
-
-        const records = allStudents
-            .slice()
-            .sort((a, b) => {
-                const da = a.createdAt?.toDate
-                    ? a.createdAt.toDate().getTime()
-                    : new Date(a.createdAt || 0).getTime();
-
-                const db = b.createdAt?.toDate
-                    ? b.createdAt.toDate().getTime()
-                    : new Date(b.createdAt || 0).getTime();
-
-                return db - da;
-            })
-            .slice(0, 5);
-
-        if (!records.length) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-4">
-                        No student records yet.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        tbody.innerHTML = records.map(student => {
-            const name =
-                student.name ||
-                student.fullName ||
-                student.studentName ||
-                "Student";
-
-            const email =
-                student.email ||
-                student.emailAddress ||
-                "N/A";
-
-            const course =
-                student.course ||
-                student.courseName ||
-                student.selectedCourse ||
-                "N/A";
-
-            const status =
-                String(
-                    student.applicationStatus ||
-                    student.status ||
-                    "Pending"
-                );
-
-            return `
-                <tr>
-                    <td>
-                        <div class="user-cell">
-                            <div class="user-avatar">
-                                ${escapeHTML(name.charAt(0).toUpperCase())}
-                            </div>
-                            <div>
-                                <strong>${escapeHTML(name)}</strong>
-                                <small>${escapeHTML(email)}</small>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${escapeHTML(course)}</td>
-                    <td>${escapeHTML(formatDate(student.createdAt))}</td>
-                    <td>
-                        <span class="status-badge ${
-                            String(status).toLowerCase().includes("accepted") ||
-                            String(status).toLowerCase() === "active"
-                                ? "active"
-                                : String(status).toLowerCase().includes("reject")
-                                    ? "rejected"
-                                    : "pending"
-                        }">
-                            ${escapeHTML(status)}
-                        </span>
-                    </td>
-                </tr>
-            `;
-        }).join("");
-    }
-
-
-    function renderDashboardCharts() {
-        if (typeof Chart === "undefined") return;
-
-        const enrollmentCanvas = $("enrollmentChart");
-        const categoryCanvas = $("categoryChart");
-
-        if (enrollmentCanvas) {
-            const monthly = Array(12).fill(0);
-            const records = allStudents.length
-                ? allStudents
-                : allOrders;
-
-            records.forEach(item => {
-                const raw = item.createdAt || item.date || item.enrolledAt;
-                if (!raw) return;
-
-                const date = typeof raw.toDate === "function"
-                    ? raw.toDate()
-                    : new Date(raw);
-
-                if (Number.isNaN(date.getTime())) return;
-                monthly[date.getMonth()]++;
-            });
-
-            if (enrollmentCanvas._chart) {
-                enrollmentCanvas._chart.destroy();
-            }
-
-            enrollmentCanvas._chart = new Chart(
-                enrollmentCanvas,
-                {
-                    type: "line",
-                    data: {
-                        labels: [
-                            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-                        ],
-                        datasets: [{
-                            label: "Students",
-                            data: monthly,
-                            tension: 0.35,
-                            borderWidth: 2,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0 }
-                            }
-                        }
-                    }
-                }
-            );
-        }
-
-        if (categoryCanvas) {
-            const counts = {};
-
-            allCourses.forEach(course => {
-                const label = getCategoryName(course.category);
-                counts[label] = (counts[label] || 0) + 1;
-            });
-
-            const labels = Object.keys(counts);
-            const values = Object.values(counts);
-
-            if (categoryCanvas._chart) {
-                categoryCanvas._chart.destroy();
-            }
-
-            categoryCanvas._chart = new Chart(
-                categoryCanvas,
-                {
-                    type: "doughnut",
-                    data: {
-                        labels: labels.length ? labels : ["No courses"],
-                        datasets: [{
-                            data: values.length ? values : [1],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: "65%",
-                        plugins: {
-                            legend: {
-                                position: "bottom"
-                            }
-                        }
-                    }
-                }
-            );
-        }
-    }
-
-
-    /* =========================================================
-       PAGINATION HELPERS
-    ========================================================= */
-
-    function getPageData(items, page) {
-        const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
-        const safePage = Math.min(Math.max(page, 1), totalPages);
-        const start = (safePage - 1) * ITEMS_PER_PAGE;
-
-        return {
-            items: items.slice(start, start + ITEMS_PER_PAGE),
-            currentPage: safePage,
-            totalPages
-        };
-    }
-
-
-    function renderPagination(container, currentPage, totalPages, buttonClass) {
-        if (!container || totalPages <= 1) {
-            if (container) container.innerHTML = "";
-            return;
-        }
-
-        let html = `
-            <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
-                <small class="text-muted">Page ${currentPage} of ${totalPages}</small>
-                <div class="pagination pagination-sm mb-0">
-                    <button
-                        type="button"
-                        class="page-link ${buttonClass}"
-                        data-page="${currentPage - 1}"
-                        ${currentPage === 1 ? "disabled" : ""}>
-                        Previous
-                    </button>
-        `;
-
-        for (let page = 1; page <= totalPages; page++) {
-            html += `
-                <button
-                    type="button"
-                    class="page-link ${buttonClass} ${page === currentPage ? "active" : ""}"
-                    data-page="${page}">
-                    ${page}
-                </button>
-            `;
-        }
-
-        html += `
-                    <button
-                        type="button"
-                        class="page-link ${buttonClass}"
-                        data-page="${currentPage + 1}"
-                        ${currentPage === totalPages ? "disabled" : ""}>
-                        Next
-                    </button>
-                </div>
-            </div>
-        `;
-
-        container.innerHTML = html;
-    }
-
-
-    /* =========================================================
-       STUDENTS
-       Actual repo collection: students
-       Important fields from the repo:
-       cnic, name, course, applicationStatus,
-       entryTestStatus, marksObtained,
-       assignedTeacherId, assignedTeacherUid,
-       assignedTeacherName, progressPercent
-    ========================================================= */
-
-    const studentSearch = $("studentSearch");
-    const studentStatus = $("studentStatus");
-    const studentsTableBody = $("studentsTableBody");
-
-
-    async function loadStudents() {
-        try {
-            const snapshot = await getDocs(collection(db, "students"));
-
-            allStudents = snapshot.docs.map(studentDoc => ({
-                id: studentDoc.id,
-                ...studentDoc.data()
-            }));
-
-            renderStudents(getFilteredStudents());
-            updateStudentSummary();
-        } catch (error) {
-            showFirebaseError(
-                "Students load nahi ho sake.",
-                error
-            );
-        }
-    }
-
-
-    function getStudentName(student) {
-        return (
-            student.name ||
-            student.fullName ||
-            student.studentName ||
-            "N/A"
-        );
-    }
-
-
-    function getStudentEmail(student) {
-        return (
-            student.email ||
-            student.emailAddress ||
-            "N/A"
-        );
-    }
-
-
-    function getStudentCourse(student) {
-        return (
-            student.course ||
-            student.courseName ||
-            student.selectedCourse ||
-            student.courseTitle ||
-            "N/A"
-        );
-    }
-
-
-    function getStudentStatus(student) {
-        const status = String(
-            student.applicationStatus ||
-            student.status ||
-            "Entry Test Pending"
-        ).toLowerCase().trim();
-
-        if (status === "accepted" || status === "approved" || status === "active") {
-            return "active";
-        }
-
-        if (status === "rejected") {
-            return "rejected";
-        }
-
-        if (status === "blocked") {
-            return "blocked";
-        }
-
-        return "pending";
-    }
-
-
-    function getOriginalStudentStatus(student) {
-        return student.applicationStatus || "Entry Test Pending";
-    }
-
-
-    function getFilteredStudents() {
-        const search =
-            studentSearch?.value.toLowerCase().trim() || "";
-
-        const statusFilter =
-            studentStatus?.value || "all";
-
-        return allStudents.filter(student => {
-            const name = getStudentName(student).toLowerCase();
-            const email = getStudentEmail(student).toLowerCase();
-            const course = getStudentCourse(student).toLowerCase();
-            const status = getStudentStatus(student);
-
-            const matchesSearch =
-                !search ||
-                name.includes(search) ||
-                email.includes(search) ||
-                course.includes(search);
-
-            const matchesStatus =
-                statusFilter === "all" ||
-                status === statusFilter;
-
-            return matchesSearch && matchesStatus;
-        });
-    }
-
-
-    function renderStudents(students) {
-        if (!studentsTableBody) return;
-
-        const pageData = getPageData(students, studentPage);
-        studentPage = pageData.currentPage;
-
-        studentsTableBody.innerHTML = "";
-
-        if (!students.length) {
-            studentsTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        No students found.
-                    </td>
-                </tr>
-            `;
-
-            renderPagination($('studentsPagination'), 1, 1, 'student-page-btn');
-            return;
-        }
-
-        pageData.items.forEach(student => {
-            const row = document.createElement("tr");
-
-            const name = getStudentName(student);
-            const email = getStudentEmail(student);
-            const course = getStudentCourse(student);
-            const status = getStudentStatus(student);
-
-            let actions = "";
-
-            if (status === "pending") {
-                actions = `
-                    <button class="action-btn approve-student-btn" data-id="${escapeHTML(student.id)}">Approve</button>
-                    <button class="action-btn reject-student-btn" data-id="${escapeHTML(student.id)}">Reject</button>
-                `;
-            } else if (status === "active") {
-                actions = `
-                    <button class="action-btn block-student-btn" data-id="${escapeHTML(student.id)}">Block</button>
-                    <button class="action-btn assign-student-btn" data-id="${escapeHTML(student.id)}">Assign</button>
-                `;
-            } else if (status === "blocked") {
-                actions = `
-                    <button class="action-btn unblock-student-btn" data-id="${escapeHTML(student.id)}">Unblock</button>
-                                `;
-            } else if (status === "rejected") {
-                actions = `
-                    <button class="action-btn approve-student-btn" data-id="${escapeHTML(student.id)}">Approve</button>
-                `;
-            }
-
-            actions += `
-                <button class="action-btn delete-student-btn" data-id="${escapeHTML(student.id)}">Delete</button>
-            `;
-
-            const teacherName = student.assignedTeacherName || "Not assigned";
-
-            row.innerHTML = `
-                <td>
-                    <div class="user-info">
-                        <div class="avatar">
-                            ${escapeHTML(name.charAt(0).toUpperCase())}
-                        </div>
-                        <div>
-                            <strong>${escapeHTML(name)}</strong>
-                            <small>Teacher: ${escapeHTML(teacherName)}</small>
-                        </div>
-                    </div>
-                </td>
-                <td>${escapeHTML(email)}</td>
-                <td>${escapeHTML(course)}</td>
-                <td>
-                    <span class="status-badge ${escapeHTML(status)}">
-                        ${escapeHTML(status === "active" ? "Active" : status.charAt(0).toUpperCase() + status.slice(1))}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">${actions}</div>
-                </td>
-            `;
-
-            studentsTableBody.appendChild(row);
-        });
-
-        renderPagination(
-            $('studentsPagination'),
-            pageData.currentPage,
-            pageData.totalPages,
-            'student-page-btn'
-        );
-    }
-
-
-    function updateStudentSummary() {
-        const pending = allStudents.filter(
-            student =>
-                getOriginalStudentStatus(student) === "Awaiting Approval"
-        ).length;
-
-        const text = $("students")?.querySelector(".page-heading p");
-
-        if (text) {
-            text.textContent =
-                `Manage ${allStudents.length} student records • ${pending} awaiting approval.`;
-        }
-    }
-
-
-    async function findMatchingCourseForStudent(student) {
-        const title = getStudentCourse(student);
-
-        return allCourses.find(course =>
-            course.category === "Diploma Track" &&
-            course.title === title
-        ) || null;
-    }
-
-
-    async function approveStudent(studentId) {
-        const student =
-            allStudents.find(item => item.id === studentId);
-
-        if (!student) return;
-
-        try {
-            const matchedCourse =
-                await findMatchingCourseForStudent(student);
-
-            const updateData = {
-                applicationStatus: "Accepted",
-                progressPercent: 0,
-                updatedAt: serverTimestamp()
-            };
-
-            if (matchedCourse) {
-                updateData.assignedTeacherId =
-                    matchedCourse.teacherId || null;
-
-                updateData.assignedTeacherUid =
-                    matchedCourse.teacherUid || null;
-
-                updateData.assignedTeacherName =
-                    matchedCourse.teacherName || null;
-            } else {
-                updateData.assignedTeacherId = null;
-                updateData.assignedTeacherUid = null;
-                updateData.assignedTeacherName = null;
-            }
-
-            await updateDoc(
-                doc(db, "students", studentId),
-                updateData
-            );
-
-            await loadStudents();
-            await loadDashboardStats();
-
-            if (!matchedCourse) {
-                alert(
-                    `Student accepted, but no matching Diploma Track course was found for "${getStudentCourse(student)}". You can create/fix the course and then use Assign.`
-                );
-            }
-        } catch (error) {
-            showFirebaseError(
-                "Student approve nahi ho saka.",
-                error
-            );
-        }
-    }
-
-
-    async function assignStudentTeacher(studentId) {
-        const student =
-            allStudents.find(item => item.id === studentId);
-
-        if (!student) return;
-
-        const matchedCourse =
-            await findMatchingCourseForStudent(student);
-
-        if (!matchedCourse) {
-            alert(
-                `No matching Diploma Track course found for "${getStudentCourse(student)}".`
-            );
-            return;
-        }
-
-        if (!matchedCourse.teacherId && !matchedCourse.teacherUid) {
-            alert(
-                "Matching course mila, lekin us course par teacher assigned nahi hai."
-            );
-            return;
-        }
-
-        try {
-            await updateDoc(
-                doc(db, "students", studentId),
-                {
-                    assignedTeacherId:
-                        matchedCourse.teacherId || null,
-                    assignedTeacherUid:
-                        matchedCourse.teacherUid || null,
-                    assignedTeacherName:
-                        matchedCourse.teacherName || null,
-                    updatedAt: serverTimestamp()
-                }
-            );
-
-            await loadStudents();
-        } catch (error) {
-            showFirebaseError(
-                "Teacher assignment nahi ho saki.",
-                error
-            );
-        }
-    }
-
-
-    async function updateStudentStatus(studentId, status) {
-        try {
-            const data = {
-                updatedAt: serverTimestamp()
-            };
-
-            if (status === "rejected") {
-                data.applicationStatus = "Rejected";
-            }
-
-            if (status === "blocked") {
-                data.status = "blocked";
-                data.applicationStatus = "Blocked";
-            }
-
-            if (status === "approved") {
-                data.applicationStatus = "Accepted";
-            }
-
-            await updateDoc(
-                doc(db, "students", studentId),
-                data
-            );
-
-            await loadStudents();
-            await loadDashboardStats();
-        } catch (error) {
-            showFirebaseError(
-                "Student status update nahi ho saka.",
-                error
-            );
-        }
-    }
-
-
-    studentsTableBody?.addEventListener("click", async event => {
-        const button = event.target.closest("button");
-        if (!button) return;
-
-        const studentId = button.dataset.id;
-        if (!studentId) return;
-
-        if (button.classList.contains("approve-student-btn")) {
-            await approveStudent(studentId);
-            return;
-        }
-
-        if (button.classList.contains("reject-student-btn")) {
-            await updateStudentStatus(studentId, "rejected");
-            return;
-        }
-
-        if (button.classList.contains("block-student-btn")) {
-            await updateStudentStatus(studentId, "blocked");
-            return;
-        }
-
-        if (button.classList.contains("unblock-student-btn")) {
-            await updateStudentStatus(studentId, "approved");
-            return;
-        }
-
-        if (button.classList.contains("assign-student-btn")) {
-            await assignStudentTeacher(studentId);
-            return;
-        }
-
-        if (button.classList.contains("delete-student-btn")) {
-            const student = allStudents.find(
-                item => item.id === studentId
-            );
-
-            if (!confirm(`Delete ${getStudentName(student || {})}?`)) {
-                return;
-            }
-
-            try {
-                await deleteDoc(
-                    doc(db, "students", studentId)
-                );
-
-                await loadStudents();
-                await loadDashboardStats();
-            } catch (error) {
-                showFirebaseError(
-                    "Student delete nahi ho saka.",
-                    error
-                );
-            }
-        }
-    });
-
-
-    studentSearch?.addEventListener("input", () => {
-        studentPage = 1;
-        renderStudents(getFilteredStudents());
-    });
-
-    studentStatus?.addEventListener("change", () => {
-        studentPage = 1;
-        renderStudents(getFilteredStudents());
-    });
-
-    $("studentsPagination")?.addEventListener("click", event => {
-        const button = event.target.closest(".student-page-btn");
-        if (!button || button.disabled) return;
-
-        const page = Number(button.dataset.page);
-        if (!Number.isFinite(page)) return;
-
-        studentPage = page;
-        renderStudents(getFilteredStudents());
-    });
-
-
-    /* =========================================================
-       TEACHERS
-       Actual repo collection: teachers
-    ========================================================= */
-
-    const teacherSearch = $("teacherSearch");
-    const teacherStatus = $("teacherStatus");
-    const teachersTableBody = $("teachersTableBody");
-
-
-    async function loadTeachers() {
-        try {
-            const snapshot = await getDocs(collection(db, "teachers"));
-
-            allTeachers = snapshot.docs.map(teacherDoc => ({
-                id: teacherDoc.id,
-                ...teacherDoc.data()
-            }));
-
-            renderTeachers(getFilteredTeachers());
-        } catch (error) {
-            showFirebaseError(
-                "Teachers load nahi ho sake.",
-                error
-            );
-        }
-    }
-
-
-    function getTeacherStatus(teacher) {
-        const status = String(
-            teacher.status || "approved"
-        ).toLowerCase();
-
-        if (status === "approved") return "active";
-        return status;
-    }
-
-
-    function getFilteredTeachers() {
-        const search =
-            teacherSearch?.value.toLowerCase().trim() || "";
-
-        const statusFilter =
-            teacherStatus?.value || "all";
-
-        return allTeachers.filter(teacher => {
-            const name = String(
-                teacher.name ||
-                teacher.fullName ||
-                ""
-            ).toLowerCase();
-
-            const email = String(
-                teacher.email ||
-                teacher.emailAddress ||
-                ""
-            ).toLowerCase();
-
-            const title = String(
-                teacher.title ||
-                teacher.specialization ||
-                teacher.bio ||
-                ""
-            ).toLowerCase();
-
-            const status = getTeacherStatus(teacher);
-
-            return (
-                (!search ||
-                    name.includes(search) ||
-                    email.includes(search) ||
-                    title.includes(search)) &&
-                (statusFilter === "all" || status === statusFilter)
-            );
-        });
-    }
-
-
-    function renderTeachers(teachers) {
-        if (!teachersTableBody) return;
-
-        const pageData = getPageData(teachers, teacherPage);
-        teacherPage = pageData.currentPage;
-
-        teachersTableBody.innerHTML = "";
-
-        if (!teachers.length) {
-            teachersTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        No teachers found.
-                    </td>
-                </tr>
-            `;
-            renderPagination($('teachersPagination'), 1, 1, 'teacher-page-btn');
-            return;
-        }
-
-        pageData.items.forEach(teacher => {
-            const row = document.createElement("tr");
-
-            const name = teacher.name || teacher.fullName || "N/A";
-            const email = teacher.email || teacher.emailAddress || "N/A";
-            const title = teacher.title || teacher.specialization || "N/A";
-            const status = getTeacherStatus(teacher);
-
-            let actions = "";
-
-            if (status === "pending") {
-                actions = `
-                    <button class="action-btn approve-teacher-btn" data-id="${escapeHTML(teacher.id)}">Approve</button>
-                    <button class="action-btn reject-teacher-btn" data-id="${escapeHTML(teacher.id)}">Reject</button>
-                `;
-            } else if (status === "active") {
-                actions = `
-                    <button class="action-btn block-teacher-btn" data-id="${escapeHTML(teacher.id)}">Block</button>
-                `;
-            } else if (status === "blocked") {
-                actions = `
-                    <button class="action-btn unblock-teacher-btn" data-id="${escapeHTML(teacher.id)}">Unblock</button>
-                `;
-            } else if (status === "rejected") {
-                actions = `
-                    <button class="action-btn approve-teacher-btn" data-id="${escapeHTML(teacher.id)}">Approve</button>
-                `;
-            }
-
-            actions += `
-                <button class="action-btn delete-teacher-btn" data-id="${escapeHTML(teacher.id)}">Delete</button>
-            `;
-
-            row.innerHTML = `
-                <td>
-                    <div class="user-info">
-                        <div class="avatar">
-                            ${escapeHTML(name.charAt(0).toUpperCase())}
-                        </div>
-                        <strong>${escapeHTML(name)}</strong>
-                    </div>
-                </td>
-                <td>${escapeHTML(email)}</td>
-                <td>${escapeHTML(title)}</td>
-                <td>
-                    <span class="status-badge ${escapeHTML(status)}">
-                        ${escapeHTML(status === "active" ? "Active" : status.charAt(0).toUpperCase() + status.slice(1))}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">${actions}</div>
-                </td>
-            `;
-
-            teachersTableBody.appendChild(row);
-        });
-
-        renderPagination(
-            $('teachersPagination'),
-            pageData.currentPage,
-            pageData.totalPages,
-            'teacher-page-btn'
-        );
-    }
-
-
-    async function updateTeacherStatus(teacherId, status) {
-        try {
-            await updateDoc(
-                doc(db, "teachers", teacherId),
-                {
-                    status,
-                    updatedAt: serverTimestamp()
-                }
-            );
-
-            await loadTeachers();
-            await loadCourses();
-            await loadDashboardStats();
-        } catch (error) {
-            showFirebaseError(
-                "Teacher status update nahi ho saka.",
-                error
-            );
-        }
-    }
-
-
-    teachersTableBody?.addEventListener("click", async event => {
-        const button = event.target.closest("button");
-        if (!button) return;
-
-        const teacherId = button.dataset.id;
-        if (!teacherId) return;
-
-        if (button.classList.contains("approve-teacher-btn")) {
-            await updateTeacherStatus(teacherId, "approved");
-            return;
-        }
-
-        if (button.classList.contains("reject-teacher-btn")) {
-            await updateTeacherStatus(teacherId, "rejected");
-            return;
-        }
-
-        if (button.classList.contains("block-teacher-btn")) {
-            await updateTeacherStatus(teacherId, "blocked");
-            return;
-        }
-
-        if (button.classList.contains("unblock-teacher-btn")) {
-            await updateTeacherStatus(teacherId, "approved");
-            return;
-        }
-
-        if (button.classList.contains("delete-teacher-btn")) {
-            const teacher = allTeachers.find(
-                item => item.id === teacherId
-            );
-
-            if (!confirm(`Delete ${teacher?.name || "this teacher"}?`)) {
-                return;
-            }
-
-            try {
-                await deleteDoc(
-                    doc(db, "teachers", teacherId)
-                );
-
-                await loadTeachers();
-                await loadCourses();
-                await loadDashboardStats();
-            } catch (error) {
-                showFirebaseError(
-                    "Teacher delete nahi ho saka.",
-                    error
-                );
-            }
-        }
-    });
-
-
-    teacherSearch?.addEventListener("input", () => {
-        teacherPage = 1;
-        renderTeachers(getFilteredTeachers());
-    });
-
-    teacherStatus?.addEventListener("change", () => {
-        teacherPage = 1;
-        renderTeachers(getFilteredTeachers());
-    });
-
-    $("teachersPagination")?.addEventListener("click", event => {
-        const button = event.target.closest(".teacher-page-btn");
-        if (!button || button.disabled) return;
-
-        const page = Number(button.dataset.page);
-        if (!Number.isFinite(page)) return;
-
-        teacherPage = page;
-        renderTeachers(getFilteredTeachers());
-    });
-
-
-    /* =========================================================
-       COURSES
-       Actual repo fields:
-       title, category, campus, price,
-       teacherId, teacherName, teacherUid,
-       description
-
-       Current UI has no teacher input, so existing teacher
-       relationships are preserved. New courses remain unassigned.
-    ========================================================= */
-
-    const courseSearch = $("courseSearch");
-    const courseCategory = $("courseCategory");
-
-    const coursesTableBody = $("coursesTableBody");
-
-    const addCourseBtn = $("addCourseBtn");
-    const courseModal = $("courseModal");
-    const closeCourseModal = $("closeCourseModal");
-    const cancelCourseBtn = $("cancelCourseBtn");
-    const saveCourseBtn = $("saveCourseBtn");
-
-    const courseNameInput = $("courseName");
-    const courseCategoryInput = $("courseCategoryInput");
-    const coursePriceInput = $("coursePrice");
-    const courseModalTitle = $("courseModalTitle");
-
-
-    async function loadCourses() {
-        try {
-            const snapshot = await getDocs(collection(db, "courses"));
-
-            allCourses = snapshot.docs.map(courseDoc => ({
-                id: courseDoc.id,
-                ...courseDoc.data()
-            }));
-
-            renderCourses(getFilteredCourses());
-        } catch (error) {
-            showFirebaseError(
-                "Courses load nahi ho sake.",
-                error
-            );
-        }
-    }
-
-
-    function getFilteredCourses() {
-        const search =
-            courseSearch?.value.toLowerCase().trim() || "";
-
-        const category =
-            courseCategory?.value || "all";
-
-        return allCourses.filter(course => {
-            const title = String(
-                course.title ||
-                course.name ||
-                ""
-            ).toLowerCase();
-
-            const categoryText = String(
-                course.category ||
-                ""
-            ).toLowerCase();
-
-            const slug = getCategorySlug(course.category);
-
-            const matchesSearch =
-                !search ||
-                title.includes(search) ||
-                categoryText.includes(search);
-
-            const matchesCategory =
-                category === "all" ||
-                slug === category ||
-                String(course.category || "").toLowerCase() ===
-                    String(category).toLowerCase();
-
-            return matchesSearch && matchesCategory;
-        });
-    }
-
-
-    function renderCourses(courses) {
-        if (!coursesTableBody) return;
-
-        const pageData = getPageData(courses, coursePage);
-        coursePage = pageData.currentPage;
-
-        coursesTableBody.innerHTML = "";
-
-        if (!courses.length) {
-            coursesTableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-4">
-                        No courses found.
-                    </td>
-                </tr>
-            `;
-                        renderPagination($('coursesPagination'), 1, 1, 'course-page-btn');
-            return;
-        }
-
-        pageData.items.forEach(course => {
-            const title = course.title || course.name || "Untitled Course";
-            const category = getCategoryName(course.category);
-            const teacher = course.teacherName || course.teacher || "Not assigned";
-            const students = course.studentsCount ?? course.enrolledStudents ?? 0;
-            const price = Number(course.price) || 0;
-            const description = course.description || course.shortDescription || "No course description available.";
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>
-                    <div class="user-info">
-                        <div class="avatar">
-                            <i class="fa-solid fa-book-open"></i>
-                        </div>
-                        <div>
-                            <strong>${escapeHTML(title)}</strong>
-                            <small>${escapeHTML(description)}</small>
-                        </div>
-                    </div>
-                </td>
-                <td>${escapeHTML(category)}</td>
-                <td>${escapeHTML(teacher)}</td>
-                <td>
-                    <i class="fa-solid fa-users me-1"></i>
-                    ${escapeHTML(students)}
-                </td>
-                <td>
-                    <strong>
-                        ${price > 0 ? `Rs. ${escapeHTML(price)}` : "Free"}
-                    </strong>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button
-                            type="button"
-                            class="outline-btn edit-course-btn"
-                            data-id="${escapeHTML(course.id)}">
-                            <i class="fa-solid fa-pen"></i>
-                            Edit
-                        </button>
-
-                        <button
-                            type="button"
-                            class="delete-btn delete-course-btn"
-                            data-id="${escapeHTML(course.id)}">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            coursesTableBody.appendChild(row);
-        });
-
-        renderPagination(
-            $('coursesPagination'),
-            pageData.currentPage,
-            pageData.totalPages,
-            'course-page-btn'
-        );
-    }
-
-
-    function openCourseModalForAdd() {
-        editingCourseId = null;
-
-        if (courseModalTitle) {
-            courseModalTitle.textContent = "Add Course";
-        }
-
-        if (courseNameInput) {
-            courseNameInput.value = "";
-        }
-
-        if (courseCategoryInput) {
-            courseCategoryInput.value = "web";
-        }
-
-        if (coursePriceInput) {
-            coursePriceInput.value = "";
-        }
-
-        courseModal?.classList.add("show");
-    }
-
-
-    function openCourseModalForEdit(course) {
-        editingCourseId = course.id;
-
-        if (courseModalTitle) {
-            courseModalTitle.textContent = "Edit Course";
-        }
-
-        if (courseNameInput) {
-            courseNameInput.value =
-                course.title ||
-                course.name ||
-                "";
-        }
-
-        if (courseCategoryInput) {
-            courseCategoryInput.value =
-                course.category ||
-                "web";
-        }
-
-        if (coursePriceInput) {
-            coursePriceInput.value = course.price ?? "";
-        }
-
-        courseModal?.classList.add("show");
-    }
-
-
-    function closeCourseModalFunction() {
-        editingCourseId = null;
-        courseModal?.classList.remove("show");
-    }
-
-
-    addCourseBtn?.addEventListener(
-        "click",
-        openCourseModalForAdd
-    );
-
-    closeCourseModal?.addEventListener(
-        "click",
-        closeCourseModalFunction
-    );
-
-    cancelCourseBtn?.addEventListener(
-        "click",
-        closeCourseModalFunction
-    );
-
-    courseModal?.querySelector(".modal-overlay")?.addEventListener(
-        "click",
-        closeCourseModalFunction
-    );
-
-
-    saveCourseBtn?.addEventListener(
-        "click",
-        async () => {
-            const title =
-                courseNameInput?.value.trim() || "";
-
-            const category =
-                courseCategoryInput?.value.trim() || "";
-
-            const price =
-                Number(coursePriceInput?.value || 0);
-
-            if (!title) {
-                alert("Course name enter karo.");
-                return;
-            }
-
-            try {
-                saveCourseBtn.disabled = true;
-
-                if (editingCourseId) {
-                    const oldCourse = allCourses.find(
-                        item => item.id === editingCourseId
-                    );
-
-                    await updateDoc(
-                        doc(
-                            db,
-                            "courses",
-                            editingCourseId
-                        ),
-                        {
-                            title,
-                            category,
-                            price,
-                            description:
-                                oldCourse?.description || "",
-                            teacherId:
-                                oldCourse?.teacherId || null,
-                            teacherName:
-                                oldCourse?.teacherName || null,
-                            teacherUid:
-                                oldCourse?.teacherUid || null,
-                            campus:
-                                oldCourse?.campus || "",
-                            updatedAt:
-                                serverTimestamp()
-                        }
-                    );
-                } else {
-                    await addDoc(
-                        collection(db, "courses"),
-                        {
-                            title,
-                            category,
-                            price,
-                            campus: "",
-                            teacherId: null,
-                            teacherName: null,
-                            teacherUid: null,
-                            description: "",
-                            studentsCount: 0,
-                            createdAt:
-                                serverTimestamp(),
-                            updatedAt:
-                                serverTimestamp()
-                        }
-                    );
-                }
-
-                closeCourseModalFunction();
-                await loadCourses();
-                await loadDashboardStats();
-            } catch (error) {
-                showFirebaseError(
-                    editingCourseId
-                        ? "Course update nahi ho saka."
-                        : "Course add nahi ho saka.",
-                    error
-                );
-            } finally {
-                saveCourseBtn.disabled = false;
-            }
-        }
-    );
-
-
-    coursesTableBody?.addEventListener(
-        "click",
-        async event => {
-            const button = event.target.closest("button");
-            if (!button) return;
-
-            const courseId = button.dataset.id;
-            if (!courseId) return;
-
-            const course = allCourses.find(
-                item => item.id === courseId
-            );
-
-            if (button.classList.contains("edit-course-btn")) {
-                if (course) {
-                    openCourseModalForEdit(course);
-                }
-                return;
-            }
-
-            if (button.classList.contains("delete-course-btn")) {
-                if (
-                    !confirm(
-                        `Delete ${course?.title || "this course"}?`
-                    )
-                ) {
-                    return;
-                }
-
-                try {
-                    await deleteDoc(
-                        doc(db, "courses", courseId)
-                    );
-
-                    await loadCourses();
-                    await loadStudents();
-                    await loadDashboardStats();
-                } catch (error) {
-                    showFirebaseError(
-                        "Course delete nahi ho saka.",
-                        error
-                    );
-                }
-            }
-        }
-    );
-
-
-    courseSearch?.addEventListener("input", () => {
-        coursePage = 1;
-        renderCourses(getFilteredCourses());
-    });
-
-    courseCategory?.addEventListener("change", () => {
-        coursePage = 1;
-        renderCourses(getFilteredCourses());
-    });
-
-    $("coursesPagination")?.addEventListener("click", event => {
-        const button = event.target.closest(".course-page-btn");
-        if (!button || button.disabled) return;
-
-        const page = Number(button.dataset.page);
-        if (!Number.isFinite(page)) return;
-
-        coursePage = page;
-        renderCourses(getFilteredCourses());
-    });
-
-
-    /* =========================================================
-       BLOGS / ARTICLES
-       Actual repo collection: blogs
-
-       Teacher-created records:
-       status = pending
-       authorUid
-       authorId
-       authorName
-       title
-       category
-       excerpt
-       body
-       image
-       createdAt
-       updatedAt
-    ========================================================= */
-
-    const articleSearch = $("articleSearch");
-    const articleStatus = $("articleStatus");
-    const articlesTableBody = $("articlesTableBody");
-
-    const articleModal = $("articleModal");
-    const closeArticleModal = $("closeArticleModal");
-
-    const modalArticleTitle = $("modalArticleTitle");
-    const modalArticleAuthor = $("modalArticleAuthor");
-    const modalArticleRole = $("modalArticleRole");
-
-    const approveArticleBtn = $("approveArticleBtn");
-    const rejectArticleBtn = $("rejectArticleBtn");
-
-    const pendingCountElement = document.querySelector(
-        "#articles .pending-count"
-    );
-
-
-    async function loadArticles() {
-        try {
-            const snapshot = await getDocs(collection(db, "blogs"));
-
-            allArticles = snapshot.docs.map(articleDoc => ({
-                id: articleDoc.id,
-                ...articleDoc.data()
-            }));
-
-            renderArticles(getFilteredArticles());
-            updateArticlePendingCount();
-        } catch (error) {
-            showFirebaseError(
-                "Articles load nahi ho sake.",
-                error
-            );
-        }
-    }
-
-
-    function getArticleStatus(article) {
-        return String(
-            article.status ||
-            "pending"
-        ).toLowerCase().trim();
-    }
-
-
-    function getFilteredArticles() {
-        const search =
-            articleSearch?.value.toLowerCase().trim() || "";
-
-        const statusFilter =
-            articleStatus?.value || "all";
-
-        return allArticles.filter(article => {
-            const title = String(
-                article.title ||
-                article.name ||
-                ""
-            ).toLowerCase();
-
-            const author = String(
-                article.authorName ||
-                article.author ||
-                article.userName ||
-                ""
-            ).toLowerCase();
-
-            const status = getArticleStatus(article);
-
-            return (
-                (!search ||
-                    title.includes(search) ||
-                    author.includes(search)) &&
-                (statusFilter === "all" || status === statusFilter)
-            );
-        });
-    }
-
-
-    function updateArticlePendingCount() {
-        if (!pendingCountElement) return;
-
-        const count = allArticles.filter(
-            article => getArticleStatus(article) === "pending"
-        ).length;
-
-        pendingCountElement.innerHTML = `
-            <i class="fa-solid fa-clock"></i>
-            ${count} Pending
-        `;
-
-        const sidebarBadge = document.querySelector(
-            '.nav-link[data-target="articles"] .menu-badge'
-        );
-
-        if (sidebarBadge) {
-            sidebarBadge.textContent = count;
-        }
-    }
-
-
-    function renderArticles(articles) {
-        if (!articlesTableBody) return;
-
-        articlesTableBody.innerHTML = "";
-
-        if (!articles.length) {
-            articlesTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-4">
-                        No articles found.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        articles.forEach(article => {
-            const row = document.createElement("tr");
-
-            const title =
-                article.title ||
-                article.name ||
-                "Untitled Article";
-
-            const author =
-                article.authorName ||
-                article.author ||
-                article.userName ||
-                "Admin";
-
-            const role =
-                article.role ||
-                article.authorRole ||
-                (article.authorUid ? "Teacher" : "Admin");
-
-            const status = getArticleStatus(article);
-
-            row.innerHTML = `
-                <td>
-                    <div class="article-cell">
-                        <div class="article-icon">
-                            <i class="fa-solid fa-newspaper"></i>
-                        </div>
-                        <div>
-                            <strong>${escapeHTML(title)}</strong>
-                            <small>
-                                ${escapeHTML(article.category || "General")}
-                            </small>
-                        </div>
-                    </div>
-                </td>
-                <td>${escapeHTML(author)}</td>
-                <td>
-                    <span class="role-badge ${
-                        String(role).toLowerCase() === "teacher"
-                            ? "teacher"
-                            : "student"
-                    }">
-                        ${escapeHTML(role)}
-                    </span>
-                </td>
-                <td>
-                    <span class="status-badge ${escapeHTML(status)}">
-                        ${escapeHTML(
-                            status.charAt(0).toUpperCase() + status.slice(1)
-                        )}
-                    </span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button
-                            class="review-btn view-article-btn"
-                            data-id="${escapeHTML(article.id)}"
-                        >
-                            Review
-                        </button>
-                        <button
-                            class="action-btn delete-article-btn"
-                            data-id="${escapeHTML(article.id)}"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            articlesTableBody.appendChild(row);
-        });
-    }
-
-
-    function openArticleModal(article) {
-        currentArticleId = article.id;
-
-        if (modalArticleTitle) {
-            modalArticleTitle.textContent =
-                article.title ||
-                article.name ||
-                "Untitled Article";
-        }
-
-        if (modalArticleAuthor) {
-            modalArticleAuthor.textContent =
-                article.authorName ||
-                article.author ||
-                article.userName ||
-                "Unknown";
-        }
-
-        if (modalArticleRole) {
-            modalArticleRole.textContent =
-                article.role ||
-                article.authorRole ||
-                (article.authorUid ? "Teacher" : "Admin");
-        }
-
-        const preview = document.querySelector(
-            "#articleModal .article-preview p"
-        );
-
-        if (preview) {
-            preview.textContent =
-                article.body ||
-                article.content ||
-                article.description ||
-                article.excerpt ||
-                "No article content available.";
-        }
-
-        const currentStatus = getArticleStatus(article);
-        const demo = Boolean(article.demo);
-
-        if (approveArticleBtn) {
-            approveArticleBtn.disabled =
-                demo || currentStatus === "approved";
-        }
-
-        if (rejectArticleBtn) {
-            rejectArticleBtn.disabled =
-                demo || currentStatus === "rejected";
-        }
-
-        articleModal?.classList.add("show");
-    }
-
-
-    async function updateArticleStatus(status) {
-        if (!currentArticleId) return;
-
-        try {
-            await updateDoc(
-                doc(db, "blogs", currentArticleId),
-                {
-                    status,
-                    updatedAt: serverTimestamp()
-                }
-            );
-
-            articleModal?.classList.remove("show");
-            currentArticleId = null;
-
-            await loadArticles();
-        } catch (error) {
-            showFirebaseError(
-                "Article status update nahi ho saka.",
-                error
-            );
-        }
-    }
-
-
-    articlesTableBody?.addEventListener(
-        "click",
-        async event => {
-            const button = event.target.closest("button");
-            if (!button) return;
-
-            const articleId = button.dataset.id;
-            if (!articleId) return;
-
-            const article = allArticles.find(
-                item => item.id === articleId
-            );
-
-            if (button.classList.contains("view-article-btn")) {
-                if (article) {
-                    openArticleModal(article);
-                }
-                return;
-            }
-
-            if (button.classList.contains("delete-article-btn")) {
-                if (
-                    !confirm(
-                        `Delete ${article?.title || "this article"}?`
-                    )
-                ) {
-                    return;
-                }
-
-                try {
-                    await deleteDoc(
-                        doc(db, "blogs", articleId)
-                    );
-
-                    await loadArticles();
-                } catch (error) {
-                    showFirebaseError(
-                        "Article delete nahi ho saka.",
-                        error
-                    );
-                }
-            }
-        }
-    );
-
-
-    approveArticleBtn?.addEventListener(
-        "click",
-        () => updateArticleStatus("approved")
-    );
-
-
-    rejectArticleBtn?.addEventListener(        "click",
-        () => updateArticleStatus("rejected")
-    );
-
-
-    function closeArticle() {
-        articleModal?.classList.remove("show");
-        currentArticleId = null;
-    }
-
-
-    closeArticleModal?.addEventListener(
-        "click",
-        closeArticle
-    );
-
-    articleModal?.querySelector(
-        ".modal-overlay"
-    )?.addEventListener(
-        "click",
-        closeArticle
-    );
-
-    articleSearch?.addEventListener(
-        "input",
-        () => renderArticles(getFilteredArticles())
-    );
-
-    articleStatus?.addEventListener(
-        "change",
-        () => renderArticles(getFilteredArticles())
-    );
-
-
-    /* =========================================================
-       ANNOUNCEMENTS
-       Actual repo collection: newsEvents
-    ========================================================= */
-
-    const addAnnouncementBtn = $("addAnnouncementBtn");
-    const announcementModal = $("announcementModal");
-    const closeAnnouncementModal = $("closeAnnouncementModal");
-    const cancelAnnouncementBtn = $("cancelAnnouncementBtn");
-    const saveAnnouncementBtn = $("saveAnnouncementBtn");
-    const announcementTitle = $("announcementTitle");
-    const announcementMessage = $("announcementMessage");
-    const announcementList = $("announcementList");
-
-
-    async function loadAnnouncements() {
-        try {
-            const snapshot = await getDocs(
-                collection(db, "newsEvents")
-            );
-
-            allAnnouncements = snapshot.docs
-                .map(item => ({
-                    id: item.id,
-                    ...item.data()
-                }))
-                .filter(item =>
-                    !item.type ||
-                    item.type === "announcement"
-                );
-
-            renderAnnouncements();
-        } catch (error) {
-            showFirebaseError(
-                "Announcements load nahi ho sake.",
-                error
-            );
-        }
-    }
-
-
-    function renderAnnouncements() {
-        if (!announcementList) return;
-
-        announcementList.innerHTML = "";
-
-        if (!allAnnouncements.length) {
-            announcementList.innerHTML = `
-                <div class="text-center py-4">
-                    No announcements found.
-                </div>
-            `;
-            return;
-        }
-
-        allAnnouncements
-            .slice()
-            .sort((a, b) => {
-                const da = a.createdAt?.toDate
-                    ? a.createdAt.toDate().getTime()
-                    : new Date(a.createdAt || 0).getTime();
-
-                const db = b.createdAt?.toDate
-                    ? b.createdAt.toDate().getTime()
-                    : new Date(b.createdAt || 0).getTime();
-
-                return db - da;
-            })
-            .forEach(announcement => {
-                const item = document.createElement("div");
-                item.className = "announcement-card";
-
-                item.innerHTML = `
-                    <div class="announcement-top">
-                        <div class="announcement-icon">
-                            <i class="fa-solid fa-bullhorn"></i>
-                        </div>
-                        <span>
-                            ${escapeHTML(
-                                announcement.status || "Published"
-                            )}
-                        </span>
-                    </div>
-
-                    <h4>
-                        ${escapeHTML(
-                            announcement.title || "Announcement"
-                        )}
-                    </h4>
-
-                    <p>
-                        ${escapeHTML(
-                            announcement.message ||
-                            announcement.description ||
-                            ""
-                        )}
-                    </p>
-
-                    <div class="announcement-footer">
-                        <small>
-                            ${escapeHTML(
-                                formatDate(announcement.createdAt)
-                            )}
-                        </small>
-
-                        <button
-                            class="delete-btn delete-announcement-btn"
-                            data-id="${escapeHTML(announcement.id)}"
-                        >
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-
-                announcementList.appendChild(item);
-            });
-    }
-
-
-    function closeAnnouncement() {
-        announcementModal?.classList.remove("show");
-    }
-
-
-    addAnnouncementBtn?.addEventListener(
-        "click",
-        () => {
-            if (announcementTitle) announcementTitle.value = "";
-            if (announcementMessage) announcementMessage.value = "";
-            announcementModal?.classList.add("show");
-        }
-    );
-
-    closeAnnouncementModal?.addEventListener("click", closeAnnouncement);
-    cancelAnnouncementBtn?.addEventListener("click", closeAnnouncement);
-
-    announcementModal?.querySelector(
-        ".modal-overlay"
-    )?.addEventListener("click", closeAnnouncement);
-
-
-    saveAnnouncementBtn?.addEventListener(
-        "click",
-        async () => {
-            const title =
-                announcementTitle?.value.trim() || "";
-
-            const message =
-                announcementMessage?.value.trim() || "";
-
-            if (!title || !message) {
-                alert("Title aur message dono enter karo.");
-                return;
-            }
-
-            try {
-                saveAnnouncementBtn.disabled = true;
-
-                await addDoc(
-                    collection(db, "newsEvents"),
-                    {
-                        title,
-                        message,
-                        type: "announcement",
-                        status: "published",
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp()
-                    }
-                );
-
-                closeAnnouncement();
-                await loadAnnouncements();
-            } catch (error) {
-                showFirebaseError(
-                    "Announcement add nahi ho saka.",
-                    error
-                );
-            } finally {
-                saveAnnouncementBtn.disabled = false;
-            }
-        }
-    );
-
-
-    announcementList?.addEventListener(
-        "click",
-        async event => {
-            const button = event.target.closest(
-                ".delete-announcement-btn"
-            );
-
-            if (!button) return;
-
-            const announcementId = button.dataset.id;
-            if (!announcementId) return;
-
-            if (!confirm("Delete this announcement?")) {
-                return;
-            }
-
-            try {
-                await deleteDoc(
-                    doc(
-                        db,
-                        "newsEvents",
-                        announcementId
-                    )
-                );
-
-                await loadAnnouncements();
-            } catch (error) {
-                showFirebaseError(
-                    "Announcement delete nahi ho saka.",
-                    error
-                );
-            }
-        }
-    );
-
-
-    /* =========================================================
-       REPORTS
-       Uses real loaded Firebase data.
-    ========================================================= */
-
-    function renderReports() {
-        const cards = document.querySelectorAll(
-            "#reports .report-card h3"
-        );
-
-        const paidOrders = allOrders.filter(
-            order =>
-                String(order.paymentStatus || "")
-                    .toLowerCase() === "paid"
-        );
-
-        const revenue = paidOrders.reduce(
-            (sum, order) =>
-                sum + (Number(order.amount) || 0),
-            0
-        );
-
-        const acceptedStudents = allStudents.filter(
-            student =>
-                String(student.applicationStatus || "")
-                    .toLowerCase() === "accepted"
-        );
-
-        const completion = acceptedStudents.filter(
-            student =>
-                Number(student.progressPercent) >= 100
-        ).length;
-
-        const completionRate = acceptedStudents.length
-            ? Math.round(
-                (completion / acceptedStudents.length) * 100
-            )
-            : 0;
-
-        const activeTeachers = allTeachers.filter(
-            teacher =>
-                getTeacherStatus(teacher) === "active"
-        ).length;
-
-        const activeUsers =
-            acceptedStudents.length +
-            activeTeachers;
-
-        if (cards[0]) {
-            cards[0].textContent =
-                `Rs. ${revenue.toLocaleString()}`;
-        }
-
-        if (cards[1]) {
-            cards[1].textContent =
-                `${completionRate}%`;
-        }
-
-        if (cards[2]) {
-            cards[2].textContent =
-                activeUsers;
-        }
-
-        const canvas = $("performanceChart");
-
-        if (!canvas || typeof Chart === "undefined") {
-            return;
-        }
-
-        if (canvas._chart) {
-            canvas._chart.destroy();
-        }
-
-        canvas._chart = new Chart(
-            canvas,
-            {
-                type: "bar",
-                data: {
-                    labels: [
-                        "Students",
-                        "Teachers",
-                        "Courses",
-                        "Orders"
-                    ],
-                    datasets: [{
-                        label: "Current totals",
-                        data: [
-                            allStudents.length,
-                            allTeachers.length,
-                            allCourses.length,
-                            allOrders.length
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
-                        }
-                    }
-                }
-            }
-        );
-    }
-
-
-    /* =========================================================
-       SETTINGS
-       Current HTML has no settings collection/fields in the repo,
-       so this button remains a UI confirmation instead of pretending
-       to write to Firestore.
-    ========================================================= */
-
-    $("saveSettingsBtn")?.addEventListener(
-        "click",
-        () => {
-            const button = $("saveSettingsBtn");
-            const oldText = button.innerHTML;
-
-            button.innerHTML =
-                '<i class="fa-solid fa-check"></i> Saved!';
-
-            setTimeout(() => {
-                button.innerHTML = oldText;
-            }, 2000);
-        }
-    );
-
-
-    /* =========================================================
-       SIDEBAR NAVIGATION
-    ========================================================= */
-
-    const sidebarLinks = document.querySelectorAll(
-        ".sidebar-menu .nav-link"
-    );
-
-    function activateSection(target) {
-        document
-            .querySelectorAll(".page-section")
-            .forEach(section => {
-                section.classList.toggle(
-                    "active-section",
-                    section.id === target
-                );
-            });
-
-        sidebarLinks.forEach(link => {
-            link.classList.toggle(
-                "active",
-                link.dataset.target === target
-            );
-        });
-    }
-/* =========================================================
-   GLOBAL SECTION SEARCH
-========================================================= */
 
 const globalSearch = $("globalSearch");
 
@@ -2509,7 +138,6 @@ globalSearch?.addEventListener("input", () => {
 
 /* =========================================================
    ADMIN LOGOUT
-========================================================= */
 
 const logoutBtn = $("logoutBtn");
 
@@ -2713,3 +341,1294 @@ setTimeout(() => {
 });
 
 
+/*=========================================
+        FIREBASE IMPORTS
+import { db, auth } from "../firebaseConfig.js";
+import {
+    doc,
+    setDoc,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    collection,
+    getDocs,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { CHART_COLORS, CHART_PALETTE, renderChart, emptyChartConfig } from "../charts.js";
+import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
+
+/*=========================================
+        STATE (simple in-memory cache,
+        re-fetched after every write)
+let applications = [];
+let courses = [];
+let teachers = [];
+let orders = [];
+let attendance = [];
+let successStories = [];
+let blogs = [];
+let newsEvents = [];
+
+/*=========================================
+        HELPERS
+function friendlyFirestoreError(error) {
+    console.error(error);
+    if (error && error.code === "permission-denied") {
+        return "Database permission denied. Check Firebase Console → Firestore → Rules (the Admin role needs access to these collections).";
+    }
+    return "Something went wrong. (" + (error && error.message ? error.message : "unknown error") + ")";
+}
+
+function genId(prefix) {
+    return prefix + "-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1000);
+}
+
+function val(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+}
+
+/*=========================================
+        TAB SWITCHING
+function showTab(tabName) {
+    document.querySelectorAll(".admin-tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + tabName).classList.add("active");
+    document.querySelector(`.admin-tab-btn[data-tab="${tabName}"]`).classList.add("active");
+}
+
+/*=========================================
+        STATS
+function refreshStats() {
+    document.getElementById("statAwaiting").innerText = applications.filter(a => a.applicationStatus === "Awaiting Approval").length;
+    document.getElementById("statAccepted").innerText = applications.filter(a => a.applicationStatus === "Accepted").length;
+    document.getElementById("statCourses").innerText = courses.length;
+    document.getElementById("statTeachers").innerText = teachers.length;
+    document.getElementById("statPendingTeachers").innerText = teachers.filter(t => (t.status || "approved") === "pending").length;
+    document.getElementById("statPendingOrders").innerText = orders.filter(o => o.paymentStatus === "Pending").length;
+
+    refreshNotifications();
+    renderCountsChart();
+    renderCampusChart();
+    renderTrackRecordChart();
+    renderStudentsByCourseChart();
+}
+
+/*=========================================
+        NOTIFICATIONS (bell icon, top-right)
+        Derived from the same arrays the tabs below already loaded — no
+        extra Firestore reads. Runs from refreshStats() so it always
+        reflects whatever just changed (a new signup, a new order, ...).
+function refreshNotifications() {
+    const badge = document.getElementById("notifBadge");
+    const list = document.getElementById("notifList");
+    if (!badge || !list) return; // guard in case this runs before DOMContentLoaded wiring
+
+    const items = [
+        ...teachers.filter(t => (t.status || "approved") === "pending")
+            .map(t => ({ text: `${t.name || "Teacher"} applied`, tab: "teacherApplications" })),
+        ...applications.filter(a => a.applicationStatus === "Awaiting Approval")
+            .map(s => ({ text: `${s.name || "Student"}'s application is ready for review`, tab: "applications" })),
+        ...orders.filter(o => o.paymentStatus === "Pending")
+            .map(o => ({ text: `${o.studentName || "Order"}'s payment needs confirmation`, tab: "orders" }))
+    ];
+
+    if (items.length === 0) {
+        badge.style.display = "none";
+        list.innerHTML = '<p class="admin-empty-note">No new notifications.</p>';
+        return;
+    }
+
+    badge.style.display = "flex";
+    badge.innerText = items.length > 9 ? "9+" : String(items.length);
+
+    // Capped at 8 — this is a quick glance list, not another full tab.
+    list.innerHTML = items.slice(0, 8).map(item =>
+        `<button type="button" class="admin-notif-item" data-tab="${item.tab}">${item.text}</button>`
+    ).join("");
+
+    list.querySelectorAll("[data-tab]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelector(`.admin-tab-btn[data-tab="${btn.dataset.tab}"]`)?.click();
+            document.getElementById("notifDropdown").style.display = "none";
+        });
+    });
+}
+
+/*=========================================
+        ANALYTICS CHARTS
+function renderCountsChart() {
+    if (typeof Chart === "undefined") return;
+    if (teachers.length === 0 && applications.length === 0) {
+        renderChart("chartCounts", emptyChartConfig("bar", "No data yet"));
+        return;
+    }
+    renderChart("chartCounts", {
+        type: "bar",
+        data: {
+            labels: ["Teachers", "Students"],
+            datasets: [{
+                data: [teachers.length, applications.length],
+                backgroundColor: [CHART_COLORS.blue, CHART_COLORS.teal],
+                borderRadius: 8,
+                maxBarThickness: 60
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function renderCampusChart() {
+    if (typeof Chart === "undefined") return;
+    if (courses.length === 0) {
+        renderChart("chartCampus", emptyChartConfig("bar", "No courses yet"));
+        return;
+    }
+
+    // Group by campus, split paid vs free within each — this is exactly the
+    // graph that needed the `campus` field added to courses this session;
+    // older courses saved before that existed fall under "Not set" instead
+    // of silently vanishing from the chart.
+    const byCampus = {};
+    courses.forEach(c => {
+        const campus = c.campus || "Not set";
+        if (!byCampus[campus]) byCampus[campus] = { paid: 0, free: 0 };
+        if (c.price > 0) byCampus[campus].paid++;
+        else byCampus[campus].free++;
+    });
+
+    const labels = Object.keys(byCampus);
+    renderChart("chartCampus", {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [
+                { label: "Paid", data: labels.map(l => byCampus[l].paid), backgroundColor: CHART_COLORS.orange, borderRadius: 6 },
+                { label: "Free", data: labels.map(l => byCampus[l].free), backgroundColor: CHART_COLORS.green, borderRadius: 6 }
+            ]
+        },
+        options: {
+            plugins: { legend: { position: "bottom" } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function renderTrackRecordChart() {
+    if (typeof Chart === "undefined") return;
+
+    // "Graduates" = Accepted students whose course progress has reached
+    // 100%. There's no separate "Completed" applicationStatus in the data
+    // model (Accepted covers everyone from day 1 of a course through the
+    // end), so 100% progress is the honest stand-in for "finished" — it's
+    // set the same way any other progress value is, nothing special-cased.
+    const graduates = applications.filter(a => a.applicationStatus === "Accepted" && (a.progressPercent || 0) >= 100).length;
+
+    if (courses.length === 0 && graduates === 0) {
+        renderChart("chartTrackRecord", emptyChartConfig("bar", "No data yet"));
+        return;
+    }
+
+    renderChart("chartTrackRecord", {
+        type: "bar",
+        data: {
+            labels: ["Courses", "Graduates"],
+            datasets: [{
+                data: [courses.length, graduates],
+                backgroundColor: [CHART_COLORS.purple, CHART_COLORS.orange],
+                borderRadius: 8,
+                maxBarThickness: 60
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+// How many ACCEPTED students are on each course — answers "which students
+// are on which course" at a glance instead of scrolling the whole
+// Applications list. Uses the same `course` (title string) matching as
+// everywhere else in this app — see setApplicationDecision()'s comment.
+function renderStudentsByCourseChart() {
+    if (typeof Chart === "undefined") return;
+    if (courses.length === 0) {
+        renderChart("chartStudentsByCourse", emptyChartConfig("bar", "No courses yet"));
+        return;
+    }
+
+    const accepted = applications.filter(a => a.applicationStatus === "Accepted");
+    const counts = courses.map(c => accepted.filter(a => a.course === c.title).length);
+
+    if (accepted.length === 0) {
+        renderChart("chartStudentsByCourse", emptyChartConfig("bar", "No accepted students yet"));
+        return;
+    }
+
+    renderChart("chartStudentsByCourse", {
+        type: "bar",
+        data: {
+            labels: courses.map(c => c.title),
+            datasets: [{
+                data: counts,
+                backgroundColor: CHART_PALETTE,
+                borderRadius: 6,
+                maxBarThickness: 34
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+}
+
+function renderAttendanceChart() {
+    if (typeof Chart === "undefined") return;
+    if (attendance.length === 0) {
+        renderChart("chartAttendance", emptyChartConfig("doughnut", "No attendance recorded yet"));
+        return;
+    }
+
+    let present = 0, total = 0;
+    attendance.forEach(a => {
+        present += a.presentCount || 0;
+        total += a.totalCount || 0;
+    });
+    const absent = Math.max(total - present, 0);
+
+    renderChart("chartAttendance", {
+        type: "doughnut",
+        data: {
+            labels: ["Present", "Absent"],
+            datasets: [{ data: [present, absent], backgroundColor: [CHART_COLORS.green, CHART_COLORS.red], borderWidth: 0 }]
+        },
+        options: { plugins: { legend: { position: "bottom" } }, cutout: "65%" }
+    });
+}
+
+/*=========================================
+        ATTENDANCE (aggregate view only — marking
+        happens on the Teacher dashboard)
+async function loadAttendance() {
+    try {
+        const snap = await getDocs(collection(db, "attendance"));
+        attendance = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAttendanceChart();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+/*=========================================
+        APPLICATIONS TAB
+async function loadApplications() {
+    const container = document.getElementById("applicationsList");
+    container.innerHTML = '<p class="admin-empty-note">Loading...</p>';
+    try {
+        const snap = await getDocs(collection(db, "students"));
+        applications = snap.docs.map(d => d.data());
+        renderApplications();
+        refreshStats();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function badgeForApplicationStatus(status) {
+    const map = {
+        "Awaiting Approval": "badge-awaiting",
+        "Accepted": "badge-accepted",
+        "Rejected": "badge-rejected",
+        "Entry Test Pending": "badge-pending",
+        "Failed": "badge-failed"
+    };
+    return map[status] || "badge-pending";
+}
+
+function renderApplications() {
+    const filter = document.getElementById("applicationsFilter").value;
+    const container = document.getElementById("applicationsList");
+
+    const filtered = filter === "all"
+        ? applications
+        : applications.filter(a => (a.applicationStatus || "Entry Test Pending") === filter);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No records match this filter.</p>';
+        return;
+    }
+
+    container.innerHTML = filtered.map(s => {
+        const status = s.applicationStatus || "Entry Test Pending";
+        const showActions = status === "Awaiting Approval";
+        // Accepted but no matching Diploma Track course was found at the
+        // time — common cause is the course being saved as "Skill Course"
+        // (the form's default) instead of "Diploma Track", or the course
+        // not existing yet when this student was accepted. Offer a one-click
+        // fix here instead of making Admin Reject + re-Accept to retry it.
+        const showReassign = status === "Accepted" && !s.assignedTeacherUid;
+        return `
+            <div class="admin-row-card">
+                <div class="admin-row-main">
+                    <h3>${s.name || "-"} <span class="admin-badge ${badgeForApplicationStatus(status)}">${status}</span></h3>
+                    <p><strong>Roll No:</strong> ${s.rollNumber || "-"} &nbsp; | &nbsp; <strong>CNIC:</strong> ${s.cnic || "-"}</p>
+                    <p><strong>Course:</strong> ${s.course || "-"} &nbsp; | &nbsp; <strong>Entry Test:</strong> ${s.entryTestStatus || "-"} (${s.marksObtained ?? "-"})</p>
+                    ${status === "Accepted" ? `<p><strong>Teacher:</strong> ${s.assignedTeacherName || "Not assigned yet"} &nbsp; | &nbsp; <strong>Progress:</strong> ${s.progressPercent ?? 0}%</p>` : ``}
+                </div>
+                ${showActions ? `
+                <div class="admin-row-actions">
+                    <button class="admin-btn-accept" data-cnic="${s.cnic}" data-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
+                    <button class="admin-btn-reject" data-cnic="${s.cnic}" data-action="reject"><i class="fa-solid fa-xmark"></i> Reject</button>
+                </div>` : ``}
+                ${showReassign ? `
+                <div class="admin-row-actions">
+                    <button class="admin-btn-secondary" data-cnic="${s.cnic}" data-action="reassign"><i class="fa-solid fa-rotate"></i> Assign Teacher</button>
+                </div>` : ``}
+            </div>
+        `;
+    }).join("");
+
+    container.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const cnic = btn.dataset.cnic;
+            const action = btn.dataset.action;
+            if (action === "reassign") {
+                reassignTeacher(cnic);
+            } else {
+                setApplicationDecision(cnic, action === "accept" ? "Accepted" : "Rejected");
+            }
+        });
+    });
+}
+
+async function setApplicationDecision(cnic, decision) {
+    try {
+        const updateData = { applicationStatus: decision };
+
+        // On Accept, also wire this student up to whichever teacher teaches
+        // their chosen Diploma Track (if that course exists yet) — this is
+        // what lets the Teacher dashboard show "my students" scoped to just
+        // their own roster. If no matching course/teacher exists yet, the
+        // student still gets Accepted; they'll just show up as unassigned
+        // in the Teacher view until a matching course is created.
+        if (decision === "Accepted") {
+            const app = applications.find(a => a.cnic === cnic);
+            const matchedCourse = app
+                ? courses.find(c => c.category === "Diploma Track" && c.title === app.course)
+                : null;
+
+            updateData.assignedTeacherId = matchedCourse ? (matchedCourse.teacherId || null) : null;
+            updateData.assignedTeacherUid = matchedCourse ? (matchedCourse.teacherUid || null) : null;
+            updateData.assignedTeacherName = matchedCourse ? (matchedCourse.teacherName || null) : null;
+            updateData.progressPercent = 0;
+        }
+
+        await updateDoc(doc(db, "students", cnic), updateData);
+        await loadApplications();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+// Re-runs just the teacher-matching step from setApplicationDecision()
+// above, for a student who's already Accepted but never got matched to a
+// teacher (courseId/Name did exist yet, or the course's Category wasn't
+// "Diploma Track" at the time). Doesn't touch applicationStatus, so this is
+// safe to click as many times as needed while fixing the course.
+async function reassignTeacher(cnic) {
+    try {
+        const app = applications.find(a => a.cnic === cnic);
+        const matchedCourse = app
+            ? courses.find(c => c.category === "Diploma Track" && c.title === app.course)
+            : null;
+
+        if (!matchedCourse) {
+            alert(
+                "No matching Diploma Track course found for \"" + (app?.course || "this student's course") + "\".\n\n" +
+                "Go to the Courses tab and check: the course's Title must exactly match this, its Category must be \"Diploma Track\" (not \"Skill Course\"), and it must have a Teacher assigned. Then come back and click \"Assign Teacher\" again."
+            );
+            return;
+        }
+
+        await updateDoc(doc(db, "students", cnic), {
+            assignedTeacherId: matchedCourse.teacherId || null,
+            assignedTeacherUid: matchedCourse.teacherUid || null,
+            assignedTeacherName: matchedCourse.teacherName || null
+        });
+        await loadApplications();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        COURSES TAB
+async function loadCourses() {
+    const container = document.getElementById("coursesList");
+    try {
+        const snap = await getDocs(collection(db, "courses"));
+        courses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderCourses();
+        populateTeacherDropdown();
+        refreshStats();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function renderCourses() {
+    const container = document.getElementById("coursesList");
+    if (courses.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No courses created yet. Add one using the form above.</p>';
+        return;
+    }
+    container.innerHTML = courses.map(c => `
+        <div class="admin-row-card">
+            <div class="admin-row-main">
+                <h3>${c.title} <span class="admin-badge ${c.price > 0 ? 'badge-paid' : 'badge-free'}">${c.price > 0 ? 'PKR ' + c.price : 'Free'}</span></h3>
+                <p><strong>Category:</strong> ${c.category} &nbsp; | &nbsp; <strong>Campus:</strong> ${c.campus || 'Not set'} &nbsp; | &nbsp; <strong>Teacher:</strong> ${c.teacherName || 'Not assigned'} ${c.teacherId ? `<span class="admin-badge ${c.teacherUid ? 'badge-linked' : 'badge-unlinked'}">${c.teacherUid ? 'Teacher linked' : 'Teacher not logged in yet'}</span>` : ''}</p>
+                <p>${c.description || ''}</p>
+            </div>
+            <div class="admin-row-actions">
+                <button class="admin-btn-edit" data-id="${c.id}" data-action="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button class="admin-btn-delete" data-id="${c.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener("click", () => startEditCourse(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", () => deleteCourse(btn.dataset.id));
+    });
+}
+
+function populateTeacherDropdown() {
+    const select = document.getElementById("courseTeacher");
+    const currentValue = select.value;
+    // Only approved teachers are assignable — a pending/rejected applicant
+    // hasn't been vetted yet, so they shouldn't be pickable for a course.
+    const assignable = teachers.filter(t => teacherStatus(t) === "approved");
+    select.innerHTML = '<option value="">-- none yet --</option>' +
+        assignable.map(t => `<option value="${t.id}">${t.name}${t.uid ? '' : ' (not logged in yet)'}</option>`).join("");
+    select.value = currentValue;
+}
+
+function startEditCourse(id) {
+    const c = courses.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById("courseEditId").value = c.id;
+    document.getElementById("courseTitle").value = c.title;
+    document.getElementById("courseCategory").value = c.category;
+    document.getElementById("coursePrice").value = c.price;
+    document.getElementById("courseCampus").value = c.campus || "";
+    document.getElementById("courseTeacher").value = c.teacherId || "";
+    document.getElementById("courseDescription").value = c.description || "";
+    document.getElementById("courseSubmitBtn").innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Course';
+    document.getElementById("courseCancelEditBtn").style.display = "inline-flex";
+    document.getElementById("tab-courses").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetCourseForm() {
+    document.getElementById("courseForm").reset();
+    document.getElementById("courseEditId").value = "";
+    document.getElementById("courseSubmitBtn").innerHTML = '<i class="fa-solid fa-plus"></i> Add Course';
+    document.getElementById("courseCancelEditBtn").style.display = "none";
+}
+
+async function handleCourseSubmit(e) {
+    e.preventDefault();
+    const editId = val("courseEditId");
+    const teacherId = val("courseTeacher");
+    const matchedTeacher = teacherId ? teachers.find(t => t.id === teacherId) : null;
+
+    const data = {
+        title: val("courseTitle"),
+        category: val("courseCategory"),
+        campus: val("courseCampus"),
+        price: Number(val("coursePrice")) || 0,
+        teacherId: teacherId || null,
+        teacherName: matchedTeacher ? matchedTeacher.name : null,
+        // Denormalized so Firestore rules + the Teacher dashboard can scope
+        // "my courses" by request.auth.uid without an extra lookup. For a
+        // teacher who applied through signup.html this is already set (uid
+        // is known from the moment they applied, not just once Admin
+        // approves them). It's only ever null for a teacher Admin added
+        // directly in the Teachers tab, who has no login of their own yet.
+        teacherUid: matchedTeacher ? (matchedTeacher.uid || null) : null,
+        description: val("courseDescription"),
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "courses", editId), data);
+        } else {
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, "courses", genId("CRS")), data);
+        }
+        resetCourseForm();
+        await loadCourses();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+async function deleteCourse(id) {
+    if (!confirm("Delete this course? This can't be undone.")) return;
+    try {
+        await deleteDoc(doc(db, "courses", id));
+        await loadCourses();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        TEACHERS TAB
+async function loadTeachers() {
+    const container = document.getElementById("teachersList");
+    try {
+        const snap = await getDocs(collection(db, "teachers"));
+        teachers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderTeachers();
+        renderTeacherApplications();
+        populateTeacherDropdown();
+        refreshStats();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+// "status" only exists on docs created through the new signup flow — older
+// docs (added directly by Admin before this feature existed, or seeded)
+// have no status field at all, and are treated as "approved" everywhere in
+// the app (homepage mosaic, this same fallback). Centralized here since
+// both renderTeachers() and renderTeacherApplications() need it.
+function teacherStatus(t) {
+    return t.status || "approved";
+}
+
+function renderTeachers() {
+    const container = document.getElementById("teachersList");
+    if (teachers.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No teachers added yet. Add one using the form above.</p>';
+        return;
+    }
+    container.innerHTML = teachers.map(t => {
+        const status = teacherStatus(t);
+        // Approval status takes priority once it exists — "linked/not
+        // logged in yet" only remains meaningful for legacy docs that were
+        // never part of an application (uid tells you nothing extra for a
+        // new-flow teacher: it's set the moment they apply, long before
+        // they're approved).
+        let badgeClass, badgeText;
+        if (status === "pending") { badgeClass = "badge-awaiting"; badgeText = "Pending Approval"; }
+        else if (status === "rejected") { badgeClass = "badge-rejected"; badgeText = "Rejected"; }
+        else { badgeClass = t.uid ? "badge-linked" : "badge-unlinked"; badgeText = t.uid ? "Account linked" : "Not logged in yet"; }
+
+        // Pending teachers get Accept/Reject right here too — the
+        // Teacher Applications tab has the same buttons (better for
+        // reviewing many at once), but admins land on THIS tab first and
+        // shouldn't have to go hunting for a second tab just to approve
+        // someone they're already looking at.
+        const isPending = status === "pending";
+
+        return `
+        <div class="admin-teacher-card">
+            <img src="${t.photo || 'https://placehold.co/80'}" alt="${t.name}">
+            <h3>${t.name}</h3>
+            <p>${t.title || ''}</p>
+            <span class="admin-badge ${badgeClass}">${badgeText}</span>
+            ${isPending ? `
+            <div class="admin-row-actions" style="justify-content:center; margin-top:10px;">
+                <button class="admin-btn-accept" data-id="${t.id}" data-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
+                <button class="admin-btn-reject" data-id="${t.id}" data-action="reject"><i class="fa-solid fa-xmark"></i> Reject</button>
+            </div>` : ``}
+            <div class="admin-row-actions" style="justify-content:center; margin-top:10px;">
+                <button class="admin-btn-edit" data-id="${t.id}" data-action="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button class="admin-btn-delete" data-id="${t.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    `;
+    }).join("");
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener("click", () => startEditTeacher(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", () => deleteTeacher(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="accept"]').forEach(btn => {
+        btn.addEventListener("click", () => setTeacherApplicationDecision(btn.dataset.id, "approved"));
+    });
+    container.querySelectorAll('[data-action="reject"]').forEach(btn => {
+        btn.addEventListener("click", () => setTeacherApplicationDecision(btn.dataset.id, "rejected"));
+    });
+}
+
+/*=========================================
+        TEACHER APPLICATIONS TAB
+        (same teachers[] array as above, just filtered/rendered
+        differently — accept/reject only ever touch the `status` field)
+function badgeForTeacherStatus(status) {
+    const map = { pending: "badge-awaiting", approved: "badge-accepted", rejected: "badge-rejected" };
+    return map[status] || "badge-pending";
+}
+
+function renderTeacherApplications() {
+    const filterEl = document.getElementById("teacherApplicationsFilter");
+    const container = document.getElementById("teacherApplicationsList");
+    if (!filterEl || !container) return; // guard in case this runs before DOMContentLoaded wiring
+
+    const filter = filterEl.value;
+    const withStatus = teachers.map(t => ({ ...t, status: teacherStatus(t) }));
+    const filtered = filter === "all" ? withStatus : withStatus.filter(t => t.status === filter);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No applications match this filter.</p>';
+        return;
+    }
+
+    container.innerHTML = filtered.map(t => `
+        <div class="admin-row-card">
+            <div class="admin-row-main">
+                <h3>${t.name || "-"} <span class="admin-badge ${badgeForTeacherStatus(t.status)}">${t.status}</span></h3>
+                <p><strong>Email:</strong> ${t.email || "-"}</p>
+                ${t.title ? `<p><strong>Title:</strong> ${t.title}</p>` : ``}
+            </div>
+            ${t.status === "pending" ? `
+            <div class="admin-row-actions">
+                <button class="admin-btn-accept" data-id="${t.id}" data-action="accept"><i class="fa-solid fa-check"></i> Accept</button>
+                <button class="admin-btn-reject" data-id="${t.id}" data-action="reject"><i class="fa-solid fa-xmark"></i> Reject</button>
+            </div>` : ``}
+        </div>
+    `).join("");
+
+    container.querySelectorAll("[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+            setTeacherApplicationDecision(btn.dataset.id, btn.dataset.action === "accept" ? "approved" : "rejected");
+        });
+    });
+}
+
+async function setTeacherApplicationDecision(teacherId, decision) {
+    try {
+        await updateDoc(doc(db, "teachers", teacherId), { status: decision, updatedAt: serverTimestamp() });
+        await loadTeachers(); // refreshes both this tab and the Teachers tab from one fetch
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+let pendingTeacherPhoto = null; // Cloudinary URL once uploaded, cleared after save
+let teacherPhotoUploading = false; // true while a Cloudinary upload is in flight — blocks submit so it can't race ahead of pendingTeacherPhoto
+
+function startEditTeacher(id) {
+    const t = teachers.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById("teacherEditId").value = t.id;
+    document.getElementById("teacherName").value = t.name;
+    document.getElementById("teacherTitle").value = t.title || "";
+    document.getElementById("teacherBio").value = t.bio || "";
+    pendingTeacherPhoto = t.photo || null;
+    const preview = document.getElementById("teacherPhotoPreview");
+    if (t.photo) {
+        preview.src = t.photo;
+        preview.style.display = "block";
+    } else {
+        preview.style.display = "none";
+    }
+    document.getElementById("teacherSubmitBtn").innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Teacher';
+    document.getElementById("teacherCancelEditBtn").style.display = "inline-flex";
+    document.getElementById("tab-teachers").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetTeacherForm() {
+    document.getElementById("teacherForm").reset();
+    document.getElementById("teacherEditId").value = "";
+    document.getElementById("teacherPhotoPreview").style.display = "none";
+    pendingTeacherPhoto = null;
+    document.getElementById("teacherSubmitBtn").innerHTML = '<i class="fa-solid fa-plus"></i> Add Teacher';
+    document.getElementById("teacherCancelEditBtn").style.display = "none";
+}
+
+async function handleTeacherSubmit(e) {
+    e.preventDefault();
+
+    if (teacherPhotoUploading) {
+        alert("The photo is still uploading — please wait a moment and click Save again.");
+        return;
+    }
+
+    const editId = val("teacherEditId");
+
+    const data = {
+        name: val("teacherName"),
+        title: val("teacherTitle"),
+        bio: val("teacherBio"),
+        photo: pendingTeacherPhoto || "",
+        updatedAt: serverTimestamp()
+    };
+
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "teachers", editId), data);
+        } else {
+            // Added directly by Admin — no application to review, so this
+            // goes straight to "approved" and shows on the homepage right
+            // away. uid stays null: it's a display-only profile with no
+            // login of its own unless/until that person separately signs up
+            // (see signup.html) and Admin approves that application too.
+            data.uid = null;
+            data.status = "approved";
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, "teachers", genId("TCH")), data);
+        }
+        resetTeacherForm();
+        await loadTeachers();
+        await loadCourses(); // teacher names may be denormalized onto courses
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+async function deleteTeacher(id) {
+    if (!confirm("Delete this teacher profile?")) return;
+    try {
+        await deleteDoc(doc(db, "teachers", id));
+        await loadTeachers();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        ORDERS TAB
+async function loadOrders() {
+    const container = document.getElementById("ordersList");
+    try {
+        const snap = await getDocs(collection(db, "orders"));
+        orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderOrders();
+        refreshStats();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function renderOrders() {
+    const container = document.getElementById("ordersList");
+    if (orders.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No orders yet.</p>';
+        return;
+    }
+    container.innerHTML = orders.map(o => `
+        <div class="admin-row-card">
+            <div class="admin-row-main">
+                <h3>${o.studentName || '-'} <span class="admin-badge ${o.paymentStatus === 'Paid' ? 'badge-accepted' : 'badge-awaiting'}">${o.paymentStatus}</span></h3>
+                <p><strong>Course:</strong> ${o.courseTitle || '-'} &nbsp; | &nbsp; <strong>Amount:</strong> PKR ${o.amount || 0}</p>
+            </div>
+            ${o.paymentStatus === "Pending" ? `
+            <div class="admin-row-actions">
+                <button class="admin-btn-paid" data-id="${o.id}" data-action="markpaid"><i class="fa-solid fa-check"></i> Mark as Paid</button>
+            </div>` : ``}
+        </div>
+    `).join("");
+
+    container.querySelectorAll('[data-action="markpaid"]').forEach(btn => {
+        btn.addEventListener("click", () => markOrderPaid(btn.dataset.id));
+    });
+}
+
+async function markOrderPaid(id) {
+    try {
+        await updateDoc(doc(db, "orders", id), { paymentStatus: "Paid", paidAt: serverTimestamp() });
+        await loadOrders();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        SHARED IMAGE UPLOAD HELPER
+
+        Same Cloudinary flow as the Teacher Photo input above (instant
+        local preview via URL.createObjectURL, upload in the background,
+        input disabled while it's in flight, revert to whatever was
+        already saved on error) — factored out here because the three
+        tabs below add three more photo/image inputs that all need
+        exactly this. The Teacher Photo wiring itself is left as-is
+        rather than switched over to this helper, since it already works
+        and there's no reason to touch it.
+function wireImageUpload(inputId, previewId, imageState) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener("change", async function () {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            alert("Photo file size must be less than " + Math.round(MAX_UPLOAD_BYTES / 1024 / 1024) + "MB");
+            input.value = "";
+            return;
+        }
+
+        const preview = document.getElementById(previewId);
+        if (preview) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = "block";
+        }
+
+        imageState.uploading = true;
+        input.disabled = true;
+        try {
+            imageState.url = await uploadImageToCloudinary(file);
+        } catch (error) {
+            alert(error.message);
+            input.value = "";
+            if (preview) {
+                preview.style.display = imageState.url ? "block" : "none";
+                if (imageState.url) preview.src = imageState.url;
+            }
+        } finally {
+            imageState.uploading = false;
+            input.disabled = false;
+        }
+    });
+}
+
+const storyPhotoState = { url: null, uploading: false };
+const blogImageState  = { url: null, uploading: false };
+const newsImageState  = { url: null, uploading: false };
+
+/*=========================================
+        SUCCESS STORIES TAB
+        Public, Admin-managed — renders on the homepage's "Success
+        Stories" section. Plain CRUD like Courses, no approval workflow.
+async function loadStories() {
+    const container = document.getElementById("storiesList");
+    try {
+        const snap = await getDocs(collection(db, "successStories"));
+        successStories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderStories();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function renderStories() {
+    const container = document.getElementById("storiesList");
+    if (successStories.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No success stories yet. Add one using the form above.</p>';
+        return;
+    }
+    container.innerHTML = successStories.map(s => `
+        <div class="admin-teacher-card">
+            <img src="${s.photo || 'https://placehold.co/80'}" alt="${s.name}">
+            <h3>${s.name}</h3>
+            <p>${s.outcome || ''}</p>
+            <div class="admin-row-actions" style="justify-content:center; margin-top:10px;">
+                <button class="admin-btn-edit" data-id="${s.id}" data-action="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button class="admin-btn-delete" data-id="${s.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener("click", () => startEditStory(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", () => deleteStory(btn.dataset.id));
+    });
+}
+
+function startEditStory(id) {
+    const s = successStories.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById("storyEditId").value = s.id;
+    document.getElementById("storyName").value = s.name || "";
+    document.getElementById("storyOutcome").value = s.outcome || "";
+    document.getElementById("storyCourse").value = s.course || "";
+    document.getElementById("storyHighlight").value = s.highlight || "";
+    document.getElementById("storyText").value = s.story || "";
+    storyPhotoState.url = s.photo || null;
+    const preview = document.getElementById("storyPhotoPreview");
+    if (s.photo) { preview.src = s.photo; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("storySubmitBtn").innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Story';
+    document.getElementById("storyCancelEditBtn").style.display = "inline-flex";
+    document.getElementById("tab-successStories").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetStoryForm() {
+    document.getElementById("storyForm").reset();
+    document.getElementById("storyEditId").value = "";
+    document.getElementById("storyPhotoPreview").style.display = "none";
+    storyPhotoState.url = null;
+    document.getElementById("storySubmitBtn").innerHTML = '<i class="fa-solid fa-plus"></i> Add Story';
+    document.getElementById("storyCancelEditBtn").style.display = "none";
+}
+
+async function handleStorySubmit(e) {
+    e.preventDefault();
+    if (storyPhotoState.uploading) {
+        alert("The photo is still uploading — please wait a moment and click Save again.");
+        return;
+    }
+    const editId = val("storyEditId");
+    const data = {
+        name: val("storyName"),
+        outcome: val("storyOutcome"),
+        course: val("storyCourse"),
+        highlight: val("storyHighlight"),
+        story: val("storyText"),
+        photo: storyPhotoState.url || "",
+        updatedAt: serverTimestamp()
+    };
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "successStories", editId), data);
+        } else {
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, "successStories", genId("STR")), data);
+        }
+        resetStoryForm();
+        await loadStories();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+async function deleteStory(id) {
+    if (!confirm("Delete this success story?")) return;
+    try {
+        await deleteDoc(doc(db, "successStories", id));
+        await loadStories();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        BLOG POSTS TAB
+        Public, Admin-managed — renders on the homepage's "Popular
+        Blogs" section. `body` is the full post text shown in the
+        "Read More" modal; `excerpt` is just what the card teases.
+async function loadBlogs() {
+    const container = document.getElementById("blogsList");
+    try {
+        const snap = await getDocs(collection(db, "blogs"));
+        blogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderBlogs();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function renderBlogs() {
+    const container = document.getElementById("blogsList");
+    if (blogs.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No blog posts yet. Add one using the form above.</p>';
+        return;
+    }
+    container.innerHTML = blogs.map(b => `
+        <div class="admin-content-card">
+            ${b.image ? `<img src="${b.image}" class="admin-content-thumb" alt="${b.title}">` : ''}
+            <div class="admin-content-body">
+                <h3>${b.title}</h3>
+                <p>${b.excerpt || ''}</p>
+                <div class="admin-row-actions">
+                    <button class="admin-btn-edit" data-id="${b.id}" data-action="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                    <button class="admin-btn-delete" data-id="${b.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener("click", () => startEditBlog(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", () => deleteBlog(btn.dataset.id));
+    });
+}
+
+function startEditBlog(id) {
+    const b = blogs.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById("blogEditId").value = b.id;
+    document.getElementById("blogTitle").value = b.title || "";
+    document.getElementById("blogCategory").value = b.category || "";
+    document.getElementById("blogExcerpt").value = b.excerpt || "";
+    document.getElementById("blogBody").value = b.body || "";
+    blogImageState.url = b.image || null;
+    const preview = document.getElementById("blogImagePreview");
+    if (b.image) { preview.src = b.image; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("blogSubmitBtn").innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Post';
+    document.getElementById("blogCancelEditBtn").style.display = "inline-flex";
+    document.getElementById("tab-blogs").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetBlogForm() {
+    document.getElementById("blogForm").reset();
+    document.getElementById("blogEditId").value = "";
+    document.getElementById("blogImagePreview").style.display = "none";
+    blogImageState.url = null;
+    document.getElementById("blogSubmitBtn").innerHTML = '<i class="fa-solid fa-plus"></i> Add Post';
+    document.getElementById("blogCancelEditBtn").style.display = "none";
+}
+
+async function handleBlogSubmit(e) {
+    e.preventDefault();
+    if (blogImageState.uploading) {
+        alert("The image is still uploading — please wait a moment and click Save again.");
+        return;
+    }
+    const editId = val("blogEditId");
+    const data = {
+        title: val("blogTitle"),
+        category: val("blogCategory"),
+        excerpt: val("blogExcerpt"),
+        body: val("blogBody"),
+        image: blogImageState.url || "",
+        updatedAt: serverTimestamp()
+    };
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "blogs", editId), data);
+        } else {
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, "blogs", genId("BLG")), data);
+        }
+        resetBlogForm();
+        await loadBlogs();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+async function deleteBlog(id) {
+    if (!confirm("Delete this blog post?")) return;
+    try {
+        await deleteDoc(doc(db, "blogs", id));
+        await loadBlogs();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        NEWS & EVENTS TAB
+        Public, Admin-managed — renders on the homepage's "News &
+        Events" section, newest `date` first.
+async function loadNewsEvents() {
+    const container = document.getElementById("newsList");
+    try {
+        const snap = await getDocs(collection(db, "newsEvents"));
+        newsEvents = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderNewsEvents();
+    } catch (error) {
+        container.innerHTML = '<p class="admin-empty-note">' + friendlyFirestoreError(error) + '</p>';
+    }
+}
+
+function renderNewsEvents() {
+    const container = document.getElementById("newsList");
+    if (newsEvents.length === 0) {
+        container.innerHTML = '<p class="admin-empty-note">No news/events yet. Add one using the form above.</p>';
+        return;
+    }
+    const sorted = [...newsEvents].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    container.innerHTML = sorted.map(n => `
+        <div class="admin-content-card">
+            ${n.image ? `<img src="${n.image}" class="admin-content-thumb" alt="${n.title}">` : ''}
+            <div class="admin-content-body">
+                <h3>${n.title}</h3>
+                <p><strong>${n.date || ''}</strong> — ${n.excerpt || ''}</p>
+                <div class="admin-row-actions">
+                    <button class="admin-btn-edit" data-id="${n.id}" data-action="edit"><i class="fa-solid fa-pen"></i> Edit</button>
+                    <button class="admin-btn-delete" data-id="${n.id}" data-action="delete"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join("");
+
+    container.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener("click", () => startEditNews(btn.dataset.id));
+    });
+    container.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", () => deleteNews(btn.dataset.id));
+    });
+}
+
+function startEditNews(id) {
+    const n = newsEvents.find(x => x.id === id);
+    if (!n) return;
+    document.getElementById("newsEditId").value = n.id;
+    document.getElementById("newsTitle").value = n.title || "";
+    document.getElementById("newsDate").value = n.date || "";
+    document.getElementById("newsExcerpt").value = n.excerpt || "";
+    document.getElementById("newsLink").value = n.link || "";
+    newsImageState.url = n.image || null;
+    const preview = document.getElementById("newsImagePreview");
+    if (n.image) { preview.src = n.image; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("newsSubmitBtn").innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update';
+    document.getElementById("newsCancelEditBtn").style.display = "inline-flex";
+    document.getElementById("tab-newsEvents").scrollIntoView({ behavior: "smooth" });
+}
+
+function resetNewsForm() {
+    document.getElementById("newsForm").reset();
+    document.getElementById("newsEditId").value = "";
+    document.getElementById("newsImagePreview").style.display = "none";
+    newsImageState.url = null;
+    document.getElementById("newsSubmitBtn").innerHTML = '<i class="fa-solid fa-plus"></i> Add';
+    document.getElementById("newsCancelEditBtn").style.display = "none";
+}
+
+async function handleNewsSubmit(e) {
+    e.preventDefault();
+    if (newsImageState.uploading) {
+        alert("The image is still uploading — please wait a moment and click Save again.");
+        return;
+    }
+    const editId = val("newsEditId");
+    const data = {
+        title: val("newsTitle"),
+        date: val("newsDate"),
+        excerpt: val("newsExcerpt"),
+        link: val("newsLink"),
+        image: newsImageState.url || "",
+        updatedAt: serverTimestamp()
+    };
+    try {
+        if (editId) {
+            await updateDoc(doc(db, "newsEvents", editId), data);
+        } else {
+            data.createdAt = serverTimestamp();
+            await setDoc(doc(db, "newsEvents", genId("NEV")), data);
+        }
+        resetNewsForm();
+        await loadNewsEvents();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+async function deleteNews(id) {
+    if (!confirm("Delete this news/event?")) return;
+    try {
+        await deleteDoc(doc(db, "newsEvents", id));
+        await loadNewsEvents();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    }
+}
+
+/*=========================================
+        WIRING
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => showTab(btn.dataset.tab));
+    });
+
+    document.getElementById("applicationsFilter").addEventListener("change", renderApplications);
+    document.getElementById("refreshApplicationsBtn").addEventListener("click", loadApplications);
+
+    document.getElementById("teacherApplicationsFilter").addEventListener("change", renderTeacherApplications);
+    document.getElementById("refreshTeacherApplicationsBtn").addEventListener("click", loadTeachers);
+
+    document.getElementById("courseForm").addEventListener("submit", handleCourseSubmit);
+    document.getElementById("courseCancelEditBtn").addEventListener("click", resetCourseForm);
+
+    document.getElementById("teacherForm").addEventListener("submit", handleTeacherSubmit);
+    document.getElementById("teacherCancelEditBtn").addEventListener("click", resetTeacherForm);
+
+    document.getElementById("teacherPhotoInput").addEventListener("change", async function () {
+        const input = this;
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            alert("Photo file size must be less than " + Math.round(MAX_UPLOAD_BYTES / 1024 / 1024) + "MB");
+            input.value = "";
+            return;
+        }
+
+        const preview = document.getElementById("teacherPhotoPreview");
+        // Instant local preview while the upload happens in the background —
+        // no need to wait for the network round-trip just to see the photo.
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+
+        teacherPhotoUploading = true;
+        input.disabled = true;
+        try {
+            pendingTeacherPhoto = await uploadImageToCloudinary(file);
+        } catch (error) {
+            alert(error.message);
+            input.value = "";
+            preview.style.display = pendingTeacherPhoto ? "block" : "none";
+            if (pendingTeacherPhoto) preview.src = pendingTeacherPhoto;
+        } finally {
+            teacherPhotoUploading = false;
+            input.disabled = false;
+        }
+    });
+
+    document.getElementById("storyForm").addEventListener("submit", handleStorySubmit);
+    document.getElementById("storyCancelEditBtn").addEventListener("click", resetStoryForm);
+    wireImageUpload("storyPhotoInput", "storyPhotoPreview", storyPhotoState);
+
+    document.getElementById("blogForm").addEventListener("submit", handleBlogSubmit);
+    document.getElementById("blogCancelEditBtn").addEventListener("click", resetBlogForm);
+    wireImageUpload("blogImageInput", "blogImagePreview", blogImageState);
+
+    document.getElementById("newsForm").addEventListener("submit", handleNewsSubmit);
+    document.getElementById("newsCancelEditBtn").addEventListener("click", resetNewsForm);
+    wireImageUpload("newsImageInput", "newsImagePreview", newsImageState);
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        try {
+            await signOut(auth);
+            window.location.href = "../login.html";
+        } catch (error) {
+            alert(friendlyFirestoreError(error));
+        }
+    });
+
+    // Notification bell — toggle open/closed, and close on any click
+    // outside it (standard dropdown behavior; without this it only ever
+    // closes by clicking an item, which reads as broken).
+    const notifBell = document.getElementById("notifBell");
+    const notifDropdown = document.getElementById("notifDropdown");
+    notifBell.addEventListener("click", (e) => {
+        e.stopPropagation();
+        notifDropdown.style.display = notifDropdown.style.display === "block" ? "none" : "block";
+    });
+    document.addEventListener("click", (e) => {
+        if (!notifDropdown.contains(e.target) && e.target !== notifBell) {
+            notifDropdown.style.display = "none";
+        }
+    });
+
+    // Initial load — all eight, since datasets are small at this scale.
+    loadApplications();
+    loadCourses();
+    loadTeachers();
+    loadOrders();
+    loadAttendance();
+    loadStories();
+    loadBlogs();
+    loadNewsEvents();
+});
+ main

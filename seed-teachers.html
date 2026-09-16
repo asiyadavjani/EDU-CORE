@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed teachers — EduCore (one-time setup)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Open Sans',system-ui,sans-serif; }
+  body { background:#f6f8fc; color:#334155; padding:40px 20px; }
+  .wrap { max-width:720px; margin:0 auto; }
+  h1 { font-size:26px; color:#0f172a; margin-bottom:8px; }
+  .sub { color:#64748b; font-size:15px; margin-bottom:26px; line-height:1.6; }
+  .card { background:#fff; border:1px solid #e6ecf5; border-radius:14px; padding:26px; margin-bottom:18px; }
+  .warn { background:#fff8e6; border-color:#f5d98a; }
+  .warn strong { color:#8a5a00; display:block; margin-bottom:6px; }
+  .warn p { font-size:14px; color:#7a5410; line-height:1.6; }
+  ol { margin:12px 0 0 20px; font-size:14px; line-height:1.9; color:#475569; }
+  code { background:#eef2f8; padding:2px 6px; border-radius:4px; font-family:ui-monospace,monospace; font-size:13px; }
+  button { background:#0b6bd3; color:#fff; border:none; padding:13px 24px; border-radius:9px;
+           font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+  button:hover:not(:disabled) { background:#00458e; }
+  button:disabled { background:#94a3b8; cursor:not-allowed; }
+  button.danger { background:#b91c1c; }
+  button.danger:hover:not(:disabled) { background:#8f1414; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  #log { margin-top:18px; font-size:13.5px; line-height:1.8; font-family:ui-monospace,monospace;
+         background:#0f172a; color:#cbd5e1; border-radius:10px; padding:16px; max-height:340px;
+         overflow:auto; display:none; white-space:pre-wrap; }
+  .ok { color:#4ade80; } .err { color:#fca5a5; } .dim { color:#94a3b8; }
+  a.back { display:inline-block; margin-top:20px; color:#0b6bd3; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Seed teachers</h1>
+  <p class="sub">
+    This page only needs to be run once. It will add 10 teacher profiles to your Firestore
+    <code>teachers</code> collection, so the homepage mosaic has content. After that, keep
+    adding / editing teachers normally from the Admin panel.
+  </p>
+
+  <div class="card warn">
+    <strong>Before running this</strong>
+    <p>
+      Firestore rules usually only let a logged-in Admin write. If you see
+      "permission denied" below, log in with an Admin account in another tab first,
+      then refresh this page and try again.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="seedBtn"><i class="fa-solid fa-database"></i> Add 10 teachers</button>
+      <button id="undoBtn" class="danger" disabled><i class="fa-solid fa-trash"></i> Remove seeded teachers</button>
+    </div>
+    <ol>
+      <li>Each doc's id will be <code>SEED-TCH-01</code> … <code>SEED-TCH-10</code></li>
+      <li>Running it again overwrites the same docs — no duplicates are created</li>
+      <li>All come with <code>status: "approved"</code>, so they'll show on the homepage right away</li>
+      <li>Photos are left blank — upload them from the Admin panel; initials show until then</li>
+    </ol>
+    <div id="log"></div>
+  </div>
+
+  <a class="back" href="./index.html">&larr; Back to homepage</a>
+</div>
+
+<script type="module">
+import { db } from "./firebaseConfig.js";
+import { doc, setDoc, deleteDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* Same field names admin.js writes, plus the new `status`. Keep these in
+   sync with admin.js → handleTeacherSubmit if you ever change the shape. */
+const TEACHERS = [
+  { name: "Ayesha Siddiqui", title: "Lead Instructor, Web Development",
+    bio: "Ayesha has spent 9 years working with React and Node at product companies. In her class, students start writing code from day one — a deployable feature gets built every week." },
+  { name: "Bilal Ahmed", title: "Head of AI & Data Science",
+    bio: "Bilal deploys machine learning models to production. In the course he uses real datasets, not toy examples — so students learn to handle messy, incomplete data." },
+  { name: "Hina Raza", title: "Digital Marketing Strategist",
+    bio: "Hina has managed large ad budgets for local brands. Every student runs a campaign with real money and defends its numbers in front of the class." },
+  { name: "Usman Tariq", title: "Graphic Design & UI/UX Lead",
+    bio: "Usman teaches design as a craft — grid, type, and colour first, tools second. By the end of the course, every student has a portfolio of 4 case studies." },
+  { name: "Sana Khan", title: "Networking & Cybersecurity Trainer",
+    bio: "Sana is Cisco-certified and has managed enterprise networks. Lab sessions run on real switches, not simulators — that's what makes the difference in the CCNA exam." },
+  { name: "Fahad Memon", title: "Mobile App Development Instructor",
+    bio: "Over 30 of Fahad's students' apps are live on the Play Store. He also teaches the publishing process — store listings, review policies, and updates." },
+  { name: "Zainab Qureshi", title: "Python & Automation Instructor",
+    bio: "Zainab starts with scripting, and by the third week students are automating their everyday tasks. Her focus is on writing readable code." },
+  { name: "Imran Baig", title: "Cloud & DevOps Trainer",
+    bio: "Imran has migrated banking systems to the cloud. The class builds a CI/CD pipeline from day one, and students deploy their own work." },
+  { name: "Maria Aslam", title: "Database & Backend Instructor",
+    bio: "Maria teaches SQL through questions — problem first, query second. She has a strong grip on normalisation and indexing, and teaches how to fix slow queries." },
+  { name: "Ahsan Sheikh", title: "Freelancing & Career Coach",
+    bio: "Ahsan has completed 300+ projects on Upwork. He teaches how to write proposals, set rates, and talk to clients — not just the skill, but how to win the work too." }
+];
+
+const logEl  = document.getElementById("log");
+const seedBtn = document.getElementById("seedBtn");
+const undoBtn = document.getElementById("undoBtn");
+
+function log(msg, cls) {
+  logEl.style.display = "block";
+  const span = document.createElement("span");
+  if (cls) span.className = cls;
+  span.textContent = msg + "\n";
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function idFor(i) {
+  return "SEED-TCH-" + String(i + 1).padStart(2, "0");
+}
+
+function explain(error) {
+  if (error && error.code === "permission-denied") {
+    return "Permission denied — Firestore rules didn't allow the write. Log in as Admin in another tab, then refresh.";
+  }
+  return (error && error.message) ? error.message : String(error);
+}
+
+seedBtn.addEventListener("click", async () => {
+  seedBtn.disabled = true;
+  logEl.innerHTML = "";
+  log("Writing " + TEACHERS.length + " teacher profiles…", "dim");
+
+  let done = 0;
+  for (let i = 0; i < TEACHERS.length; i++) {
+    const t = TEACHERS[i];
+    try {
+      await setDoc(doc(db, "teachers", idFor(i)), {
+        name: t.name,
+        title: t.title,
+        bio: t.bio,
+        photo: "",
+        status: "approved",
+        uid: null,
+        updatedAt: serverTimestamp()
+      });
+      done++;
+      log("  ✓ " + t.name, "ok");
+    } catch (error) {
+      console.error(error);
+      log("  ✗ " + t.name + " — " + explain(error), "err");
+      break;
+    }
+  }
+
+  if (done === TEACHERS.length) {
+    log("\nDone. Open the homepage now — the mosaic will be filled in.", "ok");
+    undoBtn.disabled = false;
+  } else {
+    log("\n" + done + "/" + TEACHERS.length + " written. Check the error above.", "err");
+  }
+  seedBtn.disabled = false;
+});
+
+undoBtn.addEventListener("click", async () => {
+  if (!confirm("Delete the 10 seeded teachers? Teachers added through the Admin panel won't be affected.")) return;
+  undoBtn.disabled = true;
+  logEl.innerHTML = "";
+  log("Deleting seeded profiles…", "dim");
+
+  for (let i = 0; i < TEACHERS.length; i++) {
+    try {
+      await deleteDoc(doc(db, "teachers", idFor(i)));
+      log("  ✓ " + idFor(i) + " deleted", "ok");
+    } catch (error) {
+      log("  ✗ " + idFor(i) + " — " + explain(error), "err");
+    }
+  }
+  log("\nDone.", "ok");
+  undoBtn.disabled = false;
+});
+</script>
+</body>
+</html>

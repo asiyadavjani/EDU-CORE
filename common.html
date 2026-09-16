@@ -84,25 +84,43 @@
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" placeholder="Search free &amp; paid courses...">
         </div>
+
+        <!-- Mobile-only copy of Log In / Sign Up / Enroll Now — shown only
+             inside the hamburger drawer under 900px (see style.css). The
+             original .header-actions below stays desktop-only past that
+             point, so these two never show at the same time. -->
+        <div class="mobile-nav-actions">
+            <a href="./login.html" class="login-btn btn-swipe">Log In</a>
+            <a href="./signup.html" class="signup-btn btn-swipe">Sign Up</a>
+            <a href="./enrollment.html" class="enroll-btn">Enroll Now</a>
+        </div>
     </div>
 
     <div class="header-actions">
-        <a href="./cart.html" class="cart-btn">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span class="cart-badge">0</span>
-        </a>
         <a href="./login.html" class="login-btn btn-swipe">Log In</a>
         <a href="./signup.html" class="signup-btn btn-swipe">Sign Up</a>
       <a href="./enrollment.html" class="enroll-btn">Enroll Now</a>
-      
+
     </div>
+
+    <!-- Mobile menu toggle — hidden on desktop, shown only under 900px
+         (see style.css). Opens/closes .center-nav via app.js. -->
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Dim backdrop behind the mobile hamburger drawer (.center-nav) while
+         it's open — purely visual (CSS-only, driven by the .nav-open class
+         already toggled in app.js). Tapping it closes the menu, same as
+         tapping anywhere else outside .center-nav. -->
+    <div class="nav-backdrop" id="navBackdrop"></div>
 </header>
 
 
 <div class="side-floating-bar">
-  <a href="tel:03041111570" class="side-item">
+  <a href="tel:03200918060" class="side-item">
     <i class="fa-solid fa-phone"></i>
-    <span class="side-tooltip">0304-111-1570</span>
+    <span class="side-tooltip">0320-0918060</span>
   </a>
 
   <a href="mailto:support@educore.com" class="side-item">
@@ -152,7 +170,7 @@
         </p>
         <div class="contact-info">
           <p><i class="fa-solid fa-location-dot"></i> A-25, Tech Zone, Karachi, Pakistan</p>
-          <p><i class="fa-solid fa-phone"></i> +92 21 111 729 526</p>
+          <p><i class="fa-solid fa-phone"></i> 0320-0918060</p>
           <p><i class="fa-solid fa-envelope"></i> support@educore.com</p>
         </div>
         

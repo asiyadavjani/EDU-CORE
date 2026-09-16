@@ -132,6 +132,22 @@
         .footer-text { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
         .footer-text a { color: var(--orange-accent); text-decoration: none; font-weight: 600; }
 
+        .back-home-link {
+            position: fixed;
+            top: 22px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            z-index: 10;
+            transition: color 0.3s ease;
+        }
+        .back-home-link:hover { color: var(--theme-accent-blue); }
+
         /* file:// warning banner */
         .env-warning {
             position: fixed; top: 0; left: 0; right: 0;
@@ -163,6 +179,8 @@
 </head>
 <body>
 
+    <a href="./index.html" class="back-home-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+
     <div class="glass-card" id="signupCard">
         <div class="role-selector">
             <button type="button" class="role-btn active" data-role="Student">
@@ -188,7 +206,7 @@
                 <label>Email Address</label>
                 <div class="input-field">
                     <i class="fa-solid fa-envelope field-icon"></i>
-                    <input type="email" id="email" placeholder="name@example.com" required>
+                    <input type="email" id="email" placeholder="name@example.com" autocomplete="username" required>
                 </div>
             </div>
 
@@ -196,7 +214,7 @@
                 <label>Password</label>
                 <div class="input-field">
                     <i class="fa-solid fa-lock field-icon"></i>
-                    <input type="password" id="password" placeholder="••••••••" required>
+                    <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" required>
                     <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
                 </div>
             </div>
@@ -266,6 +284,12 @@
                 window.selectedRole = this.getAttribute("data-role");
                 if (roleHeading) roleHeading.innerText = window.selectedRole;
                 if (submitBtn) submitBtn.innerText = `Sign Up as ${window.selectedRole}`;
+
+                // Same reasoning as login.html — Student/Teacher share this
+                // one URL, so clear the password on tab switch rather than
+                // risk it carrying over from whichever role was selected first.
+                const pwField = document.getElementById("password");
+                if (pwField) pwField.value = "";
             });
         });
     </script>
@@ -319,6 +343,29 @@
             };
         }
 
+        // Creates the /teachers/{uid} "job application" doc for a brand-new
+        // Teacher signup. The doc ID is the user's OWN uid (never a random
+        // id) so a teacher can only ever create/own exactly one application,
+        // tied 1:1 to their login. This is what replaces the old "claim any
+        // profile" system on the Teacher dashboard: Firestore rules can now
+        // simply require request.auth.uid == teacherId on create, and only
+        // an Admin-only rule can ever move status away from "pending" — see
+        // the Firestore rules note that came with this change. title/bio/
+        // photo start blank; the teacher fills them in from "My Profile"
+        // once Admin accepts them (see teacher.js).
+        async function createTeacherApplication(uid, fullName, email) {
+            await setDoc(doc(db, "teachers", uid), {
+                name: fullName,
+                title: "",
+                bio: "",
+                photo: "",
+                email: email,
+                uid: uid,
+                status: "pending",
+                createdAt: serverTimestamp()
+            });
+        }
+
         // Form Submission (Sign Up) — role can only ever be Student or
         // Teacher here since Admin has no button in the role-selector.
         // (Firestore rules also enforce this server-side — see firestore.rules.)
@@ -344,13 +391,24 @@
                     createdAt: serverTimestamp()
                 });
 
+                // 2b. Teacher signups also submit a job application — this is
+                // the ONLY way a teachers/{uid} doc gets created now (no more
+                // "claim an existing profile" step on the dashboard).
+                if (role === "Teacher") {
+                    await createTeacherApplication(user.uid, fullName, email);
+                }
+
                 // 3. Send Email Verification
                 await sendEmailVerification(user);
 
                 // 4. Form Reset / Inputs Empty
                 signupForm.reset();
 
-                showPopup("Account Created!", `Verification email sent! Redirecting to ${role} page...`, () => {
+                const successMessage = role === "Teacher"
+                    ? "Verification email sent! Your teacher application has been submitted and is pending Admin approval — you can log in any time to check its status."
+                    : `Verification email sent! Redirecting to ${role} page...`;
+
+                showPopup(role === "Teacher" ? "Application Submitted!" : "Account Created!", successMessage, () => {
                     redirectToDashboard(role);
                 });
 
@@ -370,17 +428,28 @@
                 const userDoc = await getDoc(userDocRef);
 
                 if (!userDoc.exists()) {
+                    const fullName = user.displayName || "Social User";
                     await setDoc(userDocRef, {
-                        fullName: user.displayName || "Social User",
+                        fullName: fullName,
                         email: user.email,
                         role: role,
                         createdAt: serverTimestamp()
                     });
+
+                    // Same "submit a job application" step as the email/password
+                    // path above — social sign-up must not be a loophole around it.
+                    if (role === "Teacher") {
+                        await createTeacherApplication(user.uid, fullName, user.email);
+                    }
                 }
 
                 signupForm.reset();
 
-                showPopup("Success", `Registered and Logged in as ${role}!`, () => {
+                const successMessage = role === "Teacher"
+                    ? "Registered! Your teacher application is pending Admin approval."
+                    : `Registered and Logged in as ${role}!`;
+
+                showPopup("Success", successMessage, () => {
                     redirectToDashboard(role);
                 });
 

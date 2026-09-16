@@ -32,12 +32,6 @@
         </div>
     </section>
 
-
-
-
-
-
-
     <section class="stats-glass-wrapper">
     <div class="glass-glow glow-1"></div>
     <div class="glass-glow glow-2"></div>
@@ -83,23 +77,23 @@
 
         <!-- PORTAL BUTTONS -->
         <div class="portal-buttons">
-            <button class="portal-btn active" onclick="showPortal('registration')">
+            <button class="portal-btn active" data-portal="registration">
                 <i class="fa-solid fa-clipboard-list"></i> Registration Form
             </button>
-            <button class="portal-btn" onclick="showPortal('idcard')">
+            <button class="portal-btn" data-portal="idcard">
                 <i class="fa-solid fa-address-card"></i> Download ID Card
             </button>
-            <button class="portal-btn" onclick="showPortal('testStatus')">
+            <button class="portal-btn" data-portal="testStatus">
                 <i class="fa-solid fa-square-check"></i> Entry Test Status
             </button>
-            <button class="portal-btn" onclick="showPortal('result')">
+            <button class="portal-btn" data-portal="result">
                 <i class="fa-solid fa-file-lines"></i> Result
             </button>
         </div>
 
         <!-- 1. REGISTRATION FORM -->
         <div class="portal-box active" id="registration">
-            <form class="registration-form">
+            <form class="registration-form" id="registrationForm">
 
                 <!-- Location & Course Details -->
                 <div class="form-section">
@@ -107,14 +101,14 @@
                     <div class="form-grid">
                         <div class="input-box">
                             <label>Select Country*</label>
-                            <select required>
+                            <select id="country" required>
                                 <option value="">Select country</option>
                                 <option value="Pakistan">Pakistan</option>
                             </select>
                         </div>
                         <div class="input-box">
                             <label>Select class preference*</label>
-                            <select required>
+                            <select id="classPreference" required>
                                 <option value="">Select class preference</option>
                                 <option value="Onsite">Onsite</option>
                                 <option value="Online">Online</option>
@@ -122,7 +116,7 @@
                         </div>
                         <div class="input-box">
                             <label>Select Gender*</label>
-                            <select required>
+                            <select id="gender" required>
                                 <option value="">Select gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
@@ -130,7 +124,7 @@
                         </div>
                         <div class="input-box">
                             <label>Select City*</label>
-                            <select required>
+                            <select id="city" required>
                                 <option value="">Select city</option>
                                 <option value="Karachi">Karachi</option>
                                 <option value="Lahore">Lahore</option>
@@ -139,7 +133,7 @@
                         </div>
                         <div class="input-box">
                             <label>Select Course*</label>
-                            <select required>
+                            <select id="courseSelect" required>
                                 <option value="">Select course</option>
                                 <option value="Web Development">Web Development</option>
                                 <option value="Python">Python Development</option>
@@ -148,9 +142,12 @@
                         </div>
                         <div class="input-box">
                             <label>Select Campus*</label>
-                            <select required>
+                            <select id="campus" required>
                                 <option value="">Select campus</option>
                                 <option value="Main Campus">Main Campus</option>
+                                <!-- Kept in sync with admin/admin.html's courseCampus list. -->
+                                <option value="North Campus">North Campus</option>
+                                <option value="Online Campus">Online Campus</option>
                             </select>
                         </div>
                     </div>
@@ -162,40 +159,40 @@
                     <div class="form-grid">
                         <div class="input-box">
                             <label>Full Name*</label>
-                            <input type="text" placeholder="Enter your full name" required>
+                            <input type="text" id="fullName" placeholder="Enter your full name" required>
                         </div>
                         <div class="input-box">
                             <label>Father Name*</label>
-                            <input type="text" placeholder="Enter father's name" required>
+                            <input type="text" id="fatherName" placeholder="Enter father's name" required>
                         </div>
                         <div class="input-box">
                             <label>Date of Birth*</label>
-                            <input type="date" required>
+                            <input type="date" id="dob" required>
                         </div>
                         <div class="input-box">
                             <label>Email*</label>
-                            <input type="email" placeholder="your.email@example.com" required>
+                            <input type="email" id="emailAddress" placeholder="your.email@example.com" required>
                         </div>
                         <div class="input-box">
                             <label>Phone*</label>
-                            <input type="tel" placeholder="Enter phone number" required>
+                            <input type="tel" id="phone" placeholder="Enter phone number" required>
                         </div>
                         <div class="input-box">
                             <label>Father's Phone*</label>
-                            <input type="tel" placeholder="Enter phone number" required>
+                            <input type="tel" id="fatherPhone" placeholder="Enter phone number" required>
                         </div>
                         <div class="input-box">
                             <label>ID Number (CNIC / B-Form)*</label>
-                            <input type="text" placeholder="Enter ID number" required>
+                            <input type="text" id="cnicNumber" placeholder="Enter ID number" required>
                         </div>
                         <div class="input-box">
                             <label>Father's ID Number*</label>
-                            <input type="text" placeholder="Enter father's ID number" required>
+                            <input type="text" id="fatherCnicNumber" placeholder="Enter father's ID number" required>
                         </div>
                     </div>
                     <div class="input-box full-width">
                         <label>Address* (0/220 characters)</label>
-                        <textarea placeholder="Enter your complete address (minimum 10 characters)" maxlength="220" rows="3" required></textarea>
+                        <textarea id="address" placeholder="Enter your complete address (minimum 10 characters)" maxlength="220" rows="3" required></textarea>
                     </div>
                 </div>
 
@@ -205,7 +202,7 @@
                     <div class="form-grid">
                         <div class="input-box">
                             <label>Computer Proficiency*</label>
-                            <select required>
+                            <select id="computerProficiency" required>
                                 <option value="">Select your computer proficiency</option>
                                 <option value="Beginner">Beginner</option>
                                 <option value="Intermediate">Intermediate</option>
@@ -214,7 +211,7 @@
                         </div>
                         <div class="input-box">
                             <label>Last Qualification*</label>
-                            <select required>
+                            <select id="lastQualification" required>
                                 <option value="">Last qualification</option>
                                 <option value="Matric">Matric</option>
                                 <option value="Intermediate">Intermediate</option>
@@ -224,7 +221,7 @@
                     </div>
                     <div class="input-box full-width">
                         <label>Where did you hear about us?*</label>
-                        <select required>
+                        <select id="hearAboutUs" required>
                             <option value="">Where did you hear about us?</option>
                             <option value="Social Media">Social Media</option>
                             <option value="Friend">Friend</option>
@@ -244,12 +241,13 @@
                 <div class="form-section">
                     <h3><i class="fa-solid fa-upload"></i> Upload Picture</h3>
                     <div class="upload-container">
-                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon" id="uploadIconPlaceholder"></i>
+                        <img id="upload-preview" class="upload-preview-img" alt="Selected photo preview" style="display:none;">
                         <label for="picture-upload" class="upload-btn">+ Upload Picture</label>
                         <input type="file" id="picture-upload" accept="image/*" hidden required>
                         <p class="upload-instructions">
                             • With white or blue background<br>
-                            • File size must be less than 1MB<br>
+                            • File size must be less than 5MB<br>
                             • File type: jpg, jpeg, png<br>
                             • Face should be clearly visible without glasses
                         </p>
@@ -274,10 +272,9 @@
                         <p>Please ensure all information provided is accurate. Incomplete or false information may result in rejection of your application.</p>
                     </div>
                 </div>
-<button type="submit" class="submit-btn">
+<button type="submit" class="submit-btn" id="registerSubmitBtn">
     <i class="fa-solid fa-paper-plane"></i> Submit Application
 </button>
-                <!-- <button type="submit" class="submit-btn">Submit Application</button> -->
             </form>
         </div>
 
@@ -291,14 +288,14 @@
                     <label>CNIC Number*</label>
                     <input type="text" id="cnicSearch" placeholder="4220109966883">
                 </div>
-                <button class="search-btn" onclick="searchIDCard()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                <button class="search-btn" id="idCardSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
             </div>
 
             <!-- Card Result Area -->
             <div class="id-card-display" id="idCardDisplay" style="display: none;">
                 <div class="id-card">
                     <div class="id-header">
-                        <img src="./images/logo.png" alt="Logo">
+                        <img src="./images/logo-removebg-preview.png" alt="Logo">
                         <h3>EduCore Student Card</h3>
                     </div>
                     <div class="id-body">
@@ -306,6 +303,7 @@
                         <h3 id="cardName">Student Name</h3>
                         <p id="cardId">Student ID: -</p>
                         <p id="cardCourse">Course: -</p>
+                        <p id="cardStatus">Status: -</p>
                         <button class="download-btn"><i class="fa-solid fa-download"></i> Download ID Card</button>
                     </div>
                 </div>
@@ -319,10 +317,11 @@
                 <p>Enter your roll number to view your entry test status</p>
                 <div class="input-box">
                     <label>Roll Number*</label>
-                    <input type="text" placeholder="ENTER YOUR ROLL NUMBER">
+                    <input type="text" id="statusRollNumber" placeholder="ENTER YOUR ROLL NUMBER">
                 </div>
-                <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Status</button>
+                <button class="search-btn" id="statusSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> Check Status</button>
             </div>
+            <div id="testStatusResult" style="display:none;"></div>
         </div>
 
         <!-- 4. RESULT -->
@@ -332,10 +331,11 @@
                 <p>Enter your roll number to view your results</p>
                 <div class="input-box">
                     <label>Roll Number*</label>
-                    <input type="text" placeholder="ENTER YOUR ROLL NUMBER">
+                    <input type="text" id="resultRollNumber" placeholder="ENTER YOUR ROLL NUMBER">
                 </div>
-                <button class="search-btn"><i class="fa-solid fa-magnifying-glass"></i> Search Result</button>
+                <button class="search-btn" id="resultSearchBtn"><i class="fa-solid fa-magnifying-glass"></i> Search Result</button>
             </div>
+            <div id="resultDisplayPanel" style="display:none;"></div>
         </div>
 
     </section>
@@ -343,7 +343,7 @@
     <div id="footer-placeholder"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="./enrollment.js"></script>
+    <script type="module" src="./enrollment.js"></script>
     <script src="./app.js"></script>
 </body>
 
