@@ -91,7 +91,8 @@
     letter-spacing: .04em;
     text-transform: uppercase;
     color: var(--ec-blue-bright);
-    background: #e8f1fd;
+    
+    background: #e8f1fd; 
     padding: 6px 14px;
     border-radius: 40px;
     margin-bottom: 14px;
@@ -315,7 +316,9 @@
 /*===================================================
   COURSES — animated card grid
 ====================================================*/
-.ec-courses-sec { background: #fff; }
+/* .ec-courses-sec { background: #fff; } */
+
+.ec-courses-sec {background: linear-gradient(135deg, #b6caf6 0%, #e0f2fe 100%); }
 
 .ec-courses-grid {
     display: grid;
@@ -325,18 +328,51 @@
 
 .ec-course-card {
     position: relative;
-    background: #fff;
+    overflow: hidden;
+    background: linear-gradient(165deg, #ffffff 0%, #f3f8ff 100%);
     border: 1px solid var(--ec-line);
     border-radius: var(--ec-r-lg);
     padding: 26px 24px 24px;
     box-shadow: 0 10px 24px -20px rgba(10,26,74,.5);
     transition: transform .3s cubic-bezier(.2,.7,.3,1), box-shadow .3s ease, border-color .3s ease;
+    /* Staggered entrance -- index comes from home-content.js's
+       style="--stagger:${index}" on each card (that was already being set
+       but nothing consumed it yet). Capped at 6 cards' worth of delay so a
+       big grid doesn't make the last row wait forever. */
+    opacity: 0;
+    animation: ec-course-in .6s cubic-bezier(.2,.7,.3,1) both;
+    animation-delay: calc(min(var(--stagger, 0), 6) * 70ms);
+}
+
+/* Thin gradient accent bar that sweeps in on hover. */
+.ec-course-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ec-blue-bright), var(--ec-sky));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .35s ease;
+}
+.ec-course-card:hover::before {
+    transform: scaleX(1);
 }
 
 .ec-course-card:hover {
     transform: translateY(-6px);
     border-color: #c5daf3;
     box-shadow: 0 26px 46px -22px rgba(10,26,74,.4);
+}
+
+@keyframes ec-course-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ec-course-card { animation: none; opacity: 1; }
+    .ec-course-card:hover .ec-course-icon { transform: none; }
 }
 
 .ec-course-icon {
@@ -347,6 +383,10 @@
     border-radius: 13px;
     font-size: 20px;
     margin-bottom: 18px;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.ec-course-card:hover .ec-course-icon {
+    transform: scale(1.08) rotate(-4deg);
 }
 
 .ec-course-card.tone-blue .ec-course-icon { background: #e8f1fd; color: var(--ec-blue-bright); }
