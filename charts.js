@@ -37,6 +37,22 @@ export function renderChart(canvasId, config) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
     if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+    // Every dashboard draws its charts into a fixed-height box (.dash-chart-box,
+    // .chart-container, .admin-chart-box — all position:relative + an explicit
+    // height in CSS), which is the setup Chart.js expects for maintainAspectRatio:
+    // false. Without turning that off, Chart.js defaults to true and picks the
+    // canvas's height from its WIDTH via a fixed aspect ratio instead, ignoring
+    // the box's actual height — on a wide sidebar layout that computed height
+    // comes out taller than the box, so the box (and the whole card around it)
+    // grows to fit the oversized canvas instead of the canvas filling the box.
+    // Setting these here, once, fixes every chart on every dashboard; a config
+    // that ever needs to override them still can, since its own `options` are
+    // spread in last.
+    config.options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        ...(config.options || {})
+    };
     chartInstances[canvasId] = new Chart(canvas, config);
     return chartInstances[canvasId];
 }

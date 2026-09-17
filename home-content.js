@@ -155,7 +155,13 @@ async function loadBlogsSection() {
     if (!grid) return;
     try {
         const snap = await getDocs(collection(db, "blogs"));
-        blogsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Admin-added posts have no status field (treated as live immediately);
+        // Teacher-submitted posts start "pending" and must stay off the public
+        // site until Admin approves them in the Blog Posts tab, and rejected
+        // ones stay off it for good.
+        blogsData = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(b => b.status !== "pending" && b.status !== "rejected");
         if (blogsData.length === 0) {
             grid.innerHTML = '<p class="ec-empty-note">Blog posts coming soon.</p>';
             return;

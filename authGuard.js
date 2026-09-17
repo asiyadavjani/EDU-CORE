@@ -16,15 +16,14 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-
  *       we navigate away instead.
  *
  * UNLIKE a plain "redirect or reveal" guard, this one narrates its own
- * progress on screen ("Checking your login…" -> "Confirming your role…")
- * and gives up with a clear, actionable message after a timeout instead of
- * leaving the page silently blank forever. The single biggest real-world
- * cause of "nothing happens, no console error" with Firebase is a silently
- * hung network call — an ad-blocker / VPN / antivirus / firewall dropping
- * requests to Google's servers without ever throwing a catchable error, or
- * a genuinely dead internet connection. Previously that produced an
- * indefinitely blank page with nothing to go on; now it surfaces as a
- * readable on-page message within a few seconds, with a Retry button.
+ * progress on screen ("Checking your login…" -> "Confirming your role…").
+ *
+ * Anything that isn't a clean "role matches, show the page" — wrong role,
+ * no profile, a Firestore error, a hung network call, Firebase Auth itself
+ * failing to start — sends the visitor straight to the home page
+ * (index.html) rather than showing an error screen or routing them to
+ * their own dashboard. The real reason is still logged to the console for
+ * debugging; it's just never shown on screen.
  */
 
 const AUTH_STEP_TIMEOUT_MS = 9000;
@@ -56,19 +55,13 @@ export function protectPage(allowedRoles = [], ui = {}) {
             '<p class="auth-loading-text">' + text + '</p>';
     }
 
-    function showError(text) {
-        console.error("[AuthGuard]", text);
-        if (!loadingEl) { alert(text); return; }
-        loadingEl.classList.add("auth-loading-error");
-        loadingEl.innerHTML =
-            '<div class="auth-error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' +
-            '<p class="auth-loading-text">' + text + '</p>' +
-            '<div class="auth-loading-actions">' +
-                '<button type="button" id="authRetryBtn">Retry</button>' +
-                '<a href="' + resolveLoginPath() + '">Go to Login</a>' +
-            '</div>';
-        const retryBtn = document.getElementById("authRetryBtn");
-        if (retryBtn) retryBtn.addEventListener("click", () => window.location.reload());
+    // Any failure case (wrong role, no profile, a Firestore/network error, ...)
+    // lands here instead of an on-page error screen — the reason is logged
+    // for debugging, and the visitor is sent straight to the home page.
+    function sendToIndex(reason) {
+        console.error("[AuthGuard]", reason);
+        showStatus("Redirecting…");
+        window.location.href = resolveIndexPath();
     }
 
     showStatus("Checking your login…");
@@ -77,11 +70,10 @@ export function protectPage(allowedRoles = [], ui = {}) {
     const watchdog = setTimeout(() => {
         if (settled) return;
         settled = true;
-        showError(
+        sendToIndex(
             "This is taking much longer than it should — Firebase isn't responding. This is almost " +
             "always an ad-blocker, VPN, antivirus, or firewall silently blocking requests to Google's " +
-            "servers, or no internet connection. Disable any content-blocker for this site and check " +
-            "your connection, then Retry."
+            "servers, or no internet connection."
         );
     }, AUTH_STEP_TIMEOUT_MS);
 
@@ -111,10 +103,9 @@ export function protectPage(allowedRoles = [], ui = {}) {
                     const userData = userDoc.data();
                     const userRole = userData.role;
 
-                    // 3. Check: Agar current page par role allowed nahi hai -> Redirect to dashboard
+                    // 3. Agar current page par role allowed nahi hai -> seedha index page
                     if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
-                        showStatus("Redirecting you to your own dashboard…");
-                        redirectToDashboard(userRole);
+                        sendToIndex("Wrong role for this page (has \"" + userRole + "\", page needs " + JSON.stringify(allowedRoles) + ") — sending to index.html.");
                         return; // never reveal this page's content to the wrong role
                     }
 
@@ -122,26 +113,23 @@ export function protectPage(allowedRoles = [], ui = {}) {
                     if (loadingEl) loadingEl.style.display = "none";
                     if (contentEl) contentEl.style.display = "";
                 } else {
-                    showError(
-                        "Your login works, but there's no matching profile in the database for this " +
-                        "account (no /users/" + user.uid.slice(0, 6) + "… document, or it has no role). " +
-                        "Try signing up again, or ask whoever manages EduCore to check your account."
+                    sendToIndex(
+                        "Login works, but there's no matching profile in the database for this account " +
+                        "(no /users/" + user.uid.slice(0, 6) + "… document, or it has no role)."
                     );
                 }
             } catch (error) {
                 settled = true;
                 clearTimeout(watchdog);
-                console.error("Auth Guard Error:", error);
                 if (error && error.code === "permission-denied") {
-                    showError(
-                        "Database permission denied while reading your profile. The Firestore security " +
-                        "rules currently published don't allow this. Firebase Console → Firestore " +
-                        "Database → Rules must include the /users/{uid} read rule — ask the site admin " +
-                        "to check the rules are fully (and correctly) published."
+                    sendToIndex(
+                        "Database permission denied while reading the user's profile. Check the Firestore " +
+                        "security rules (Firebase Console → Firestore Database → Rules) allow the " +
+                        "/users/{uid} read rule."
                     );
                 } else {
-                    showError(
-                        "Something went wrong confirming your login: " +
+                    sendToIndex(
+                        "Something went wrong confirming the login: " +
                         (error && error.message ? error.message : "unknown error")
                     );
                 }
@@ -153,7 +141,7 @@ export function protectPage(allowedRoles = [], ui = {}) {
             if (settled) return;
             settled = true;
             clearTimeout(watchdog);
-            showError(
+            sendToIndex(
                 "Firebase Authentication failed to start: " +
                 (error && error.message ? error.message : "unknown error")
             );
@@ -173,6 +161,10 @@ function rootPrefix() {
 
 function resolveLoginPath() {
     return rootPrefix() + "login.html";
+}
+
+function resolveIndexPath() {
+    return rootPrefix() + "index.html";
 }
 
 export function redirectToDashboard(role) {

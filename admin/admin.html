@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | EduCore</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="./admin.css">
 
@@ -20,6 +21,9 @@
 
 <body>
 
+<div id="authLoading">Checking access…</div>
+
+<div id="pageContent">
 <aside id="sidebar" class="sidebar">
 
 
@@ -103,15 +107,39 @@
 
 
         <a
-            href="#articles"
+            href="#blogs"
             class="nav-link"
-            data-target="articles">
+            data-target="blogs">
 
-            <i class="fa-solid fa-newspaper"></i>
+            <i class="fa-solid fa-blog"></i>
 
-            <span>Articles</span>
+            <span>Blog Posts</span>
 
-            <span class="menu-badge">4</span>
+            <span class="menu-badge" style="display:none;">0</span>
+
+        </a>
+
+
+        <a
+            href="#successStories"
+            class="nav-link"
+            data-target="successStories">
+
+            <i class="fa-solid fa-star"></i>
+
+            <span>Success Stories</span>
+
+        </a>
+
+
+        <a
+            href="#newsEvents"
+            class="nav-link"
+            data-target="newsEvents">
+
+            <i class="fa-solid fa-calendar-days"></i>
+
+            <span>News &amp; Events</span>
 
         </a>
 
@@ -178,6 +206,7 @@
 
 <!-- =========================================================
      MAIN CONTENT
+===================================================== -->
 
 <div class="main-content">
 
@@ -223,8 +252,8 @@
 
                     <i class="fa-regular fa-bell"></i>
 
-                    <span class="notification-count">
-                        3
+                    <span class="notification-count" style="display:none;">
+                        0
                     </span>
 
                 </button>
@@ -257,87 +286,10 @@
 
                     <div class="notification-list">
 
-
-                        <div class="notification-item unread">
-
-                            <div class="notification-icon blue">
-
-                                <i class="fa-solid fa-user-plus"></i>
-
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    New student registered
-                                </strong>
-
-                                <p>
-                                    Ali Ahmed has registered.
-                                </p>
-
-                                <small>
-                                    Just now
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="notification-item unread">
-
-                            <div class="notification-icon green">
-
-                                <i class="fa-solid fa-book"></i>
-
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    New enrollment
-                                </strong>
-
-                                <p>
-                                    A new course enrollment was received.
-                                </p>
-
-                                <small>
-                                    10 minutes ago
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="notification-item unread">
-
-                            <div class="notification-icon purple">
-
-                                <i class="fa-solid fa-newspaper"></i>
-
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Article waiting for approval
-                                </strong>
-
-                                <p>
-                                    A new article requires your review.
-                                </p>
-
-                                <small>
-                                    20 minutes ago
-                                </small>
-
-                            </div>
-
-                        </div>
-
+                        <!-- Populated by renderNotifications() in admin.js from REAL
+                             pending data (teachers/students/blogs) -- no more
+                             hardcoded demo rows that always showed regardless of
+                             whether anything was actually pending. -->
 
                     </div>
 
@@ -662,7 +614,7 @@
                         </thead>
 
 
-                        <tbody>
+                        <tbody id="recentEnrollmentsBody">
 
                             <tr>
 
@@ -885,20 +837,12 @@
                         All Categories
                     </option>
 
-                    <option value="web">
-                        Web Development
+                    <option value="Diploma Track">
+                        Diploma Track
                     </option>
 
-                    <option value="design">
-                        Graphic Design
-                    </option>
-
-                    <option value="marketing">
-                        Digital Marketing
-                    </option>
-
-                    <option value="ai">
-                        AI & Data
+                    <option value="Skill Course">
+                        Skill Course
                     </option>
 
                 </select>
@@ -1031,21 +975,30 @@
                             id="courseCategoryInput"
                             class="form-control-custom">
 
-                            <option value="web">
-                                Web Development
+                            <option value="Diploma Track">
+                                Diploma Track
                             </option>
 
-                            <option value="design">
-                                Graphic Design
+                            <option value="Skill Course">
+                                Skill Course
                             </option>
 
-                            <option value="marketing">
-                                Digital Marketing
-                            </option>
+                        </select>
 
-                            <option value="ai">
-                                AI & Data
-                            </option>
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Teacher
+                        </label>
+
+                        <select
+                            id="courseTeacherInput"
+                            class="form-control-custom">
+
+                            <option value="">Not assigned</option>
 
                         </select>
 
@@ -1063,6 +1016,36 @@
                             id="coursePrice"
                             class="form-control-custom"
                             placeholder="Enter price">
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Campus
+                        </label>
+
+                        <input
+                            type="text"
+                            id="courseCampusInput"
+                            class="form-control-custom"
+                            placeholder="e.g. Gulshan-e-Iqbal">
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        <textarea
+                            id="courseDescriptionInput"
+                            class="form-control-custom"
+                            rows="3"
+                            placeholder="Short course description"></textarea>
 
                     </div>
 
@@ -1150,20 +1133,24 @@
                         All Status
                     </option>
 
-                    <option value="pending">
-                        Pending
+                    <option value="Entry Test Pending">
+                        Entry Test Pending
                     </option>
 
-                    <option value="active">
-                        Active
+                    <option value="Awaiting Approval">
+                        Awaiting Approval
                     </option>
 
-                    <option value="blocked">
-                        Blocked
+                    <option value="Accepted">
+                        Accepted
                     </option>
 
-                    <option value="rejected">
+                    <option value="Rejected">
                         Rejected
+                    </option>
+
+                    <option value="Failed">
+                        Failed
                     </option>
 
                 </select>
@@ -1180,7 +1167,7 @@
 
 
                     <table
-                        id="students"
+                        id="studentsTable"
                         class="custom-table">
 
 
@@ -1284,12 +1271,8 @@
                         Pending
                     </option>
 
-                    <option value="active">
-                        Active
-                    </option>
-
-                    <option value="blocked">
-                        Blocked
+                    <option value="approved">
+                        Approved
                     </option>
 
                     <option value="rejected">
@@ -1310,7 +1293,7 @@
 
 
                     <table
-                        id="teachers"
+                        id="teachersTable"
                         class="custom-table">
 
 
@@ -1360,11 +1343,11 @@
 
 
         <!-- =================================================
-             ARTICLES
+             BLOG POSTS
         ================================================= -->
 
         <section
-            id="articles"
+            id="blogs"
             class="page-section">
 
 
@@ -1373,11 +1356,13 @@
 
                 <div>
 
-                    <h2>Article Approval</h2>
+                    <h2>Blog Posts</h2>
 
                     <p>
-                        Review articles submitted by students
-                        and teachers.
+                        Add a post directly, or review posts
+                        Teachers have submitted for approval.
+                        Everything here (minus rejected/pending)
+                        shows on the homepage's Popular Blogs.
                     </p>
 
                 </div>
@@ -1387,12 +1372,44 @@
 
                     <i class="fa-solid fa-clock"></i>
 
-                    4 Pending
+                    0 Pending
 
                 </div>
 
 
             </div>
+
+
+            <form id="blogForm" class="admin-inline-form">
+                <input type="hidden" id="blogEditId">
+                <div class="admin-form-grid">
+                    <div class="input-box">
+                        <label>Title*</label>
+                        <input type="text" id="blogTitleInput" placeholder="e.g. 5 Skills Every Web Developer Needs" required>
+                    </div>
+                    <div class="input-box">
+                        <label>Category</label>
+                        <input type="text" id="blogCategoryInput" placeholder="e.g. Web Development">
+                    </div>
+                </div>
+                <div class="input-box full-width">
+                    <label>Excerpt* (short summary shown on the card)</label>
+                    <textarea id="blogExcerptInput" rows="2" placeholder="1-2 line summary" required></textarea>
+                </div>
+                <div class="input-box full-width">
+                    <label>Full Post*</label>
+                    <textarea id="blogBodyInput" rows="5" placeholder="Write the full blog post here" required></textarea>
+                </div>
+                <div class="input-box full-width">
+                    <label>Cover Image (optional, max 5MB)</label>
+                    <input type="file" id="blogImageInput" accept="image/*">
+                    <img id="blogImagePreview" style="display:none;" class="admin-thumb-preview">
+                </div>
+                <div class="admin-form-actions">
+                    <button type="submit" class="admin-btn-primary" id="blogSubmitBtn"><i class="fa-solid fa-plus"></i> Add Post</button>
+                    <button type="button" class="admin-btn-secondary" id="blogCancelEditBtn" style="display:none;">Cancel Edit</button>
+                </div>
+            </form>
 
 
 
@@ -1405,13 +1422,13 @@
 
                     <input
                         type="text"
-                        id="articleSearch"
-                        placeholder="Search articles...">
+                        id="blogSearch"
+                        placeholder="Search posts...">
 
                 </div>
 
 
-                <select id="articleStatus">
+                <select id="blogStatusFilter">
 
                     <option value="all">
                         All Status
@@ -1443,7 +1460,7 @@
 
 
                     <table
-                        id="articlesTable"
+                        id="blogsTable"
                         class="custom-table">
 
 
@@ -1451,7 +1468,7 @@
 
                             <tr>
 
-                                <th>Article</th>
+                                <th>Post</th>
 
                                 <th>Author</th>
 
@@ -1466,7 +1483,7 @@
                         </thead>
 
 
-                        <tbody id="articlesTableBody">
+                        <tbody id="blogsTableBody">
 
 
                             <tr data-status="pending">
@@ -1655,12 +1672,12 @@
 
 
                     <span class="modal-label">
-                        ARTICLE REVIEW
+                        BLOG POST REVIEW
                     </span>
 
 
                     <h3 id="modalArticleTitle">
-                        Article
+                        Blog Post
                     </h3>
 
 
@@ -1689,14 +1706,14 @@
 
 
                         <h5>
-                            Article Preview
+                            Post Preview
                         </h5>
 
 
-                        <p>
-                            This is the article preview area.
+                        <p id="modalArticleBody">
+                            This is the post preview area.
                             The administrator can review the
-                            submitted article before approving
+                            submitted post before approving
                             or rejecting it.
                         </p>
 
@@ -1743,6 +1760,124 @@
 
 
         <!-- =================================================
+             SUCCESS STORIES
+        ================================================= -->
+
+        <section
+            id="successStories"
+            class="page-section">
+
+            <div class="page-heading">
+                <div>
+                    <h2>Success Stories</h2>
+                    <p>
+                        Whatever you add here shows to everyone in the
+                        homepage's "Success Stories" section. Add real
+                        graduates' genuine stories.
+                    </p>
+                </div>
+            </div>
+
+            <form id="storyForm" class="admin-inline-form">
+                <input type="hidden" id="storyEditId">
+                <div class="admin-form-grid">
+                    <div class="input-box">
+                        <label>Student Name*</label>
+                        <input type="text" id="storyName" placeholder="e.g. Ahmed Raza" required>
+                    </div>
+                    <div class="input-box">
+                        <label>Outcome / Role*</label>
+                        <input type="text" id="storyOutcome" placeholder="e.g. Freelance Web Developer" required>
+                    </div>
+                    <div class="input-box">
+                        <label>Course</label>
+                        <input type="text" id="storyCourse" placeholder="e.g. MERN Stack Web Development">
+                    </div>
+                    <div class="input-box">
+                        <label>Highlight (short stat, optional)</label>
+                        <input type="text" id="storyHighlight" placeholder="e.g. Upwork Top Rated">
+                    </div>
+                </div>
+                <div class="input-box full-width">
+                    <label>Story*</label>
+                    <textarea id="storyText" rows="3" placeholder="Short story — this is what will show on the homepage" required></textarea>
+                </div>
+                <div class="input-box full-width">
+                    <label>Photo (optional, max 5MB — initials show if not added)</label>
+                    <input type="file" id="storyPhotoInput" accept="image/*">
+                    <img id="storyPhotoPreview" style="display:none;" class="admin-photo-preview">
+                </div>
+                <div class="admin-form-actions">
+                    <button type="submit" class="admin-btn-primary" id="storySubmitBtn"><i class="fa-solid fa-plus"></i> Add Story</button>
+                    <button type="button" class="admin-btn-secondary" id="storyCancelEditBtn" style="display:none;">Cancel Edit</button>
+                </div>
+            </form>
+
+            <div id="storiesList" class="admin-list admin-list-grid"></div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             NEWS & EVENTS
+        ================================================= -->
+
+        <section
+            id="newsEvents"
+            class="page-section">
+
+            <div class="page-heading">
+                <div>
+                    <h2>News &amp; Events</h2>
+                    <p>
+                        New batches, admissions, events — add them here
+                        and they'll show in the homepage's "News &amp; Events"
+                        section.
+                    </p>
+                </div>
+            </div>
+
+            <form id="newsForm" class="admin-inline-form">
+                <input type="hidden" id="newsEditId">
+                <div class="admin-form-grid">
+                    <div class="input-box">
+                        <label>Title*</label>
+                        <input type="text" id="newsTitle" placeholder="e.g. New Web Development Batch" required>
+                    </div>
+                    <div class="input-box">
+                        <label>Date*</label>
+                        <input type="date" id="newsDate" required>
+                    </div>
+                </div>
+                <div class="input-box full-width">
+                    <label>Excerpt*</label>
+                    <textarea id="newsExcerpt" rows="3" placeholder="Short details" required></textarea>
+                </div>
+                <div class="admin-form-grid">
+                    <div class="input-box">
+                        <label>Link (optional — button will lead here)</label>
+                        <input type="text" id="newsLink" placeholder="e.g. ./enrollment.html">
+                    </div>
+                </div>
+                <div class="input-box full-width">
+                    <label>Image (optional, max 5MB)</label>
+                    <input type="file" id="newsImageInput" accept="image/*">
+                    <img id="newsImagePreview" style="display:none;" class="admin-thumb-preview">
+                </div>
+                <div class="admin-form-actions">
+                    <button type="submit" class="admin-btn-primary" id="newsSubmitBtn"><i class="fa-solid fa-plus"></i> Add</button>
+                    <button type="button" class="admin-btn-secondary" id="newsCancelEditBtn" style="display:none;">Cancel Edit</button>
+                </div>
+            </form>
+
+            <div id="newsList" class="admin-list admin-list-grid"></div>
+
+        </section>
+
+
+
+        <!-- =================================================
              REPORTS
         ================================================= -->
 
@@ -1780,12 +1915,12 @@
                             Total Revenue
                         </span>
 
-                        <h3>
-                            $12,840
+                        <h3 id="reportRevenue">
+                            $0
                         </h3>
 
-                        <span class="positive">
-                            +12.5% this month
+                        <span class="positive" id="reportRevenueTrend">
+                            Live snapshot
                         </span>
 
                     </div>
@@ -1801,12 +1936,12 @@
                             Completion Rate
                         </span>
 
-                        <h3>
-                            78%
+                        <h3 id="reportCompletion">
+                            0%
                         </h3>
 
-                        <span class="positive">
-                            +5.2% this month
+                        <span class="positive" id="reportCompletionTrend">
+                            Live snapshot
                         </span>
 
                     </div>
@@ -1822,12 +1957,12 @@
                             Active Users
                         </span>
 
-                        <h3>
-                            986
+                        <h3 id="reportActiveUsers">
+                            0
                         </h3>
 
-                        <span class="positive">
-                            +8.7% this month
+                        <span class="positive" id="reportActiveUsersTrend">
+                            Live snapshot
                         </span>
 
                     </div>
@@ -2183,6 +2318,7 @@
 
                                 <input
                                     type="text"
+                                    id="settingsFullName"
                                     class="form-control-custom"
                                     value="Admin">
 
@@ -2197,8 +2333,10 @@
 
                                 <input
                                     type="email"
+                                    id="settingsEmail"
                                     class="form-control-custom"
-                                    value="admin@educore.com">
+                                    value="admin@educore.com"
+                                    readonly>
 
                             </div>
 
@@ -2231,6 +2369,7 @@
 
                                 <input
                                     type="text"
+                                    id="settingsPlatformName"
                                     class="form-control-custom"
                                     value="EduCore">
 
@@ -2283,422 +2422,23 @@
 
 
 </div>
-
-
+</div>
 
 <!-- =========================================================
      BOOTSTRAP
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js">
-</script>
-
-
+===================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- =========================================================
      CHART.JS
-
-<script
-    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
-</script>
-
+     Self-hosted (vendor/chart.umd.min.js) -- see teacher.html for why.
+===================================================== -->
+<script src="../vendor/chart.umd.min.js"></script>
 
 <!-- =========================================================
-     EXISTING JS
+     ADMIN JS
+===================================================== -->
+<script type="module" src="./admin.js"></script>
 
-<!--
-<script type="module">
-
-    import { protectPage } from "../authGuard.js";
-
-    protectPage(
-        ["Admin"],
-        {
-            loadingEl: "authLoading",
-            contentEl: "pageContent"
-        }
-    );
-
-</script>
--->
-
-
-<script
-    type="module"
-    src="./admin.js">
-</script>
-
-
-</body>
-
-    <!-- Shown immediately; swapped out once the role check below passes. -->
-    <div id="authLoading">Checking access…</div>
-
-    <div id="pageContent">
-
-        <div class="admin-topbar">
-            <div class="admin-brand"><i class="fa-solid fa-graduation-cap"></i> EduCore <span>Admin</span></div>
-            <div class="admin-topbar-actions">
-                <div class="admin-notif-wrap">
-                    <button type="button" class="admin-notif-bell" id="notifBell" aria-label="Notifications">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="admin-notif-badge" id="notifBadge" style="display:none;">0</span>
-                    </button>
-                    <div class="admin-notif-dropdown" id="notifDropdown" style="display:none;">
-                        <div class="admin-notif-head">Notifications</div>
-                        <div id="notifList" class="admin-notif-list"></div>
-                    </div>
-                </div>
-                <a href="../index.html" class="admin-home-btn"><i class="fa-solid fa-house"></i> Home</a>
-                <button id="logoutBtn" class="admin-logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-            </div>
-        </div>
-
-        <div class="admin-wrap">
-
-            <!-- QUICK STATS -->
-            <div class="admin-stats-row" id="adminStats">
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statAwaiting">0</span>
-                    <span class="admin-stat-label">Awaiting Approval</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statAccepted">0</span>
-                    <span class="admin-stat-label">Accepted Students</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statCourses">0</span>
-                    <span class="admin-stat-label">Courses</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statTeachers">0</span>
-                    <span class="admin-stat-label">Teachers</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statPendingTeachers">0</span>
-                    <span class="admin-stat-label">Pending Teachers</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="admin-stat-value" id="statPendingOrders">0</span>
-                    <span class="admin-stat-label">Pending Orders</span>
-                </div>
-            </div>
-
-            <!-- ANALYTICS -->
-            <div class="admin-charts-row">
-                <div class="admin-chart-card">
-                    <h3><i class="fa-solid fa-users"></i> Teachers &amp; Students</h3>
-                    <div class="admin-chart-box"><canvas id="chartCounts"></canvas></div>
-                </div>
-                <div class="admin-chart-card">
-                    <h3><i class="fa-solid fa-building"></i> Courses by Campus</h3>
-                    <div class="admin-chart-box"><canvas id="chartCampus"></canvas></div>
-                </div>
-                <div class="admin-chart-card">
-                    <h3><i class="fa-solid fa-calendar-check"></i> Attendance Rate</h3>
-                    <div class="admin-chart-box"><canvas id="chartAttendance"></canvas></div>
-                </div>
-                <div class="admin-chart-card">
-                    <h3><i class="fa-solid fa-graduation-cap"></i> Our Track Record</h3>
-                    <div class="admin-chart-box"><canvas id="chartTrackRecord"></canvas></div>
-                </div>
-                <div class="admin-chart-card">
-                    <h3><i class="fa-solid fa-layer-group"></i> Students by Course</h3>
-                    <div class="admin-chart-box"><canvas id="chartStudentsByCourse"></canvas></div>
-                </div>
-            </div>
-
-            <!-- TABS -->
-            <div class="admin-tabs">
-                <button class="admin-tab-btn active" data-tab="applications"><i class="fa-solid fa-user-check"></i> Student Applications</button>
-                <button class="admin-tab-btn" data-tab="teacherApplications"><i class="fa-solid fa-chalkboard-user"></i> Teacher Applications</button>
-                <button class="admin-tab-btn" data-tab="courses"><i class="fa-solid fa-book"></i> Courses</button>
-                <button class="admin-tab-btn" data-tab="teachers"><i class="fa-solid fa-user-tie"></i> Teachers</button>
-                <button class="admin-tab-btn" data-tab="orders"><i class="fa-solid fa-receipt"></i> Orders</button>
-                <button class="admin-tab-btn" data-tab="successStories"><i class="fa-solid fa-star"></i> Success Stories</button>
-                <button class="admin-tab-btn" data-tab="blogs"><i class="fa-solid fa-blog"></i> Blog Posts</button>
-                <button class="admin-tab-btn" data-tab="newsEvents"><i class="fa-solid fa-newspaper"></i> News &amp; Events</button>
-            </div>
-
-            <!-- APPLICATIONS TAB -->
-            <div class="admin-tab-panel active" id="tab-applications">
-                <div class="admin-panel-head">
-                    <h2>Student Applications</h2>
-                    <div class="admin-filter-group">
-                        <label>Filter:</label>
-                        <select id="applicationsFilter">
-                            <option value="Awaiting Approval" selected>Awaiting Approval</option>
-                            <option value="Accepted">Accepted</option>
-                            <option value="Rejected">Rejected</option>
-                            <option value="Entry Test Pending">Entry Test Pending</option>
-                            <option value="Failed">Failed Entry Test</option>
-                            <option value="all">All</option>
-                        </select>
-                        <button id="refreshApplicationsBtn" class="admin-btn-secondary"><i class="fa-solid fa-rotate"></i> Refresh</button>
-                    </div>
-                </div>
-                <div id="applicationsList" class="admin-list"></div>
-            </div>
-
-            <!-- TEACHER APPLICATIONS TAB -->
-            <div class="admin-tab-panel" id="tab-teacherApplications">
-                <div class="admin-panel-head">
-                    <h2>Teacher Applications</h2>
-                    <div class="admin-filter-group">
-                        <label>Filter:</label>
-                        <select id="teacherApplicationsFilter">
-                            <option value="pending" selected>Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="all">All</option>
-                        </select>
-                        <button id="refreshTeacherApplicationsBtn" class="admin-btn-secondary" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button>
-                    </div>
-                    <p class="admin-panel-sub">Teachers show up here the moment they sign up with role = Teacher. Accept activates their dashboard login and lists them on the homepage; Reject denies it. (Teachers added directly below in the Teachers tab don't need review — they're auto-approved.)</p>
-                </div>
-                <div id="teacherApplicationsList" class="admin-list"></div>
-            </div>
-
-            <!-- COURSES TAB -->
-            <div class="admin-tab-panel" id="tab-courses">
-                <div class="admin-panel-head">
-                    <h2>Courses</h2>
-                </div>
-
-                <form id="courseForm" class="admin-inline-form">
-                    <input type="hidden" id="courseEditId">
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Course Title*</label>
-                            <input type="text" id="courseTitle" placeholder="e.g. Google Ads" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Category*</label>
-                            <select id="courseCategory" required>
-                                <option value="Diploma Track">Diploma Track (admission-based)</option>
-                                <option value="Skill Course" selected>Skill Course (catalog / cart)</option>
-                            </select>
-                        </div>
-                        <div class="input-box">
-                            <label>Price (PKR, 0 = Free)*</label>
-                            <input type="number" id="coursePrice" min="0" value="0" required>
-                        </div>
-                        <div class="input-box">
-                            <!-- Needed so future reports (e.g. paid vs free per
-                                 campus) have real data to work with — same
-                                 campus list as enrollment.html's own field. -->
-                            <label>Campus*</label>
-                            <select id="courseCampus" required>
-                                <option value="">Select campus</option>
-                                <option value="Main Campus">Main Campus</option>
-                                <!-- Placeholder extra campuses so the per-campus chart on
-                                     the Admin dashboard has more than one bucket to show —
-                                     rename these to your real campuses, or remove them, any
-                                     time from this dropdown (and the matching one in
-                                     enrollment.html). -->
-                                <option value="North Campus">North Campus</option>
-                                <option value="Online Campus">Online Campus</option>
-                            </select>
-                        </div>
-                        <div class="input-box">
-                            <label>Assign Teacher</label>
-                            <select id="courseTeacher">
-                                <option value="">-- none yet --</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Description</label>
-                        <textarea id="courseDescription" rows="2" placeholder="Short description shown on the course catalog"></textarea>
-                    </div>
-                    <div class="admin-form-actions">
-                        <button type="submit" class="admin-btn-primary" id="courseSubmitBtn"><i class="fa-solid fa-plus"></i> Add Course</button>
-                        <button type="button" class="admin-btn-secondary" id="courseCancelEditBtn" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-
-                <div id="coursesList" class="admin-list"></div>
-            </div>
-
-            <!-- TEACHERS TAB -->
-            <div class="admin-tab-panel" id="tab-teachers">
-                <div class="admin-panel-head">
-                    <h2>Teachers</h2>
-                    <p class="admin-panel-sub">Photos & bios added here also appear in the "Meet the Teachers" section on the homepage. Teachers added directly below are auto-approved; teachers who signed themselves up go through the Teacher Applications tab first.</p>
-                </div>
-
-                <form id="teacherForm" class="admin-inline-form">
-                    <input type="hidden" id="teacherEditId">
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Full Name*</label>
-                            <input type="text" id="teacherName" placeholder="e.g. Ahmed Raza" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Title / Specialty*</label>
-                            <input type="text" id="teacherTitle" placeholder="e.g. Senior Web Developer" required>
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Bio</label>
-                        <textarea id="teacherBio" rows="2" placeholder="Short bio shown on their profile"></textarea>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Photo (max 300KB)</label>
-                        <input type="file" id="teacherPhotoInput" accept="image/*">
-                        <img id="teacherPhotoPreview" style="display:none;" class="admin-photo-preview">
-                    </div>
-                    <div class="admin-form-actions">
-                        <button type="submit" class="admin-btn-primary" id="teacherSubmitBtn"><i class="fa-solid fa-plus"></i> Add Teacher</button>
-                        <button type="button" class="admin-btn-secondary" id="teacherCancelEditBtn" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-
-                <div id="teachersList" class="admin-list admin-list-grid"></div>
-            </div>
-
-            <!-- ORDERS TAB -->
-            <div class="admin-tab-panel" id="tab-orders">
-                <div class="admin-panel-head">
-                    <h2>Orders (Paid Courses)</h2>
-                    <p class="admin-panel-sub">Confirm payment received outside the system (bank transfer / JazzCash), then mark it Paid here to unlock access.</p>
-                </div>
-                <div id="ordersList" class="admin-list"></div>
-            </div>
-
-            <!-- SUCCESS STORIES TAB -->
-            <div class="admin-tab-panel" id="tab-successStories">
-                <div class="admin-panel-head">
-                    <h2>Success Stories</h2>
-                    <p class="admin-panel-sub">Whatever you add here shows to everyone in the homepage's "Success Stories" section. Add real graduates' genuine stories — the more real, the more impact.</p>
-                </div>
-
-                <form id="storyForm" class="admin-inline-form">
-                    <input type="hidden" id="storyEditId">
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Student Name*</label>
-                            <input type="text" id="storyName" placeholder="e.g. Ahmed Raza" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Outcome / Role*</label>
-                            <input type="text" id="storyOutcome" placeholder="e.g. Freelance Web Developer" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Course</label>
-                            <input type="text" id="storyCourse" placeholder="e.g. MERN Stack Web Development">
-                        </div>
-                        <div class="input-box">
-                            <label>Highlight (short stat, optional)</label>
-                            <input type="text" id="storyHighlight" placeholder="e.g. Upwork Top Rated">
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Story*</label>
-                        <textarea id="storyText" rows="3" placeholder="Short story — this is what will show on the homepage" required></textarea>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Photo (optional, max 5MB — na ho to initials dikhengay)</label>
-                        <input type="file" id="storyPhotoInput" accept="image/*">
-                        <img id="storyPhotoPreview" style="display:none;" class="admin-photo-preview">
-                    </div>
-                    <div class="admin-form-actions">
-                        <button type="submit" class="admin-btn-primary" id="storySubmitBtn"><i class="fa-solid fa-plus"></i> Add Story</button>
-                        <button type="button" class="admin-btn-secondary" id="storyCancelEditBtn" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-
-                <div id="storiesList" class="admin-list admin-list-grid"></div>
-            </div>
-
-            <!-- BLOG POSTS TAB -->
-            <div class="admin-tab-panel" id="tab-blogs">
-                <div class="admin-panel-head">
-                    <h2>Blog Posts</h2>
-                    <p class="admin-panel-sub">Posts added here show up in the homepage's "Popular Blogs" section. "Full Post" is the text that opens in a modal when someone clicks "Read More".</p>
-                </div>
-
-                <form id="blogForm" class="admin-inline-form">
-                    <input type="hidden" id="blogEditId">
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Title*</label>
-                            <input type="text" id="blogTitle" placeholder="e.g. 5 Skills Every Web Developer Needs" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Category</label>
-                            <input type="text" id="blogCategory" placeholder="e.g. Web Development">
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Excerpt* (this short summary shows on the card)</label>
-                        <textarea id="blogExcerpt" rows="2" placeholder="1-2 line summary" required></textarea>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Full Post*</label>
-                        <textarea id="blogBody" rows="5" placeholder="Write the full blog post here" required></textarea>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Cover Image (optional, max 5MB)</label>
-                        <input type="file" id="blogImageInput" accept="image/*">
-                        <img id="blogImagePreview" style="display:none;" class="admin-thumb-preview">
-                    </div>
-                    <div class="admin-form-actions">
-                        <button type="submit" class="admin-btn-primary" id="blogSubmitBtn"><i class="fa-solid fa-plus"></i> Add Post</button>
-                        <button type="button" class="admin-btn-secondary" id="blogCancelEditBtn" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-
-                <div id="blogsList" class="admin-list admin-list-grid"></div>
-            </div>
-
-            <!-- NEWS & EVENTS TAB -->
-            <div class="admin-tab-panel" id="tab-newsEvents">
-                <div class="admin-panel-head">
-                    <h2>News &amp; Events</h2>
-                    <p class="admin-panel-sub">New batches, admissions, events — add them here and they'll show in the homepage's "News &amp; Events" section.</p>
-                </div>
-
-                <form id="newsForm" class="admin-inline-form">
-                    <input type="hidden" id="newsEditId">
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Title*</label>
-                            <input type="text" id="newsTitle" placeholder="e.g. Naya Web Development Batch" required>
-                        </div>
-                        <div class="input-box">
-                            <label>Date*</label>
-                            <input type="date" id="newsDate" required>
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Excerpt*</label>
-                        <textarea id="newsExcerpt" rows="3" placeholder="Short details" required></textarea>
-                    </div>
-                    <div class="admin-form-grid">
-                        <div class="input-box">
-                            <label>Link (optional — button is site ya page par le jayega)</label>
-                            <input type="text" id="newsLink" placeholder="e.g. ./enrollment.html">
-                        </div>
-                    </div>
-                    <div class="input-box full-width">
-                        <label>Image (optional, max 5MB)</label>
-                        <input type="file" id="newsImageInput" accept="image/*">
-                        <img id="newsImagePreview" style="display:none;" class="admin-thumb-preview">
-                    </div>
-                    <div class="admin-form-actions">
-                        <button type="submit" class="admin-btn-primary" id="newsSubmitBtn"><i class="fa-solid fa-plus"></i> Add</button>
-                        <button type="button" class="admin-btn-secondary" id="newsCancelEditBtn" style="display:none;">Cancel Edit</button>
-                    </div>
-                </form>
-
-                <div id="newsList" class="admin-list admin-list-grid"></div>
-            </div>
-
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
-    <script type="module" src="./admin.js"></script>
 </body>
 </html>

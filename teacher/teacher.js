@@ -1,5 +1,6 @@
 /*=========================================
         FIREBASE IMPORTS
+=========================================*/
 import { db, auth } from "../firebaseConfig.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
@@ -18,12 +19,15 @@ import { uploadImageToCloudinary, MAX_UPLOAD_BYTES } from "../cloudinary.js";
 
 /*=========================================
         STATE
+=========================================*/
 let myUid = null;
 let myProfile = null;      // the teachers/{id} doc that belongs to this login
 let myCourses = [];
 let myStudents = [];
 let myAttendance = [];     // attendance docs this teacher has submitted
 let attendanceDraft = [];  // [{cnic, name, status}] for the course+date currently on screen
+let myBlogPosts = [];      // this teacher's own submissions to the `articles` collection
+let pendingBlogImage = null; // Cloudinary URL once the optional blog image finishes uploading
 
 // Bumped every time onAuthStateChanged fires. It CAN fire more than once
 // during a single page view (e.g. a token refresh), and without this guard
@@ -35,6 +39,7 @@ let authRunId = 0;
 
 /*=========================================
         HELPERS
+=========================================*/
 function friendlyFirestoreError(error) {
     console.error(error);
     if (error && error.code === "permission-denied") {
@@ -46,6 +51,13 @@ function friendlyFirestoreError(error) {
 function val(id) {
     const el = document.getElementById(id);
     return el ? el.value.trim() : "";
+}
+
+function escapeHTML(str) {
+    if (str === null || str === undefined) return "";
+    return String(str).replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[ch]));
 }
 
 function showTab(tabName) {
@@ -80,6 +92,7 @@ function initials(name) {
 /*=========================================
         BOOTSTRAP — figure out who's logged in,
         then check their teacher application status
+=========================================*/
 onAuthStateChanged(auth, async (user) => {
     if (!user) return; // authGuard.js already handles the redirect for this
 
@@ -147,6 +160,7 @@ async function refreshMyProfile(runId) {
         renderCourseBreakdownChart();
         await loadMyAttendance();
         await loadRankingData();
+        await loadMyBlogPosts();
     } catch (error) {
         alert(friendlyFirestoreError(error));
     }
@@ -155,6 +169,7 @@ async function refreshMyProfile(runId) {
 /*=========================================
         APPLICATION STATUS SCREEN
         (replaces the old CLAIM PROFILE FLOW)
+=========================================*/
 const APPLICATION_STATUS_CONTENT = {
     pending: {
         icon: "fa-hourglass-half",
@@ -198,6 +213,7 @@ function showDashboard() {
 
 /*=========================================
         MY COURSES
+=========================================*/
 async function loadMyCourses() {
     const container = document.getElementById("myCoursesList");
     try {
@@ -227,7 +243,89 @@ function renderMyCourses() {
 }
 
 /*=========================================
+        MY BLOG POSTS
+        Submits into the same `blogs` collection the homepage's
+        Popular Blogs section reads from and Admin's Blog Posts
+        tab manages. Status starts "pending" here — it only goes
+        live once Admin approves it from that tab.
+=========================================*/
+async function loadMyBlogPosts() {
+    const container = document.getElementById("teacherBlogsList");
+    if (!container) return;
+    try {
+        const snap = await getDocs(query(collection(db, "blogs"), where("authorUid", "==", myUid)));
+        myBlogPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderMyBlogPosts();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function renderMyBlogPosts() {
+    const container = document.getElementById("teacherBlogsList");
+    if (!container) return;
+
+    if (myBlogPosts.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4 text-muted">
+                <i class="fa-solid fa-file-pen fs-3 mb-2"></i>
+                <p class="mb-0">You haven't created any blog posts yet.</p>
+            </div>`;
+        return;
+    }
+
+    const badgeClass = (status) => status === "approved" ? "badge-passed" : (status === "rejected" ? "badge-failed" : "badge-pending");
+    const badgeText = (status) => status === "approved" ? "Approved" : (status === "rejected" ? "Rejected" : "Pending");
+
+    container.innerHTML = myBlogPosts.map(p => `
+        <div class="dash-course-card">
+            <h3>${escapeHTML(p.title || "Untitled")} <span class="dash-badge ${badgeClass(p.status)}">${badgeText(p.status)}</span></h3>
+            <p><strong>Category:</strong> ${escapeHTML(p.category || "-")}</p>
+            <p>${escapeHTML(p.excerpt || "")}</p>
+        </div>
+    `).join("");
+}
+
+async function handleTeacherBlogSubmit(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById("submitTeacherBlogBtn");
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+    try {
+        const newRef = doc(collection(db, "blogs"));
+        await setDoc(newRef, {
+            title: val("blogTitle"),
+            category: val("blogCategory"),
+            excerpt: val("blogExcerpt"),
+            body: val("blogBody"),
+            image: pendingBlogImage || "",
+            author: (myProfile && myProfile.name) || "Teacher",
+            authorRole: "Teacher",
+            authorUid: myUid,
+            status: "pending",
+            createdAt: serverTimestamp()
+        });
+
+        // Closing the modal fires hidden.bs.modal, which resets the form and
+        // clears pendingBlogImage (see the wiring block) -- covers this path
+        // the same way it covers Cancel/X/Esc, so nothing to reset here.
+        const modalEl = document.getElementById("teacherBlogModal");
+        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+
+        await loadMyBlogPosts();
+    } catch (error) {
+        alert(friendlyFirestoreError(error));
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+    }
+}
+
+/*=========================================
         MY STUDENTS
+=========================================*/
 async function loadMyStudents() {
     const container = document.getElementById("myStudentsList");
     try {
@@ -300,6 +398,7 @@ async function saveStudentProgress(cnic, percent, remark, row) {
 
 /*=========================================
         ANALYTICS CHARTS
+=========================================*/
 function renderStudentProgressChart() {
     if (typeof Chart === "undefined") return;
     if (myStudents.length === 0) {
@@ -412,6 +511,7 @@ function renderRankingChart(allAcceptedStudents) {
         at all is also what "this teacher was active" means for the
         Attendance Activity chart below — there's no separate schedule
         system to check them into.
+=========================================*/
 function populateAttendanceCourseSelect() {
     const select = document.getElementById("attendanceCourseSelect");
     if (!select) return;
@@ -564,6 +664,7 @@ function renderMyAttendanceChart() {
 
 /*=========================================
         OVERVIEW TAB
+=========================================*/
 function renderOverview() {
     document.getElementById("statMyStudents").setAttribute("data-target", myStudents.length);
 
@@ -593,6 +694,7 @@ function renderOverview() {
 
 /*=========================================
         MY PROFILE
+=========================================*/
 let pendingProfilePhoto = null; // Cloudinary URL once uploaded
 let profilePhotoUploading = false; // blocks Save while an upload is in flight
 
@@ -648,6 +750,7 @@ async function handleProfileSubmit(e) {
 
 /*=========================================
         WIRING
+=========================================*/
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".dash-nav-item").forEach(item => {
         item.addEventListener("click", () => showTab(item.dataset.tab));
@@ -690,10 +793,50 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    document.getElementById("teacherBlogForm")?.addEventListener("submit", handleTeacherBlogSubmit);
+
+    document.getElementById("blogImage")?.addEventListener("change", async function () {
+        const input = this;
+        const file = input.files[0];
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            alert("Image file size must be less than " + Math.round(MAX_UPLOAD_BYTES / 1024 / 1024) + "MB");
+            input.value = "";
+            return;
+        }
+
+        const preview = document.getElementById("blogImagePreview");
+        const previewImg = document.getElementById("blogPreviewImg");
+        previewImg.src = URL.createObjectURL(file); // instant local preview
+        preview.classList.remove("d-none");
+
+        input.disabled = true;
+        try {
+            pendingBlogImage = await uploadImageToCloudinary(file);
+        } catch (error) {
+            alert(error.message);
+            input.value = "";
+            pendingBlogImage = null;
+            preview.classList.add("d-none");
+        } finally {
+            input.disabled = false;
+        }
+    });
+
+    // Blank the form the moment the modal finishes closing, whichever way it
+    // was closed (Cancel, the X, Esc, or a successful submit above), so the
+    // next "New Post" always opens clean instead of showing the last draft.
+    document.getElementById("teacherBlogModal")?.addEventListener("hidden.bs.modal", () => {
+        const form = document.getElementById("teacherBlogForm");
+        if (form) form.reset();
+        pendingBlogImage = null;
+        document.getElementById("blogImagePreview")?.classList.add("d-none");
+    });
+
     async function handleLogout() {
         try {
             await signOut(auth);
-            window.location.href = "../login.html";
+            window.location.href = "../index.html";
         } catch (error) {
             alert(friendlyFirestoreError(error));
         }

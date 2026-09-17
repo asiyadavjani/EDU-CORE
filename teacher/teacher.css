@@ -30,6 +30,7 @@
 /* =========================================================
    GLOBAL
 
+ =========================================================*/
 body {
 
     background: var(--teacher-bg);
@@ -58,6 +59,7 @@ a {
 /* =========================================================
    AUTH LOADING
 
+ =========================================================*/
 #authLoading {
 
     min-height: 100vh;
@@ -162,6 +164,7 @@ a {
 /* =========================================================
    MAIN SHELL
 
+ =========================================================*/
 .dash-shell {
 
     min-height: 100vh;
@@ -176,6 +179,7 @@ a {
    SIDEBAR
    Fixed on desktop
 
+ =========================================================*/
 .dash-sidebar {
 
     width: 255px;
@@ -212,6 +216,7 @@ a {
 /* =========================================================
    SIDEBAR BRAND
 
+ =========================================================*/
 .dash-sidebar-brand {
 
     display: flex;
@@ -270,6 +275,7 @@ a {
 /* =========================================================
    SIDEBAR NAV
 
+ =========================================================*/
 .dash-nav {
 
     display: flex;
@@ -346,6 +352,7 @@ a {
 /* =========================================================
    SIDEBAR FOOTER
 
+ =========================================================*/
 .dash-sidebar-footer {
 
     display: flex;
@@ -419,20 +426,32 @@ a {
 
 /* =========================================================
    MAIN
+   NOTE: margin-left used to compensate for .dash-sidebar being
+   position:fixed (removed from flow, so .dash-main needed a manual
+   offset to not sit underneath it). A later duplicate ".dash-sidebar"
+   rule further down this file sets position:sticky instead (an
+   IN-FLOW sidebar, which -- being later -- wins the cascade at every
+   width above the 860px mobile breakpoint), but nothing ever removed
+   this margin-left to match. The result: .dash-main was pushed an
+   EXTRA 255px (220px between 861-1100px) to the right of where the
+   sticky sidebar already placed it -- invisible right up to 860px
+   because a separate mobile media query below explicitly zeroes this
+   margin, which is exactly why "500px looks fine, wider breaks."
+   Removed here since the sticky sidebar needs no manual offset at all.
 
+ =========================================================*/
 .dash-main {
 
     flex: 1;
 
     min-width: 0;
-
-    margin-left: 255px;
 }
 
 
 /* =========================================================
    TOPBAR
 
+ =========================================================*/
 .dash-topbar {
 
     min-height: 82px;
@@ -549,6 +568,7 @@ a {
 /* =========================================================
    CONTENT
 
+ =========================================================*/
 .dash-content {
 
     width: 100%;
@@ -562,6 +582,7 @@ a {
 /* =========================================================
    TAB ANIMATION
 
+ =========================================================*/
 .dash-tab-panel {
 
     display: none;
@@ -596,6 +617,7 @@ a {
 /* =========================================================
    STAT CARDS
 
+ =========================================================*/
 .dash-stats-row {
 
     margin-bottom: 26px;
@@ -711,6 +733,7 @@ a {
 /* =========================================================
    CHARTS
 
+ =========================================================*/
 .dash-charts-row {
 
     margin-bottom: 26px;
@@ -787,6 +810,7 @@ a {
 /* =========================================================
    PANELS
 
+ =========================================================*/
 .dash-panel {
 
     padding: 22px;
@@ -847,6 +871,7 @@ a {
 /* =========================================================
    MINI OVERVIEW ROW
 
+ =========================================================*/
 .dash-row-mini {
 
     display: flex;
@@ -893,6 +918,7 @@ a {
 /* =========================================================
    COURSE CARDS
 
+ =========================================================*/
 .dash-list-grid {
 
     display: grid !important;
@@ -962,6 +988,7 @@ a {
 /* =========================================================
    BADGES
 
+ =========================================================*/
 .dash-badge {
 
     display: inline-flex;
@@ -1020,6 +1047,7 @@ a {
 /* =========================================================
    STUDENT ROW
 
+ =========================================================*/
 .dash-student-row {
 
     padding: 18px 20px;
@@ -1083,6 +1111,7 @@ a {
 /* =========================================================
    PROGRESS
 
+ =========================================================*/
 .dash-progress-track {
 
     width: 100%;
@@ -1115,6 +1144,7 @@ a {
 /* =========================================================
    STUDENT CONTROLS
 
+ =========================================================*/
 .dash-student-controls {
 
     display: flex;
@@ -1202,6 +1232,7 @@ a {
 /* =========================================================
    ATTENDANCE
 
+ =========================================================*/
 .attendance-row {
 
     display: flex;
@@ -1296,6 +1327,7 @@ a {
 /* =========================================================
    FORM
 
+ =========================================================*/
 .dash-form {
 
     width: 100%;
@@ -1449,6 +1481,7 @@ a {
 /* =========================================================
    APPLICATION STATUS
 
+ =========================================================*/
 .appstatus-wrap {
 
     min-height: 100vh;
@@ -1599,6 +1632,7 @@ a {
 /* =========================================================
    RESPONSIVE — TABLET
 
+ =========================================================*/
 @media (max-width: 1100px) {
 
     .dash-sidebar {
@@ -1607,10 +1641,8 @@ a {
         min-width: 220px;
     }
 
-    .dash-main {
-
-        margin-left: 220px;
-    }
+    /* .dash-main's margin-left removed here too -- see the NOTE on the
+       base .dash-main rule above; same stale fixed-sidebar offset. */
 
     .dash-topbar {
 
@@ -1638,6 +1670,7 @@ a {
    HAMBURGER BUTTON
    Hidden on desktop
 
+ =========================================================*/
 .teacher-menu-toggle {
 
     display: none;
@@ -1647,6 +1680,7 @@ a {
 /* =========================================================
    MOBILE — HAMBURGER SIDEBAR
 
+ =========================================================*/
 @media (max-width: 860px) {
 
     /* Main shell */
@@ -1788,6 +1822,7 @@ a {
 /* =========================================================
    SMALL TABLET / LARGE MOBILE
 
+ =========================================================*/
 @media (max-width: 767px) {
 
     .dash-topbar {
@@ -1887,6 +1922,7 @@ a {
 /* =========================================================
    PHONE
 
+ =========================================================*/
 @media (max-width: 575px) {
 
     .dash-sidebar {
@@ -2028,6 +2064,7 @@ a {
 /* =========================================================
    SIDEBAR SCROLLBAR
 
+ =========================================================*/
 .dash-sidebar::-webkit-scrollbar {
 
     width: 5px;
@@ -2051,6 +2088,7 @@ a {
 /* =========================================================
    REDUCED MOTION
 
+ =========================================================*/
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -2066,6 +2104,7 @@ a {
         TEACHER DASHBOARD
         (style.css, linked before this file, already defines the
         --primary-blue / --theme-* / --border-* / --shadow-* variables)
+====================================*/
 body {
     background: var(--bg-light-grey);
 }
@@ -2075,6 +2114,7 @@ body {
 
 /*====================================
         SHELL LAYOUT (sidebar + main)
+====================================*/
 .dash-shell {
     display: flex;
     min-height: 100vh;
@@ -2264,6 +2304,7 @@ body {
         (replaces the old insecure "claim a profile" screen — this teacher's
         own /teachers/{uid} doc is looked up directly now, so there is
         nothing left to pick from a list. See teacher.js.)
+====================================*/
 .appstatus-wrap {
     min-height: 100vh;
     display: flex;
@@ -2363,6 +2404,7 @@ body {
 
 /*====================================
         TABS
+====================================*/
 .dash-tab-panel {
     display: none;
 }
@@ -2379,10 +2421,16 @@ body {
 
 /*====================================
         STAT CARDS
+        Same issue as .dash-charts-row above: this used to force
+        display:grid + a hardcoded 4-column track, which beat Bootstrap's
+        .row{display:flex} in the cascade and silently defeated the
+        "col-12 col-sm-6 col-xl-3" responsive classes already on each
+        card in teacher.html (1-per-row on phones, 2 on tablets, 4 only
+        on large screens). That's also why "Passed Entry Test" (the
+        longest label) was overflowing its card -- 4 equal columns were
+        forced even on a narrow viewport. Layout is left to Bootstrap.
+====================================*/
 .dash-stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
     margin-bottom: 28px;
 }
 
@@ -2433,10 +2481,19 @@ body {
 
 /*====================================
         ANALYTICS CHARTS
+        NOTE: .dash-charts-row in teacher.html is always paired with
+        Bootstrap's own "row g-3 g-xl-4" classes, and its children are
+        Bootstrap "col-12 col-xl-6" (2-per-row on large screens). This
+        rule used to also set display:grid + a 260px auto-fit column
+        track, which -- being later in the file -- WON the cascade over
+        Bootstrap's .row{display:flex}, silently overriding it and
+        packing as many ~270px columns as would fit instead of the
+        intended 2-per-row ~50% layout. With real data (real course/
+        teacher names), those narrow cards were too tight for chart
+        legends and axis labels, which clipped/overflowed. Only
+        margin-bottom is kept here; layout is left to Bootstrap's .row.
+====================================*/
 .dash-charts-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 18px;
     margin-bottom: 28px;
 }
 
@@ -2480,6 +2537,7 @@ body {
 
 /*====================================
         ATTENDANCE MARKING
+====================================*/
 .attendance-row {
     display: flex;
     align-items: center;
@@ -2527,6 +2585,7 @@ body {
 
 /*====================================
         PANELS / LISTS
+====================================*/
 .dash-panel {
     background: var(--bg-body);
     border: 1px solid var(--border-light);
@@ -2716,6 +2775,7 @@ body {
 
 /*====================================
         PROFILE FORM
+====================================*/
 .dash-form {
     background: var(--bg-body);
     border: 1px solid var(--border-light);
@@ -2725,10 +2785,13 @@ body {
     max-width: 600px;
 }
 
+/* Same fix again: this forced a 2-column grid, defeating the "col-12
+   col-md-6" Bootstrap classes already on its .input-box children (which
+   are meant to stack to 1 column under 768px). Bootstrap's .row now
+   governs it. (.input-box.full-width's grid-column below is dead code
+   either way -- those fields sit outside this .row entirely in the
+   HTML -- so it's left as-is rather than risking an unrelated change.) */
 .dash-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
     margin-bottom: 6px;
 }
 
@@ -2790,6 +2853,7 @@ body {
 
 /*====================================
         AUTH GUARD LOADING / ERROR SCREEN
+====================================*/
 #authLoading {
     min-height: 100vh;
     display: flex;
@@ -2863,6 +2927,7 @@ body {
 
 /*====================================
         RESPONSIVE
+====================================*/
 @media (max-width: 992px) {
     .dash-stats-row {
         grid-template-columns: repeat(2, 1fr);
